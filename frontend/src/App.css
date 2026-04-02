@@ -1,0 +1,19 @@
+/* Minimal styles — expand as needed */
+.app {
+  font-family: sans-serif;
+  max-width: 640px;
+  margin: 4rem auto;
+  padding: 0 1rem;
+}
+
+.health-check {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.status { margin: 0.5rem 0; }
+.status.loading { color: #888; }
+.status.ok      { color: green; }
+.status.error   { color: red; }
