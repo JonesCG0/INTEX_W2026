@@ -13,7 +13,15 @@
   border-radius: 6px;
 }
 
-.status { margin: 0.5rem 0; }
-.status.loading { color: #888; }
-.status.ok      { color: green; }
-.status.error   { color: red; }
+.status {
+  margin: 0.5rem 0;
+}
+.status.loading {
+  color: #888;
+}
+.status.ok {
+  color: green;
+}
+.status.error {
+  color: red;
+}

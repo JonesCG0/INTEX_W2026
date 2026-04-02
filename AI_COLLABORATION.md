@@ -33,9 +33,10 @@ Unless the team decides otherwise, use this default setup:
 
 - **Frontend:** React + TypeScript + Vite
 - **Backend:** ASP.NET Core Web API
-- **Database:** SQL-based database chosen by the team
-- **Cloud Hosting:** Azure
-- **File/Image Storage:** Azure Blob Storage
+- **Database:** RDS (SQL Server or PostgreSQL via Entity Framework)
+- **Cloud Hosting:** AWS
+- **File/Image Storage:** S3
+- **CDN:** CloudFront
 - **Version Control:** GitHub
 
 ---
@@ -176,14 +177,49 @@ When creating files, follow these conventions:
 
 ---
 
-## Deployment Preferences
-Based on past student feedback, default to:
+## Deployment Architecture
 
-- **Azure App Service** or another simple Azure-hosted option for app deployment
-- **Azure Blob Storage** for many dynamically loaded images/files
-- GitHub-connected deployment where possible
+The team has chosen AWS as the hosting platform. The team is experienced with AWS.
 
-Avoid adding AWS S3 unless the team has a clear reason.
+### Target Architecture
+
+```
+GitHub Actions
+├── npm run build → S3 bucket → CloudFront  (frontend)
+└── dotnet publish → Elastic Beanstalk       (backend API)
+                          ↓
+                      RDS (database, private subnet)
+```
+
+### Service Breakdown
+
+| Layer | Service | Notes |
+|---|---|---|
+| Frontend | S3 + CloudFront | Deploy `frontend/dist/` to S3; CloudFront as CDN |
+| Backend | Elastic Beanstalk (.NET platform) | Manages EC2, scaling, and deploys automatically |
+| Database | RDS | Private subnet, only accessible from EB environment |
+| File Storage | S3 (separate bucket) | For any user-uploaded files or images |
+
+### Deployment To-Do List
+
+- [ ] Install AWS CLI on dev machines
+- [ ] Create IAM user with programmatic access (S3, EB, RDS, CloudFront policies)
+- [ ] Run `aws configure` with IAM credentials
+- [ ] Add `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` as GitHub Actions secrets
+- [ ] Create S3 bucket for frontend static hosting
+- [ ] Create CloudFront distribution pointing to S3 bucket
+- [ ] Create Elastic Beanstalk environment with .NET platform (`t3.micro` for free tier)
+- [ ] Create RDS instance in a private subnet (SQL Server or PostgreSQL)
+- [ ] Set up GitHub Actions workflow for frontend: build → S3 sync → CloudFront invalidation
+- [ ] Set up GitHub Actions workflow for backend: `dotnet publish` → EB deploy
+- [ ] Configure environment variables in EB for DB connection string and secrets
+- [ ] Set CORS on backend to only allow the CloudFront domain
+- [ ] Verify frontend can call backend API successfully in deployed environment
+- [ ] Set up HTTPS (CloudFront handles frontend; EB load balancer handles backend)
+
+### Cost Notes
+- EB on `t3.micro` + RDS `db.t3.micro` stay within the AWS 12-month free tier
+- S3 + CloudFront costs are negligible at class-project scale
 
 ---
 
@@ -241,7 +277,7 @@ Add answers here as the team decides them:
 - Final app idea:
 - Final database choice:
 - Final auth approach:
-- Final Azure hosting choice:
+- Final hosting choice: **AWS — S3+CloudFront (frontend), Elastic Beanstalk (backend), RDS (database)**
 - Whether ML is integrated live or offline:
 - Whether file/image upload is required:
 - CI/CD approach:

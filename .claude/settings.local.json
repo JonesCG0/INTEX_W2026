@@ -6,7 +6,9 @@
       "Bash(dotnet new:*)",
       "Bash(npm create:*)",
       "Bash(npm install:*)",
-      "Bash(gh auth:*)"
+      "Bash(gh auth:*)",
+      "Bash(npm run:*)",
+      "Bash(aws sts:*)"
     ]
   }
 }
