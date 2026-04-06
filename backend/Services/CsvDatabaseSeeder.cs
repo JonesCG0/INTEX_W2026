@@ -166,10 +166,21 @@ public sealed class CsvDatabaseSeeder(AppDbContext db)
     {
         foreach (var value in values)
         {
-            if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out _))
+            if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out _))
             {
-                return false;
+                continue;
             }
+
+            // Accept "8.0"-style whole-number decimals as integers
+            if (decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var d) &&
+                decimal.Truncate(d) == d &&
+                d >= int.MinValue &&
+                d <= int.MaxValue)
+            {
+                continue;
+            }
+
+            return false;
         }
 
         return true;
@@ -285,20 +296,17 @@ public sealed class CsvDatabaseSeeder(AppDbContext db)
 
     private static int ConvertToInt(string value)
     {
-        if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intValue))
+        // Handle both "8" and "8.0" style values
+        if (decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var decimalValue))
         {
-            return intValue;
+            var truncated = decimal.Truncate(decimalValue);
+            if (truncated >= int.MinValue && truncated <= int.MaxValue)
+            {
+                return (int)truncated;
+            }
         }
 
-        if (decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var decimalValue) &&
-            decimal.Truncate(decimalValue) == decimalValue &&
-            decimalValue >= int.MinValue &&
-            decimalValue <= int.MaxValue)
-        {
-            return decimal.ToInt32(decimalValue);
-        }
-
-        throw new FormatException($"The input string '{value}' was not in a correct format.");
+        throw new FormatException($"The input string '{value}' was not in a correct format as an integer.");
     }
 
     private static string QuoteIdentifier(string identifier)
