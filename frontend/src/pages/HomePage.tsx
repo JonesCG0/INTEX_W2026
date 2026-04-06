@@ -20,7 +20,7 @@ export default function HomePage() {
     setUser(null);
   }
 
-  const isAdmin = user?.isAuthenticated && user.role === 'Admin';
+  const isAdmin = user?.isAuthenticated && user.role?.toLowerCase() === 'admin';
 
   return (
     <div className="home-page">
@@ -77,7 +77,7 @@ export default function HomePage() {
                   Admin Portal
                 </Link>
               ) : (
-                <Link to="/login" className="btn btn-secondary">
+                <Link to="/admin/users" className="btn btn-secondary">
                   My Dashboard
                 </Link>
               )
