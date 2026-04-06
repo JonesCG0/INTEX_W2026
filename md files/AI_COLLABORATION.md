@@ -179,47 +179,46 @@ When creating files, follow these conventions:
 
 ## Deployment Architecture
 
-The team has chosen AWS as the hosting platform. The team is experienced with AWS.
+The team is using **Microsoft Azure** as the hosting platform.
+
+### Live URLs
+
+| Service | URL |
+|---|---|
+| Frontend | https://polite-rock-003bb5b1e.1.azurestaticapps.net |
+| Backend API | https://intexw2026-crd9brarcfhyf9b8.francecentral-01.azurewebsites.net |
 
 ### Target Architecture
 
 ```
 GitHub Actions
-├── npm run build → S3 bucket → CloudFront  (frontend)
-└── dotnet publish → Elastic Beanstalk       (backend API)
+├── npm run build → Azure Static Web Apps  (frontend)
+└── dotnet publish → Azure App Service     (backend API)
                           ↓
-                      RDS (database, private subnet)
+                      Azure SQL (planned)
 ```
 
 ### Service Breakdown
 
 | Layer | Service | Notes |
 |---|---|---|
-| Frontend | S3 + CloudFront | Deploy `frontend/dist/` to S3; CloudFront as CDN |
-| Backend | Elastic Beanstalk (.NET platform) | Manages EC2, scaling, and deploys automatically |
-| Database | RDS | Private subnet, only accessible from EB environment |
-| File Storage | S3 (separate bucket) | For any user-uploaded files or images |
+| Frontend | Azure Static Web Apps | Auto-deploys from `frontend/dist` on push to main |
+| Backend | Azure App Service (INTEXW2026, France Central) | Auto-deploys on push to `backend/` |
+| Database | Azure SQL Database | Planned — EF Core migrations |
+| File Storage | Azure Blob Storage | Planned |
 
 ### Deployment To-Do List
 
-- [ ] Install AWS CLI on dev machines
-- [ ] Create IAM user with programmatic access (S3, EB, RDS, CloudFront policies)
-- [ ] Run `aws configure` with IAM credentials
-- [ ] Add `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` as GitHub Actions secrets
-- [ ] Create S3 bucket for frontend static hosting
-- [ ] Create CloudFront distribution pointing to S3 bucket
-- [ ] Create Elastic Beanstalk environment with .NET platform (`t3.micro` for free tier)
-- [ ] Create RDS instance in a private subnet (SQL Server or PostgreSQL)
-- [ ] Set up GitHub Actions workflow for frontend: build → S3 sync → CloudFront invalidation
-- [ ] Set up GitHub Actions workflow for backend: `dotnet publish` → EB deploy
-- [ ] Configure environment variables in EB for DB connection string and secrets
-- [ ] Set CORS on backend to only allow the CloudFront domain
-- [ ] Verify frontend can call backend API successfully in deployed environment
-- [ ] Set up HTTPS (CloudFront handles frontend; EB load balancer handles backend)
-
-### Cost Notes
-- EB on `t3.micro` + RDS `db.t3.micro` stay within the AWS 12-month free tier
-- S3 + CloudFront costs are negligible at class-project scale
+- [x] Create Azure Static Web Apps resource
+- [x] Create Azure App Service resource (INTEXW2026)
+- [x] Set up GitHub Actions workflow for frontend
+- [x] Set up GitHub Actions workflow for backend
+- [x] Add GitHub Actions secrets (`AZURE_STATIC_WEB_APPS_API_TOKEN_*`, `AZURE_APP_SERVICE_NAME`, `AZURE_PUBLISH_PROFILE`)
+- [x] Set CORS on backend to allow Static Web Apps domain
+- [x] Verify frontend can call backend API in deployed environment
+- [ ] Create Azure SQL Database
+- [ ] Connect backend to Azure SQL via EF Core connection string in App Service env vars
+- [ ] Set up Azure Blob Storage for file uploads
 
 ---
 
@@ -277,7 +276,7 @@ Add answers here as the team decides them:
 - Final app idea:
 - Final database choice:
 - Final auth approach:
-- Final hosting choice: **AWS — S3+CloudFront (frontend), Elastic Beanstalk (backend), RDS (database)**
+- Final hosting choice: **Azure — Static Web Apps (frontend), App Service (backend), Azure SQL (database)**
 - Whether ML is integrated live or offline:
 - Whether file/image upload is required:
 - CI/CD approach:
