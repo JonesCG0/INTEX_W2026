@@ -19,7 +19,9 @@ By the end of this setup, we should have:
 - environment variables configured
 - starter README docs
 - starter Azure deployment path
-- placeholders for auth, DB, and blob storage
+- cookie-based login for the initial admin user
+- a repeatable Azure SQL seed workflow for the CSV export
+- placeholders for expanded auth, DB migrations, and blob storage
 - a task board and team ownership plan
 
 ---
@@ -134,14 +136,14 @@ Suggested prompt for Codex:
 **Owner:** One AI agent only
 
 Tasks:
-- Decide likely database approach
-- Add placeholder config section
-- Optionally create one simple sample model/entity
-- Optionally add one database connection abstraction or notes
-- Document what still needs to be decided
+- Add the minimal EF Core schema needed for the app bootstrap and admin user
+- Add a repeatable seeding path for the `lighthouse_csv_v7` CSV export
+- Document how Azure SQL is connected in development and deployment
+- Keep any future domain tables separate from the bootstrap/auth pieces
 
 Important:
 - Do not overbuild this part yet
+- Keep the bootstrap schema small and understandable
 - Only create the simplest path for later integration
 
 Suggested prompt for Codex:
@@ -167,10 +169,10 @@ Suggested prompt for Codex:
 **Owner:** One AI agent only
 
 Tasks:
-- Add notes or placeholder structure for auth
-- Document likely 401/auth needs
-- Keep current starter app open/simple unless auth is already required
-- Add TODO comments for protected routes, tokens, sessions, or identity provider choice
+- Add cookie-based login for the initial admin user
+- Document the current admin seed env vars and login flow
+- Keep the app open/simple for unauthenticated visitors
+- Add TODO comments for fuller role management, protected routes, and donor/admin authorization
 
 Suggested prompt for Codex:
 > Add the minimum project structure and documentation needed for future authentication/authorization support in the ASP.NET backend and React frontend. Do not fully implement auth yet.
@@ -202,6 +204,8 @@ Tasks:
   - local setup
   - how to run frontend
   - how to run backend
+  - how to seed Azure SQL
+  - how to seed the initial admin user
   - known TODOs
 - Make sure docs match actual code
 - Remove stale instructions
@@ -240,9 +244,9 @@ Do these in roughly this order:
 5. Environment configuration  
 6. README cleanup  
 7. Deployment preparation  
-8. DB placeholder  
+8. DB placeholder / seed workflow  
 9. Blob storage placeholder  
-10. Auth placeholder  
+10. Auth placeholder / login flow  
 11. Team planning / Trello / scrum roles
 
 This order reduces risk and gets a deployable baseline quickly.
@@ -261,9 +265,9 @@ Use this checklist before the week starts:
 - [x] `.env.example` files added
 - [x] README updated
 - [x] Azure deployment notes added (see README.md and `.github/workflows/`)
-- [ ] DB placeholder documented
+- [x] DB placeholder documented
 - [ ] Blob storage placeholder documented
-- [ ] Auth placeholder documented
+- [x] Auth placeholder documented
 - [ ] Trello board created
 - [ ] Scrum roles assigned
 

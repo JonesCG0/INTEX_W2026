@@ -30,7 +30,8 @@ The application supports three user types:
 ### Project Status
 
 - **Maturity:** MVP with production intentions.
-- **Key technologies:** .NET 10, C#, React 18, TypeScript (strict), Vite, Tailwind CSS, shadcn/ui, React Hook Form, Zod, Recharts, React Router v6, Entity Framework Core, ASP.NET Identity, Azure SQL Database.
+- **Key technologies:** .NET 10, C#, React 18, TypeScript (strict), Vite, Tailwind CSS, shadcn/ui, React Hook Form, Zod, Recharts, React Router v6, Entity Framework Core, cookie-based auth, Azure SQL Database.
+- **Key technologies:** .NET 10, C#, React 18, TypeScript (strict), Vite, Tailwind CSS, shadcn/ui, React Hook Form, Zod, Recharts, React Router v6, Entity Framework Core, cookie-based auth, Azure SQL Database.
 - **Monorepo:** Yes – `/client` and `/server` as two first-level directories.
 
 ---
@@ -46,7 +47,7 @@ The application supports three user types:
   - Use only EF Core migrations for schema changes; never modify the database manually.
 - **ORM:** Entity Framework Core.
   - Use only async methods (e.g., `ToListAsync`, `FirstOrDefaultAsync`); never use synchronous database access.
-- **Authentication:** ASP.NET Identity, cookie-based sessions only. Do not use JWT tokens.
+- **Authentication:** Cookie-based sessions for the current MVP. Do not use JWT tokens.
   - Roles: "Admin," "Donor," and unauthenticated user.
 - **Hosting:** Microsoft Azure (Azure App Service).
 - **UI:** shadcn/ui (as base for all interactive elements) + Tailwind CSS (utility extension; never use inline styles).
@@ -222,7 +223,7 @@ The application supports three user types:
 * **Pitfall:** Hardcoding secrets or connection strings.
   * **Correct approach:** Use Azure App Service env vars (backend) and `.env` (frontend, gitignored). For local test secrets, use `dotnet user-secrets`.
 * **Pitfall:** Missing `[Authorize]` on new endpoints.
-  * **Correct approach:** Apply `[Authorize]` at the controller class level by default. Remove only with `[AllowAnonymous]` for logins/public data.
+  * **Correct approach:** Apply `[Authorize]` at the controller class level by default. Remove only with `[AllowAnonymous]` for logins/public data. The auth flow currently uses cookie sessions and a seeded admin account bootstrap.
 * **Pitfall:** Skipping the IS414-required delete confirmation modal.
   * **Correct approach:** Every destructive UI flow must use shadcn/ui's `AlertDialog` before API call.
 * **Pitfall:** Returning `notes_restricted` for non-admins.
@@ -241,7 +242,7 @@ The application supports three user types:
 These are graded IS414 requirements—violations will result in project rejection.
 
 * **HTTPS:** The app must be served over SSL with a valid TLS certificate. HTTP requests must redirect to HTTPS (enforced via Azure App Service and/or .NET middleware).
-* **Password Policy:** In ASP.NET Identity, configure `PasswordOptions` stricter than Microsoft’s default—use the policy provided in IS414 lectures, not from Microsoft docs.
+* **Password Policy:** If and when ASP.NET Identity is introduced, configure `PasswordOptions` stricter than Microsoft’s default—use the policy provided in IS414 lectures, not from Microsoft docs. For the current MVP, keep the seeded admin password policy documented in the README.
 * **RBAC:** Enforce three roles:
   * **Admin:** Full CRUD on all resources.
   * **Donor:** Read-only access to donation history and impact dashboard.

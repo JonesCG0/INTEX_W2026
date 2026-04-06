@@ -166,12 +166,7 @@ public sealed class CsvDatabaseSeeder(AppDbContext db)
     {
         foreach (var value in values)
         {
-            if (!decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var parsedValue))
-            {
-                return false;
-            }
-
-            if (decimal.Truncate(parsedValue) != parsedValue)
+            if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out _))
             {
                 return false;
             }

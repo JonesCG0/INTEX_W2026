@@ -97,7 +97,7 @@ Project Haven is a secure, full-stack web application designed for a Philippine 
 ### SECURITY (Priority: P0)
 
 - **HTTPS/TLS:** Enforced, with HTTP-to-HTTPS redirect.
-- **Authentication:** ASP.NET Identity, strengthened password policy.
+- **Authentication:** Session-cookie login for the current MVP, with the long-term option to move to ASP.NET Identity if the team wants a fuller account system.
 - **Role-based Access Control:** Admin (CUD), Donor (own data, read-only), Visitors (public data only).
 - **API Protection:** All non-public endpoints require auth.
 - **Delete Confirmation:** All destructive actions confirmed via modal.
@@ -213,7 +213,7 @@ Thanks to Project Haven, the nonprofit spends more time caring for survivors and
 ### Technical Needs
 
 - RESTful API backend (controller-based, .NET 10/C#)
-- ASP.NET Identity for authentication/authorization (JWT or session cookies)
+- Session-cookie authentication for the current MVP, with the long-term option to move to ASP.NET Identity later
 - Admin, Donor, Visitor (unauthenticated) role definitions
 - Entity Framework Core for ORM/migrations
 - React/TypeScript frontend with Vite and React Router (protected routes)
@@ -267,7 +267,7 @@ Thanks to Project Haven, the nonprofit spends more time caring for survivors and
   - React/Vite frontend
   - Azure SQL Database schema
   - Public Home page & Login page
-  - ASP.NET Identity configured (password policy)
+  - Session-cookie login with an initial seeded admin account
   - Initial deployment to Azure
 - Dependencies: Azure subscription, GitHub repo setup
 
