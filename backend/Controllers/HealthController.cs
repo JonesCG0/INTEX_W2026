@@ -11,8 +11,15 @@ public class HealthController(AppDbContext db) : ControllerBase
     [HttpGet("health")]
     public async Task<IActionResult> Health()
     {
-        var dbConnected = await db.Database.CanConnectAsync();
-        return Ok(new { status = "ok", timestamp = DateTime.UtcNow, database = dbConnected ? "connected" : "unavailable" });
+        try
+        {
+            var dbConnected = await db.Database.CanConnectAsync();
+            return Ok(new { status = "ok", timestamp = DateTime.UtcNow, database = dbConnected ? "connected" : "unavailable" });
+        }
+        catch (Exception ex)
+        {
+            return Ok(new { status = "ok", timestamp = DateTime.UtcNow, database = "error", error = ex.Message });
+        }
     }
 
     // GET /api/message — sample JSON endpoint
