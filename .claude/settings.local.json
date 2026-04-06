@@ -10,7 +10,10 @@
       "Bash(npm run:*)",
       "Bash(aws sts:*)",
       "Bash(gh secret:*)",
-      "Bash(az --version)"
+      "Bash(az --version)",
+      "Bash(dotnet add:*)",
+      "Bash(dotnet build:*)",
+      "Bash(gh workflow:*)"
     ]
   }
 }
