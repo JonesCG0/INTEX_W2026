@@ -33,6 +33,21 @@ async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+export type UserSummary = {
+  id: number;
+  email: string;
+  displayName: string;
+  role: string;
+  lockoutEnabled: boolean;
+  lockoutEnd: string | null;
+  accessFailedCount: number;
+};
+
+export type QueryResult = {
+  columns: string[];
+  rows: (string | number | boolean | null)[][];
+};
+
 export type CurrentUser = {
   isAuthenticated: boolean;
   email: string | null;
@@ -53,6 +68,28 @@ const api = {
       },
     ),
   logout: () => requestJson<void>('/api/auth/logout', { method: 'POST' }),
+
+  // Admin — user management
+  adminGetUsers: () =>
+    requestJson<UserSummary[]>('/api/admin/users'),
+  adminChangeRole: (id: number, role: string) =>
+    requestJson<void>(`/api/admin/users/${id}/role`, {
+      method: 'PUT',
+      body: JSON.stringify({ role }),
+    }),
+  adminDeleteUser: (id: number) =>
+    requestJson<void>(`/api/admin/users/${id}`, { method: 'DELETE' }),
+  adminUnlockUser: (id: number) =>
+    requestJson<void>(`/api/admin/users/${id}/unlock`, { method: 'POST' }),
+  adminGetRoles: () =>
+    requestJson<string[]>('/api/admin/roles'),
+
+  // Admin — database query
+  adminQuery: (sql: string) =>
+    requestJson<QueryResult>('/api/admin/query', {
+      method: 'POST',
+      body: JSON.stringify({ sql }),
+    }),
   register: (email: string, displayName: string, password: string, confirmPassword: string) =>
     requestJson<{ isAuthenticated: boolean; email: string; displayName: string; role: string }>(
       '/api/auth/register',
