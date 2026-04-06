@@ -19,7 +19,7 @@ A secure, full-stack case management web application for a nonprofit safehouse s
 |---|---|
 | Frontend | React 19 + TypeScript + Vite |
 | Backend | ASP.NET Core (.NET 10) Web API |
-| Database | Azure SQL Database (planned — EF Core) |
+| Database | Azure SQL Database (EF Core) |
 | Hosting (frontend) | Azure Static Web Apps |
 | Hosting (backend) | Azure App Service (France Central) |
 | CI/CD | GitHub Actions |
@@ -48,7 +48,7 @@ dotnet run
 Runs at `http://localhost:5262`
 
 ### Authentication
-The backend now supports cookie-based login through `POST /api/auth/login` and session lookup through `GET /api/auth/me`.
+The backend supports cookie-based login through `POST /api/auth/login`, session lookup through `GET /api/auth/me`, and logout through `POST /api/auth/logout`.
 
 To seed the first admin account into the database, set these backend environment variables before starting the app:
 
@@ -137,7 +137,7 @@ VITE_API_URL=http://localhost:5262
 
 ## TODOs
 
-- [ ] Database — connect Azure SQL via EF Core
-- [ ] Auth — ASP.NET Identity (Admin, Donor, Visitor roles)
+- [ ] Database — add EF Core migrations and typed entity models for the main business tables
+- [ ] Auth — expand beyond the current seeded admin/cookie login flow into full role management for Admin, Donor, and Visitor
 - [ ] Blob storage — Azure Blob Storage placeholder
 - [ ] Build out full app per PRD (`md files/Web_App_PRD.md`)

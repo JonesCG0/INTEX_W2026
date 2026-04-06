@@ -125,8 +125,9 @@ Before the main assignment week, we want a working default application with:
 - environment variable support
 - simple folder structure
 - starter deployment target on Azure
-- placeholder support for auth/security
-- placeholder support for database access
+- cookie-based login for an initial admin user
+- seeded Azure SQL support for the CSV export
+- a clear path to add full auth/security later
 - placeholder support for image/file storage
 - clear README and setup steps
 
@@ -195,7 +196,7 @@ GitHub Actions
 ├── npm run build → Azure Static Web Apps  (frontend)
 └── dotnet publish → Azure App Service     (backend API)
                           ↓
-                      Azure SQL (planned)
+                      Azure SQL (in use)
 ```
 
 ### Service Breakdown
@@ -204,7 +205,7 @@ GitHub Actions
 |---|---|---|
 | Frontend | Azure Static Web Apps | Auto-deploys from `frontend/dist` on push to main |
 | Backend | Azure App Service (INTEXW2026, France Central) | Auto-deploys on push to `backend/` |
-| Database | Azure SQL Database | Planned — EF Core migrations |
+| Database | Azure SQL Database | EF Core-backed database used for app data and CSV seeding |
 | File Storage | Azure Blob Storage | Planned |
 
 ### Deployment To-Do List
@@ -216,8 +217,9 @@ GitHub Actions
 - [x] Add GitHub Actions secrets (`AZURE_STATIC_WEB_APPS_API_TOKEN_*`, `AZURE_APP_SERVICE_NAME`, `AZURE_PUBLISH_PROFILE`)
 - [x] Set CORS on backend to allow Static Web Apps domain
 - [x] Verify frontend can call backend API in deployed environment
-- [ ] Create Azure SQL Database
-- [ ] Connect backend to Azure SQL via EF Core connection string in App Service env vars
+- [ ] Create or confirm Azure SQL Database and App Service connection string
+- [ ] Seed the Azure SQL database with the `lighthouse_csv_v7` export
+- [x] Add cookie-based login and admin bootstrap support
 - [ ] Set up Azure Blob Storage for file uploads
 
 ---
@@ -274,8 +276,8 @@ When asked to code, an AI agent should return:
 Add answers here as the team decides them:
 
 - Final app idea:
-- Final database choice:
-- Final auth approach:
+- Final database choice: Azure SQL Database
+- Final auth approach: cookie-based login with an initial seeded admin user, with fuller role handling still to be added
 - Final hosting choice: **Azure — Static Web Apps (frontend), App Service (backend), Azure SQL (database)**
 - Whether ML is integrated live or offline:
 - Whether file/image upload is required:
