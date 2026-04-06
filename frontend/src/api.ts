@@ -53,6 +53,14 @@ const api = {
       },
     ),
   logout: () => requestJson<void>('/api/auth/logout', { method: 'POST' }),
+  register: (email: string, displayName: string, password: string, confirmPassword: string) =>
+    requestJson<{ isAuthenticated: boolean; email: string; displayName: string; role: string }>(
+      '/api/auth/register',
+      {
+        method: 'POST',
+        body: JSON.stringify({ email, displayName, password, confirmPassword }),
+      },
+    ),
 };
 
 export default api;

@@ -2,6 +2,7 @@ import { type ChangeEvent, type FormEvent, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api, { type CurrentUser } from '../api';
 import './LoginPage.css';
+import './SignUpPage.css';
 
 type LoginState = {
   email: string;
@@ -157,6 +158,12 @@ export default function LoginPage() {
                 {submitting ? 'Signing in...' : 'Sign in'}
               </button>
             </form>
+          )}
+
+          {!isLoggedIn && !loadingUser && (
+            <p className="signup-login-link">
+              Don&apos;t have an account? <Link to="/signup">Create one</Link>
+            </p>
           )}
         </div>
       </div>

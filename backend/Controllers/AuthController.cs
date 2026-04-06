@@ -49,6 +49,48 @@ public class AuthController(
         return NoContent();
     }
 
+    [HttpPost("register")]
+    [AllowAnonymous]
+    public async Task<ActionResult<AuthResponseDto>> Register([FromBody] RegisterRequestDto request)
+    {
+        if (request.Password != request.ConfirmPassword)
+        {
+            return BadRequest(new { error = "Passwords do not match." });
+        }
+
+        var existing = await userManager.FindByEmailAsync(request.Email.Trim());
+        if (existing is not null)
+        {
+            return Conflict(new { error = "An account with that email already exists." });
+        }
+
+        var user = new AppUser
+        {
+            UserName = request.Email.Trim(),
+            Email = request.Email.Trim(),
+            DisplayName = request.DisplayName.Trim(),
+            EmailConfirmed = true
+        };
+
+        var result = await userManager.CreateAsync(user, request.Password);
+        if (!result.Succeeded)
+        {
+            var firstError = result.Errors.FirstOrDefault()?.Description ?? "Registration failed.";
+            return BadRequest(new { error = firstError });
+        }
+
+        // New accounts are Donors by default
+        await userManager.AddToRoleAsync(user, "Donor");
+
+        var additionalClaims = new List<Claim>
+        {
+            new("DisplayName", user.DisplayName)
+        };
+        await signInManager.SignInWithClaimsAsync(user, isPersistent: true, additionalClaims);
+
+        return Ok(new AuthResponseDto(true, user.Email ?? string.Empty, user.DisplayName, "Donor"));
+    }
+
     [HttpGet("me")]
     [AllowAnonymous]
     public async Task<ActionResult<CurrentUserDto>> Me()
