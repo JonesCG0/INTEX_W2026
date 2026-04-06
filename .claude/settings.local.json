@@ -13,7 +13,8 @@
       "Bash(az --version)",
       "Bash(dotnet add:*)",
       "Bash(dotnet build:*)",
-      "Bash(gh workflow:*)"
+      "Bash(gh workflow:*)",
+      "Bash(npm uninstall:*)"
     ]
   }
 }

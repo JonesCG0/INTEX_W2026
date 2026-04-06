@@ -47,6 +47,16 @@ dotnet run
 ```
 Runs at `http://localhost:5262`
 
+### Seed the database from the CSV export
+The backend includes a one-time CSV import command that creates matching SQL tables and loads the files from `lighthouse_csv_v7`.
+
+```bash
+cd backend
+dotnet run -- --seed-csv ../lighthouse_csv_v7/lighthouse_csv_v7
+```
+
+This requires `ConnectionStrings:DefaultConnection` to point to a reachable SQL Server or Azure SQL Database.
+
 ### Environment Variables
 
 **Frontend** — create `frontend/.env` (already in repo for local dev):
