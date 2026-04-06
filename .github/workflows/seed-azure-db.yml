@@ -1,0 +1,25 @@
+name: Seed Azure SQL Database
+
+on:
+  workflow_dispatch:
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Seed CSV data into Azure SQL
+        working-directory: backend
+        env:
+          ConnectionStrings__DefaultConnection: ${{ secrets.AZURE_SQL_CONNECTION_STRING }}
+          AdminSeed__Email: ${{ secrets.ADMIN_SEED_EMAIL }}
+          AdminSeed__Password: ${{ secrets.ADMIN_SEED_PASSWORD }}
+          AdminSeed__DisplayName: ${{ secrets.ADMIN_SEED_DISPLAY_NAME }}
+        run: dotnet run -- --seed-csv ../lighthouse_csv_v7/lighthouse_csv_v7
