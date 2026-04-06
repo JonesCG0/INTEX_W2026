@@ -19,6 +19,8 @@ public class AuthController(
     [AllowAnonymous]
     public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginRequestDto request)
     {
+        try
+        {
         var user = await userManager.FindByEmailAsync(request.Email.Trim());
         if (user is null)
         {
@@ -28,7 +30,7 @@ public class AuthController(
         var result = await signInManager.CheckPasswordSignInAsync(user, request.Password, lockoutOnFailure: true);
         if (!result.Succeeded)
         {
-            return Unauthorized(new { error = "Invalid email or password." });
+            return Unauthorized(new { error = "Invalid email or password.", detail = result.ToString() });
         }
 
         var roles = await userManager.GetRolesAsync(user);
@@ -55,6 +57,11 @@ public class AuthController(
         );
 
         return Ok(new AuthResponseDto(true, user.Email ?? string.Empty, user.DisplayName, primaryRole));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message, detail = ex.StackTrace });
+        }
     }
 
     [HttpPost("logout")]
