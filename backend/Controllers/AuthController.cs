@@ -1,8 +1,6 @@
 using System.Security.Claims;
 using backend.Models;
 using backend.Models.Auth;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -36,25 +34,13 @@ public class AuthController(
         var roles = await userManager.GetRolesAsync(user);
         var primaryRole = roles.FirstOrDefault() ?? "User";
 
-        var claims = new List<Claim>
+        // Sign in via Identity — handles scheme, security stamp, and cookie correctly
+        // Pass DisplayName as an additional claim so it's available in the cookie
+        var additionalClaims = new List<Claim>
         {
-            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new(ClaimTypes.Name, user.DisplayName),
-            new(ClaimTypes.Email, user.Email ?? string.Empty),
+            new("DisplayName", user.DisplayName)
         };
-        foreach (var role in roles)
-        {
-            claims.Add(new Claim(ClaimTypes.Role, role));
-        }
-
-        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-        var principal = new ClaimsPrincipal(identity);
-
-        await HttpContext.SignInAsync(
-            CookieAuthenticationDefaults.AuthenticationScheme,
-            principal,
-            new AuthenticationProperties { IsPersistent = true, AllowRefresh = true }
-        );
+        await signInManager.SignInWithClaimsAsync(user, isPersistent: true, additionalClaims);
 
         return Ok(new AuthResponseDto(true, user.Email ?? string.Empty, user.DisplayName, primaryRole));
         }
@@ -67,7 +53,7 @@ public class AuthController(
     [HttpPost("logout")]
     public async Task<IActionResult> Logout()
     {
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+        await signInManager.SignOutAsync();
         return NoContent();
     }
 

@@ -265,9 +265,13 @@ Use this checklist before the week starts:
 - [x] `.env.example` files added
 - [x] README updated
 - [x] Azure deployment notes added (see README.md and `.github/workflows/`)
-- [x] DB placeholder documented
+- [x] Azure SQL Database connected and seeded with CSV data
+- [x] ASP.NET Identity configured (roles: Admin, Donor)
+- [x] EF Core migrations created and auto-applied on startup
+- [x] Admin seed account wired via App Service env vars
+- [x] Login page built and deployed
+- [ ] Login confirmed working end-to-end in production
 - [ ] Blob storage placeholder documented
-- [x] Auth placeholder documented
 - [ ] Trello board created
 - [ ] Scrum roles assigned
 

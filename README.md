@@ -19,7 +19,8 @@ A secure, full-stack case management web application for a nonprofit safehouse s
 |---|---|
 | Frontend | React 19 + TypeScript + Vite |
 | Backend | ASP.NET Core (.NET 10) Web API |
-| Database | Azure SQL Database (EF Core) |
+| Auth | ASP.NET Identity (cookie-based, roles: Admin / Donor) |
+| Database | Azure SQL Database (EF Core with migrations) |
 | Hosting (frontend) | Azure Static Web Apps |
 | Hosting (backend) | Azure App Service (France Central) |
 | CI/CD | GitHub Actions |
@@ -47,37 +48,51 @@ dotnet run
 ```
 Runs at `http://localhost:5262`
 
-### Authentication
-The backend supports cookie-based login through `POST /api/auth/login`, session lookup through `GET /api/auth/me`, and logout through `POST /api/auth/logout`.
+Set the connection string via user-secrets (keeps it off disk):
+```bash
+cd backend
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "YOUR_CONNECTION_STRING"
+```
 
-To seed the first admin account into the database, set these backend environment variables before starting the app:
+On startup the backend will:
+1. Auto-apply EF Core migrations
+2. Seed the admin account if `AdminSeed__*` env vars are set
 
+### Admin Seed Account
+To create the first admin on startup, set these environment variables:
 ```bash
 AdminSeed__Email=admin@example.com
-AdminSeed__Password=change-this-password
+AdminSeed__Password=YourPassword123!
 AdminSeed__DisplayName=Project Haven Admin
 ```
 
-If those values are present, the app will create or promote that user to `Admin` on startup.
+Locally use `dotnet user-secrets`:
+```bash
+dotnet user-secrets set "AdminSeed:Email" "admin@example.com"
+dotnet user-secrets set "AdminSeed:Password" "YourPassword123!"
+dotnet user-secrets set "AdminSeed:DisplayName" "Project Haven Admin"
+```
 
-### Seed the database from the CSV export
-The backend includes a one-time CSV import command that creates matching SQL tables and loads the files from `lighthouse_csv_v7`.
+On Azure, set these as App Service environment variables.
 
+### Password Policy (IS414)
+Passwords must be at least **12 characters** and include uppercase, lowercase, digit, and special character.
+
+### Seed the database from CSV export
 ```bash
 cd backend
 dotnet run -- --seed-csv ../lighthouse_csv_v7/lighthouse_csv_v7
 ```
-
-This requires `ConnectionStrings:DefaultConnection` to point to a reachable SQL Server or Azure SQL Database.
+This drops and recreates the CSV-backed tables. Requires `ConnectionStrings:DefaultConnection` to be set.
 
 ### Environment Variables
 
-**Frontend** — create `frontend/.env` (already in repo for local dev):
+**Frontend** — create `frontend/.env`:
 ```
 VITE_API_URL=http://localhost:5262
 ```
 
-**Backend** — allowed CORS origins are set in `appsettings.Development.json`:
+**Backend** — allowed CORS origins in `appsettings.Development.json`:
 ```json
 {
   "AllowedOrigins": ["http://localhost:5173"]
@@ -89,24 +104,18 @@ VITE_API_URL=http://localhost:5262
 ## Deployment
 
 ### Frontend — Azure Static Web Apps
-- Deployed automatically on push to `main` via `.github/workflows/azure-static-web-apps-polite-rock-003bb5b1e.yml`
+- Auto-deploys on push to `main` via `.github/workflows/azure-static-web-apps-polite-rock-003bb5b1e.yml`
 - Build: `npm install && npm run build` → `frontend/dist`
-- Config: `frontend/public/staticwebapp.config.json`
 
 ### Backend — Azure App Service
-- Deployed automatically on push to `main` (changes to `backend/`) via `.github/workflows/deploy-backend.yml`
+- Auto-deploys on push to `main` (changes to `backend/`) via `.github/workflows/deploy-backend.yml`
 - Can also be triggered manually from the Actions tab
-- Publish: `dotnet publish` → Azure App Service (INTEXW2026, France Central)
+- EF Core migrations run automatically on startup
 
 ### Azure SQL Seed Workflow
-- Manual seed workflow: `.github/workflows/seed-azure-db.yml`
-- Run it from the GitHub Actions tab when you want to load the CSV data into Azure SQL
-- It drops and recreates the CSV-backed tables, so use it only when you want a fresh seed
-- Required secrets:
-  - `AZURE_SQL_CONNECTION_STRING`
-  - `ADMIN_SEED_EMAIL`
-  - `ADMIN_SEED_PASSWORD`
-  - `ADMIN_SEED_DISPLAY_NAME`
+- Manual workflow: `.github/workflows/seed-azure-db.yml`
+- Runs EF migrations then loads CSV data into Azure SQL
+- Run from the GitHub Actions tab — drops and recreates CSV-backed tables
 
 ### Required GitHub Secrets
 
@@ -115,10 +124,27 @@ VITE_API_URL=http://localhost:5262
 | `AZURE_STATIC_WEB_APPS_API_TOKEN_POLITE_ROCK_003BB5B1E` | Frontend deploy token |
 | `AZURE_APP_SERVICE_NAME` | Backend App Service name (`INTEXW2026`) |
 | `AZURE_PUBLISH_PROFILE` | Backend publish credentials |
-| `AZURE_SQL_CONNECTION_STRING` | Azure SQL connection string for seeding |
-| `ADMIN_SEED_EMAIL` | Admin login email to seed |
-| `ADMIN_SEED_PASSWORD` | Admin login password to seed |
-| `ADMIN_SEED_DISPLAY_NAME` | Admin display name to seed |
+| `AZURE_SQL_CONNECTION_STRING` | Azure SQL connection string for CSV seed workflow |
+
+### Required Azure App Service Environment Variables
+
+| Variable | Purpose |
+|---|---|
+| `ConnectionStrings__DefaultConnection` | Azure SQL connection string |
+| `AdminSeed__Email` | Admin account email to seed on startup |
+| `AdminSeed__Password` | Admin account password to seed on startup |
+| `AdminSeed__DisplayName` | Admin display name to seed on startup |
+| `AllowedOrigins__0` | Frontend URL for CORS (Static Web Apps URL) |
+
+---
+
+## Auth Endpoints
+
+| Method | Route | Auth | Description |
+|---|---|---|---|
+| POST | `/api/auth/login` | Public | Login with email + password |
+| POST | `/api/auth/logout` | Any | Clear session cookie |
+| GET | `/api/auth/me` | Public | Get current session user |
 
 ---
 
@@ -127,7 +153,16 @@ VITE_API_URL=http://localhost:5262
 ```
 /
 ├── frontend/              # React + Vite app
+│   └── src/
+│       ├── pages/         # Route-level components (HomePage, LoginPage)
+│       ├── styles/        # Page-level CSS
+│       └── api.ts         # All backend API calls
 ├── backend/               # ASP.NET Core Web API
+│   ├── Controllers/       # AuthController, HealthController
+│   ├── Data/              # AppDbContext + EF migrations
+│   ├── Models/            # AppUser (IdentityUser<int>)
+│   ├── Services/          # AdminSeeder, CsvDatabaseSeeder
+│   └── Program.cs         # App setup: Identity, CORS, cookie auth
 ├── md files/              # Project docs (PRD, CLAUDE.md, setup tasks)
 ├── .github/workflows/     # CI/CD pipelines
 └── README.md
@@ -137,7 +172,9 @@ VITE_API_URL=http://localhost:5262
 
 ## TODOs
 
-- [ ] Database — add EF Core migrations and typed entity models for the main business tables
-- [ ] Auth — expand beyond the current seeded admin/cookie login flow into full role management for Admin, Donor, and Visitor
-- [ ] Blob storage — Azure Blob Storage placeholder
-- [ ] Build out full app per PRD (`md files/Web_App_PRD.md`)
+- [ ] Remove debug exception details from `AuthController.Login` once login is confirmed working
+- [ ] Build out full admin portal per PRD (`md files/Web_App_PRD.md`)
+- [ ] EF Core typed entity models for the CSV-seeded business tables
+- [ ] Donor role — protected routes and donor-facing views
+- [ ] Azure Blob Storage for file uploads
+- [ ] CSP headers, GDPR cookie consent banner, privacy policy page

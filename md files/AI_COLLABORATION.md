@@ -220,6 +220,11 @@ GitHub Actions
 - [ ] Create or confirm Azure SQL Database and App Service connection string
 - [ ] Seed the Azure SQL database with the `lighthouse_csv_v7` export
 - [x] Add cookie-based login and admin bootstrap support
+- [x] Switch to ASP.NET Identity (IdentityUser, IdentityRole, UserManager, SignInManager)
+- [x] EF Core migrations created and auto-applied on startup
+- [x] Azure SQL seeded with CSV data via `seed-azure-db.yml` workflow
+- [x] Login page built and deployed (frontend + backend)
+- [ ] Confirm login working end-to-end in production (debugging 500 in progress)
 - [ ] Set up Azure Blob Storage for file uploads
 
 ---
@@ -277,7 +282,7 @@ Add answers here as the team decides them:
 
 - Final app idea:
 - Final database choice: Azure SQL Database
-- Final auth approach: cookie-based login with an initial seeded admin user, with fuller role handling still to be added
+- Final auth approach: ASP.NET Identity with cookie-based sessions. Roles: Admin (full CRUD), Donor (read-only), Unauthenticated (public pages). Admin seeded via `AdminSeed__*` env vars on startup.
 - Final hosting choice: **Azure — Static Web Apps (frontend), App Service (backend), Azure SQL (database)**
 - Whether ML is integrated live or offline:
 - Whether file/image upload is required:
