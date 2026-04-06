@@ -1,5 +1,7 @@
+using System.Data.Common;
 using backend.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Controllers;
 
@@ -11,7 +13,21 @@ public class HealthController(AppDbContext db) : ControllerBase
     [HttpGet("health")]
     public async Task<IActionResult> Health()
     {
-        var dbConnected = await db.Database.CanConnectAsync();
+        var dbConnected = false;
+
+        try
+        {
+            dbConnected = await db.Database.CanConnectAsync();
+        }
+        catch (InvalidOperationException)
+        {
+            dbConnected = false;
+        }
+        catch (DbException)
+        {
+            dbConnected = false;
+        }
+
         return Ok(new { status = "ok", timestamp = DateTime.UtcNow, database = dbConnected ? "connected" : "unavailable" });
     }
 

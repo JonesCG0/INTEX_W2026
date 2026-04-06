@@ -47,6 +47,19 @@ dotnet run
 ```
 Runs at `http://localhost:5262`
 
+### Authentication
+The backend now supports cookie-based login through `POST /api/auth/login` and session lookup through `GET /api/auth/me`.
+
+To seed the first admin account into the database, set these backend environment variables before starting the app:
+
+```bash
+AdminSeed__Email=admin@example.com
+AdminSeed__Password=change-this-password
+AdminSeed__DisplayName=Project Haven Admin
+```
+
+If those values are present, the app will create or promote that user to `Admin` on startup.
+
 ### Seed the database from the CSV export
 The backend includes a one-time CSV import command that creates matching SQL tables and loads the files from `lighthouse_csv_v7`.
 
@@ -85,6 +98,16 @@ VITE_API_URL=http://localhost:5262
 - Can also be triggered manually from the Actions tab
 - Publish: `dotnet publish` → Azure App Service (INTEXW2026, France Central)
 
+### Azure SQL Seed Workflow
+- Manual seed workflow: `.github/workflows/seed-azure-db.yml`
+- Run it from the GitHub Actions tab when you want to load the CSV data into Azure SQL
+- It drops and recreates the CSV-backed tables, so use it only when you want a fresh seed
+- Required secrets:
+  - `AZURE_SQL_CONNECTION_STRING`
+  - `ADMIN_SEED_EMAIL`
+  - `ADMIN_SEED_PASSWORD`
+  - `ADMIN_SEED_DISPLAY_NAME`
+
 ### Required GitHub Secrets
 
 | Secret | Purpose |
@@ -92,6 +115,10 @@ VITE_API_URL=http://localhost:5262
 | `AZURE_STATIC_WEB_APPS_API_TOKEN_POLITE_ROCK_003BB5B1E` | Frontend deploy token |
 | `AZURE_APP_SERVICE_NAME` | Backend App Service name (`INTEXW2026`) |
 | `AZURE_PUBLISH_PROFILE` | Backend publish credentials |
+| `AZURE_SQL_CONNECTION_STRING` | Azure SQL connection string for seeding |
+| `ADMIN_SEED_EMAIL` | Admin login email to seed |
+| `ADMIN_SEED_PASSWORD` | Admin login password to seed |
+| `ADMIN_SEED_DISPLAY_NAME` | Admin display name to seed |
 
 ---
 
