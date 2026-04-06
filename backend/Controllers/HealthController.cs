@@ -1,16 +1,18 @@
+using backend.Data;
 using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers;
 
 [ApiController]
 [Route("api")]
-public class HealthController : ControllerBase
+public class HealthController(AppDbContext db) : ControllerBase
 {
-    // GET /api/health — used by frontend to confirm backend is reachable
+    // GET /api/health — checks backend and database connectivity
     [HttpGet("health")]
-    public IActionResult Health()
+    public async Task<IActionResult> Health()
     {
-        return Ok(new { status = "ok", timestamp = DateTime.UtcNow });
+        var dbConnected = await db.Database.CanConnectAsync();
+        return Ok(new { status = "ok", timestamp = DateTime.UtcNow, database = dbConnected ? "connected" : "unavailable" });
     }
 
     // GET /api/message — sample JSON endpoint
