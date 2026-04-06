@@ -1,15 +1,64 @@
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import api, { type CurrentUser } from '../api';
 import '../styles/HomePage.css';
 
 export default function HomePage() {
+  const navigate = useNavigate();
+  const [user, setUser] = useState<CurrentUser | null>(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+
+  useEffect(() => {
+    api
+      .currentUser()
+      .then(setUser)
+      .catch(() => setUser(null))
+      .finally(() => setLoadingUser(false));
+  }, []);
+
+  async function handleLogout() {
+    await api.logout();
+    setUser(null);
+  }
+
+  const isAdmin = user?.isAuthenticated && user.role === 'Admin';
+  const isDonor = user?.isAuthenticated && user.role === 'Donor';
+
   return (
     <div className="home-page">
       <header className="home-header">
         <div className="home-nav">
           <span className="home-logo">Project Haven</span>
-          <Link to="/login" className="btn btn-outline">
-            Log In
-          </Link>
+
+          <div className="home-nav-right">
+            {loadingUser ? null : user?.isAuthenticated ? (
+              <>
+                <span className="home-nav-greeting">
+                  Hi, {user.displayName ?? user.email}
+                </span>
+                {isAdmin && (
+                  <>
+                    <Link to="/admin/users" className="btn btn-outline">
+                      User Management
+                    </Link>
+                    <Link to="/admin/query" className="btn btn-outline">
+                      DB Query
+                    </Link>
+                  </>
+                )}
+                <button
+                  className="btn btn-secondary"
+                  onClick={() => void handleLogout()}
+                >
+                  Log Out
+                </button>
+              </>
+            ) : (
+              <Link to="/login" className="btn btn-outline">
+                Log In
+              </Link>
+            )}
+          </div>
         </div>
       </header>
 
@@ -24,9 +73,21 @@ export default function HomePage() {
             <a href="#impact" className="btn btn-primary">
               See Our Impact
             </a>
-            <Link to="/login" className="btn btn-secondary">
-              Staff Login
-            </Link>
+            {user?.isAuthenticated ? (
+              isAdmin ? (
+                <Link to="/admin/users" className="btn btn-secondary">
+                  Admin Portal
+                </Link>
+              ) : (
+                <Link to="/donor" className="btn btn-secondary">
+                  My Dashboard
+                </Link>
+              )
+            ) : (
+              <Link to="/login" className="btn btn-secondary">
+                Staff Login
+              </Link>
+            )}
           </div>
         </div>
       </main>
