@@ -8,7 +8,8 @@
       "Bash(npm install:*)",
       "Bash(gh auth:*)",
       "Bash(npm run:*)",
-      "Bash(aws sts:*)"
+      "Bash(aws sts:*)",
+      "Bash(gh secret:*)"
     ]
   }
 }
