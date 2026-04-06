@@ -21,6 +21,14 @@ function App() {
         }
       />
       <Route
+        path="/admin/dashboard"
+        element={
+          <ProtectedRoute requiredRole="Admin">
+            <AdminPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/admin/query"
         element={
           <ProtectedRoute requiredRole="Admin">

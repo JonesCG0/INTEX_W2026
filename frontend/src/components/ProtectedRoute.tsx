@@ -23,7 +23,7 @@ export function ProtectedRoute({ requiredRole, children }: Props) {
     return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading...</div>;
   }
 
-  if (!user?.isAuthenticated || user.role !== requiredRole) {
+  if (!user?.isAuthenticated || user.role?.toLowerCase() !== requiredRole.toLowerCase()) {
     return <Navigate to="/login" replace />;
   }
 
