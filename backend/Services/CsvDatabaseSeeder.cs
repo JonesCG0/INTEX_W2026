@@ -276,11 +276,29 @@ public sealed class CsvDatabaseSeeder(AppDbContext db)
         return sqlType switch
         {
             "bit" => bool.Parse(trimmedValue),
-            "int" => int.Parse(trimmedValue, NumberStyles.Integer, CultureInfo.InvariantCulture),
+            "int" => ConvertToInt(trimmedValue),
             "decimal(18,6)" => decimal.Parse(trimmedValue, NumberStyles.Number, CultureInfo.InvariantCulture),
             "date" or "datetime2(0)" => DateTime.Parse(trimmedValue, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces),
             _ => trimmedValue
         };
+    }
+
+    private static int ConvertToInt(string value)
+    {
+        if (int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var intValue))
+        {
+            return intValue;
+        }
+
+        if (decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var decimalValue) &&
+            decimal.Truncate(decimalValue) == decimalValue &&
+            decimalValue >= int.MinValue &&
+            decimalValue <= int.MaxValue)
+        {
+            return decimal.ToInt32(decimalValue);
+        }
+
+        throw new FormatException($"The input string '{value}' was not in a correct format.");
     }
 
     private static string QuoteIdentifier(string identifier)
