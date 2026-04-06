@@ -1,9 +1,0 @@
-C:\Users\carso\OneDrive - Brigham Young University\9th Semester\INTEX_W2026\backend\publish\backend.exe
-C:\Users\carso\OneDrive - Brigham Young University\9th Semester\INTEX_W2026\backend\publish\appsettings.Development.json
-C:\Users\carso\OneDrive - Brigham Young University\9th Semester\INTEX_W2026\backend\publish\appsettings.json
-C:\Users\carso\OneDrive - Brigham Young University\9th Semester\INTEX_W2026\backend\publish\backend.dll
-C:\Users\carso\OneDrive - Brigham Young University\9th Semester\INTEX_W2026\backend\publish\backend.deps.json
-C:\Users\carso\OneDrive - Brigham Young University\9th Semester\INTEX_W2026\backend\publish\backend.runtimeconfig.json
-C:\Users\carso\OneDrive - Brigham Young University\9th Semester\INTEX_W2026\backend\publish\backend.pdb
-C:\Users\carso\OneDrive - Brigham Young University\9th Semester\INTEX_W2026\backend\publish\Microsoft.AspNetCore.OpenApi.dll
-C:\Users\carso\OneDrive - Brigham Young University\9th Semester\INTEX_W2026\backend\publish\Microsoft.OpenApi.dll
