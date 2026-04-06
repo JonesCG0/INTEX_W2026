@@ -12,15 +12,15 @@ public class HealthController(AppDbContext db, IConfiguration config) : Controll
     public async Task<IActionResult> Health()
     {
         var connString = config.GetConnectionString("DefaultConnection");
-        var hasConn = !string.IsNullOrEmpty(connString);
         try
         {
-            var dbConnected = await db.Database.CanConnectAsync();
-            return Ok(new { status = "ok", timestamp = DateTime.UtcNow, database = dbConnected ? "connected" : "unavailable", hasConnectionString = hasConn });
+            using var conn = new Microsoft.Data.SqlClient.SqlConnection(connString);
+            await conn.OpenAsync();
+            return Ok(new { status = "ok", timestamp = DateTime.UtcNow, database = "connected" });
         }
         catch (Exception ex)
         {
-            return Ok(new { status = "ok", timestamp = DateTime.UtcNow, database = "error", hasConnectionString = hasConn, error = ex.Message });
+            return Ok(new { status = "ok", timestamp = DateTime.UtcNow, database = "error", error = ex.Message });
         }
     }
 
