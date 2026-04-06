@@ -224,7 +224,13 @@ GitHub Actions
 - [x] EF Core migrations created and auto-applied on startup
 - [x] Azure SQL seeded with CSV data via `seed-azure-db.yml` workflow
 - [x] Login page built and deployed (frontend + backend)
-- [ ] Confirm login working end-to-end in production (debugging 500 in progress)
+- [x] Login working end-to-end in production
+- [x] Sign-up page built (creates Donor accounts)
+- [x] Admin user management page (change role, delete, unlock)
+- [x] Admin database query page (SELECT only, 500 row cap)
+- [x] Home page auth-aware nav (greets user, shows admin links, logout)
+- [x] ProtectedRoute component for admin-gated routes
+- [x] Fixed full-screen layout (removed Vite boilerplate black sidebars)
 - [ ] Set up Azure Blob Storage for file uploads
 
 ---

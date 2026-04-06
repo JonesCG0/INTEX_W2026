@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import api, { type CurrentUser } from '../api';
 import '../styles/HomePage.css';
 
@@ -22,7 +22,6 @@ export default function HomePage() {
   }
 
   const isAdmin = user?.isAuthenticated && user.role === 'Admin';
-  const isDonor = user?.isAuthenticated && user.role === 'Donor';
 
   return (
     <div className="home-page">
@@ -79,7 +78,7 @@ export default function HomePage() {
                   Admin Portal
                 </Link>
               ) : (
-                <Link to="/donor" className="btn btn-secondary">
+                <Link to="/login" className="btn btn-secondary">
                   My Dashboard
                 </Link>
               )

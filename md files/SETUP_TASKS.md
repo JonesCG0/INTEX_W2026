@@ -270,7 +270,11 @@ Use this checklist before the week starts:
 - [x] EF Core migrations created and auto-applied on startup
 - [x] Admin seed account wired via App Service env vars
 - [x] Login page built and deployed
-- [ ] Login confirmed working end-to-end in production
+- [x] Login confirmed working end-to-end in production
+- [x] Sign-up page (Donor self-registration)
+- [x] Admin user management page (/admin/users)
+- [x] Admin database query page (/admin/query)
+- [x] Auth-aware home page nav
 - [ ] Blob storage placeholder documented
 - [ ] Trello board created
 - [ ] Scrum roles assigned

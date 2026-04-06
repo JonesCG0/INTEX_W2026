@@ -6,7 +6,7 @@ A secure, full-stack case management web application for a nonprofit safehouse s
 
 ## Live Deployment
 
-| Service  | URL |
+| Service | URL |
 |---|---|
 | Frontend | https://polite-rock-003bb5b1e.1.azurestaticapps.net |
 | Backend API | https://intexw2026-crd9brarcfhyf9b8.francecentral-01.azurewebsites.net |
@@ -24,6 +24,42 @@ A secure, full-stack case management web application for a nonprofit safehouse s
 | Hosting (frontend) | Azure Static Web Apps |
 | Hosting (backend) | Azure App Service (France Central) |
 | CI/CD | GitHub Actions |
+
+---
+
+## Pages & Routes
+
+| Route | Access | Description |
+|---|---|---|
+| `/` | Public | Home page — auth-aware nav, impact stats |
+| `/login` | Public | Login form |
+| `/signup` | Public | Registration (creates Donor account) |
+| `/admin/users` | Admin only | User management — change roles, delete, unlock |
+| `/admin/query` | Admin only | SQL query interface (SELECT only) |
+
+---
+
+## API Endpoints
+
+### Auth (`/api/auth`)
+
+| Method | Route | Auth | Description |
+|---|---|---|---|
+| POST | `/login` | Public | Login with email + password |
+| POST | `/logout` | Any | Clear session cookie |
+| GET | `/me` | Public | Get current session user |
+| POST | `/register` | Public | Create Donor account |
+
+### Admin (`/api/admin`)
+
+| Method | Route | Auth | Description |
+|---|---|---|---|
+| GET | `/users` | Admin | List all users with roles |
+| PUT | `/users/{id}/role` | Admin | Change a user's role |
+| DELETE | `/users/{id}` | Admin | Delete a user |
+| POST | `/users/{id}/unlock` | Admin | Clear lockout on a user |
+| GET | `/roles` | Admin | List available roles |
+| POST | `/query` | Admin | Run a SELECT query (max 500 rows) |
 
 ---
 
@@ -59,21 +95,12 @@ On startup the backend will:
 2. Seed the admin account if `AdminSeed__*` env vars are set
 
 ### Admin Seed Account
-To create the first admin on startup, set these environment variables:
-```bash
-AdminSeed__Email=admin@example.com
-AdminSeed__Password=YourPassword123!
-AdminSeed__DisplayName=Project Haven Admin
-```
-
-Locally use `dotnet user-secrets`:
 ```bash
 dotnet user-secrets set "AdminSeed:Email" "admin@example.com"
 dotnet user-secrets set "AdminSeed:Password" "YourPassword123!"
 dotnet user-secrets set "AdminSeed:DisplayName" "Project Haven Admin"
 ```
-
-On Azure, set these as App Service environment variables.
+On Azure, set these as App Service environment variables instead.
 
 ### Password Policy (IS414)
 Passwords must be at least **12 characters** and include uppercase, lowercase, digit, and special character.
@@ -83,7 +110,7 @@ Passwords must be at least **12 characters** and include uppercase, lowercase, d
 cd backend
 dotnet run -- --seed-csv ../lighthouse_csv_v7/lighthouse_csv_v7
 ```
-This drops and recreates the CSV-backed tables. Requires `ConnectionStrings:DefaultConnection` to be set.
+Drops and recreates CSV-backed tables. Requires `ConnectionStrings:DefaultConnection` to be set.
 
 ### Environment Variables
 
@@ -109,13 +136,12 @@ VITE_API_URL=http://localhost:5262
 
 ### Backend — Azure App Service
 - Auto-deploys on push to `main` (changes to `backend/`) via `.github/workflows/deploy-backend.yml`
-- Can also be triggered manually from the Actions tab
 - EF Core migrations run automatically on startup
 
 ### Azure SQL Seed Workflow
 - Manual workflow: `.github/workflows/seed-azure-db.yml`
-- Runs EF migrations then loads CSV data into Azure SQL
-- Run from the GitHub Actions tab — drops and recreates CSV-backed tables
+- Runs EF migrations then loads all CSV files into Azure SQL
+- Drops and recreates CSV-backed tables — use only for a fresh seed
 
 ### Required GitHub Secrets
 
@@ -138,33 +164,32 @@ VITE_API_URL=http://localhost:5262
 
 ---
 
-## Auth Endpoints
-
-| Method | Route | Auth | Description |
-|---|---|---|---|
-| POST | `/api/auth/login` | Public | Login with email + password |
-| POST | `/api/auth/logout` | Any | Clear session cookie |
-| GET | `/api/auth/me` | Public | Get current session user |
-
----
-
 ## Repo Structure
 
 ```
 /
-├── frontend/              # React + Vite app
+├── frontend/
 │   └── src/
-│       ├── pages/         # Route-level components (HomePage, LoginPage)
-│       ├── styles/        # Page-level CSS
-│       └── api.ts         # All backend API calls
-├── backend/               # ASP.NET Core Web API
-│   ├── Controllers/       # AuthController, HealthController
-│   ├── Data/              # AppDbContext + EF migrations
-│   ├── Models/            # AppUser (IdentityUser<int>)
-│   ├── Services/          # AdminSeeder, CsvDatabaseSeeder
-│   └── Program.cs         # App setup: Identity, CORS, cookie auth
-├── md files/              # Project docs (PRD, CLAUDE.md, setup tasks)
-├── .github/workflows/     # CI/CD pipelines
+│       ├── components/        # Shared components (ProtectedRoute)
+│       ├── pages/             # Route-level pages
+│       │   ├── HomePage.tsx   # Auth-aware home with nav
+│       │   ├── LoginPage.tsx
+│       │   ├── SignUpPage.tsx
+│       │   ├── AdminPage.tsx  # User management (Admin only)
+│       │   └── QueryPage.tsx  # DB query interface (Admin only)
+│       ├── styles/            # Shared CSS
+│       └── api.ts             # All backend API calls + types
+├── backend/
+│   ├── Controllers/           # AuthController, AdminController, HealthController
+│   ├── Data/                  # AppDbContext + EF migrations
+│   ├── Models/
+│   │   ├── AppUser.cs         # IdentityUser<int> with DisplayName
+│   │   ├── Auth/              # DTOs: Login, Register, CurrentUser, AuthResponse
+│   │   └── Admin/             # DTOs: UserSummary, ChangeRole, QueryRequest
+│   ├── Services/              # AdminSeeder, CsvDatabaseSeeder
+│   └── Program.cs             # Identity, CORS, cookie auth, auto-migrate
+├── md files/                  # Project docs (PRD, CLAUDE.md, setup tasks)
+├── .github/workflows/         # CI/CD pipelines
 └── README.md
 ```
 
@@ -172,9 +197,9 @@ VITE_API_URL=http://localhost:5262
 
 ## TODOs
 
-- [ ] Remove debug exception details from `AuthController.Login` once login is confirmed working
-- [ ] Build out full admin portal per PRD (`md files/Web_App_PRD.md`)
-- [ ] EF Core typed entity models for the CSV-seeded business tables
-- [ ] Donor role — protected routes and donor-facing views
-- [ ] Azure Blob Storage for file uploads
+- [ ] Build out full admin portal per PRD — residents, donors, process recordings, visitations
+- [ ] EF Core typed entity models for CSV-seeded business tables
+- [ ] Donor dashboard — donation history, anonymized impact view
 - [ ] CSP headers, GDPR cookie consent banner, privacy policy page
+- [ ] Azure Blob Storage for file uploads
+- [ ] Lighthouse accessibility audit (target ≥90%)
