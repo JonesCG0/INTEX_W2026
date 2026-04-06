@@ -14,7 +14,8 @@
       "Bash(dotnet add:*)",
       "Bash(dotnet build:*)",
       "Bash(gh workflow:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }
