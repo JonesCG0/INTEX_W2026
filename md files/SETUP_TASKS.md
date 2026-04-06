@@ -252,15 +252,15 @@ This order reduces risk and gets a deployable baseline quickly.
 ## Acceptance Checklist
 Use this checklist before the week starts:
 
-- [ ] GitHub repo created
+- [x] GitHub repo created
 - [ ] Basic branch strategy agreed on
-- [ ] React frontend created
-- [ ] ASP.NET backend created
-- [ ] Backend health endpoint works
-- [ ] Frontend successfully calls backend
-- [ ] `.env.example` files added
-- [ ] README updated
-- [ ] Azure deployment notes added
+- [x] React frontend created
+- [x] ASP.NET backend created
+- [x] Backend health endpoint works
+- [x] Frontend successfully calls backend
+- [x] `.env.example` files added
+- [x] README updated
+- [x] Azure deployment notes added (see README.md and `.github/workflows/`)
 - [ ] DB placeholder documented
 - [ ] Blob storage placeholder documented
 - [ ] Auth placeholder documented
