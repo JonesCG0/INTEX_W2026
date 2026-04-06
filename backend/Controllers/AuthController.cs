@@ -13,6 +13,14 @@ public class AuthController(
     UserManager<AppUser> userManager,
     SignInManager<AppUser> signInManager) : ControllerBase
 {
+    // Returns the highest-privilege role when a user has multiple roles.
+    private static string ResolvePrimaryRole(IList<string> roles)
+    {
+        if (roles.Contains("Admin")) return "Admin";
+        if (roles.Contains("Donor")) return "Donor";
+        return roles.FirstOrDefault() ?? "User";
+    }
+
     [HttpPost("login")]
     [AllowAnonymous]
     public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginRequestDto request)
@@ -30,9 +38,8 @@ public class AuthController(
         }
 
         var roles = await userManager.GetRolesAsync(user);
-        var primaryRole = roles.FirstOrDefault() ?? "User";
+        var primaryRole = ResolvePrimaryRole(roles);
 
-        // Sign in via Identity — handles scheme, security stamp, and cookie correctly
         var additionalClaims = new List<Claim>
         {
             new("DisplayName", user.DisplayName)
@@ -47,6 +54,27 @@ public class AuthController(
     {
         await signInManager.SignOutAsync();
         return NoContent();
+    }
+
+    [HttpGet("me")]
+    [AllowAnonymous]
+    public async Task<ActionResult<CurrentUserDto>> Me()
+    {
+        if (User.Identity?.IsAuthenticated != true)
+        {
+            return Ok(new CurrentUserDto(false, null, null, null));
+        }
+
+        var user = await userManager.GetUserAsync(User);
+        if (user is null)
+        {
+            return Ok(new CurrentUserDto(false, null, null, null));
+        }
+
+        var roles = await userManager.GetRolesAsync(user);
+        var primaryRole = ResolvePrimaryRole(roles);
+
+        return Ok(new CurrentUserDto(true, user.Email, user.DisplayName, primaryRole));
     }
 
     [HttpPost("register")]
@@ -79,7 +107,6 @@ public class AuthController(
             return BadRequest(new { error = firstError });
         }
 
-        // New accounts are Donors by default
         await userManager.AddToRoleAsync(user, "Donor");
 
         var additionalClaims = new List<Claim>
@@ -89,26 +116,5 @@ public class AuthController(
         await signInManager.SignInWithClaimsAsync(user, isPersistent: true, additionalClaims);
 
         return Ok(new AuthResponseDto(true, user.Email ?? string.Empty, user.DisplayName, "Donor"));
-    }
-
-    [HttpGet("me")]
-    [AllowAnonymous]
-    public async Task<ActionResult<CurrentUserDto>> Me()
-    {
-        if (User.Identity?.IsAuthenticated != true)
-        {
-            return Ok(new CurrentUserDto(false, null, null, null));
-        }
-
-        var user = await userManager.GetUserAsync(User);
-        if (user is null)
-        {
-            return Ok(new CurrentUserDto(false, null, null, null));
-        }
-
-        var roles = await userManager.GetRolesAsync(user);
-        var primaryRole = roles.FirstOrDefault();
-
-        return Ok(new CurrentUserDto(true, user.Email, user.DisplayName, primaryRole));
     }
 }
