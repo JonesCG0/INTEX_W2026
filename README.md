@@ -19,7 +19,7 @@ A secure, full-stack case management web application for a nonprofit safehouse s
 |---|---|
 | Frontend | React 19 + TypeScript + Vite |
 | Backend | ASP.NET Core (.NET 10) Web API |
-| Database | Azure SQL (planned — EF Core) |
+| Database | Azure SQL Database (planned — EF Core) |
 | Hosting (frontend) | Azure Static Web Apps |
 | Hosting (backend) | Azure App Service (France Central) |
 | CI/CD | GitHub Actions |

@@ -33,10 +33,10 @@ Unless the team decides otherwise, use this default setup:
 
 - **Frontend:** React + TypeScript + Vite
 - **Backend:** ASP.NET Core Web API
-- **Database:** RDS (SQL Server or PostgreSQL via Entity Framework)
-- **Cloud Hosting:** AWS
-- **File/Image Storage:** S3
-- **CDN:** CloudFront
+- **Database:** Azure SQL Database (via Entity Framework Core)
+- **Cloud Hosting:** Azure (Static Web Apps + App Service)
+- **File/Image Storage:** Azure Blob Storage
+- **CDN:** Azure Static Web Apps (built-in)
 - **Version Control:** GitHub
 
 ---
