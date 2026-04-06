@@ -32,3 +32,9 @@ C:\Users\carso\OneDrive - Brigham Young University\9th Semester\INTEX_W2026\back
 C:\Users\carso\OneDrive - Brigham Young University\9th Semester\INTEX_W2026\backend\obj\Debug\net10.0\backend.pdb
 C:\Users\carso\OneDrive - Brigham Young University\9th Semester\INTEX_W2026\backend\obj\Debug\net10.0\backend.genruntimeconfig.cache
 C:\Users\carso\OneDrive - Brigham Young University\9th Semester\INTEX_W2026\backend\obj\Debug\net10.0\ref\backend.dll
+C:\Users\carso\OneDrive - Brigham Young University\9th Semester\INTEX_W2026\backend\bin\Debug\net10.0\publish\web.config
+C:\Users\carso\OneDrive - Brigham Young University\9th Semester\INTEX_W2026\backend\bin\Debug\net10.0\publish\appsettings.Development.json
+C:\Users\carso\OneDrive - Brigham Young University\9th Semester\INTEX_W2026\backend\bin\Debug\net10.0\publish\appsettings.json
+C:\Users\carso\OneDrive - Brigham Young University\9th Semester\INTEX_W2026\backend\bin\Debug\net10.0\publish\backend.deps.json
+C:\Users\carso\OneDrive - Brigham Young University\9th Semester\INTEX_W2026\backend\bin\Debug\net10.0\publish\backend.runtimeconfig.json
+C:\Users\carso\OneDrive - Brigham Young University\9th Semester\INTEX_W2026\backend\bin\Debug\net10.0\publish\backend.staticwebassets.endpoints.json
