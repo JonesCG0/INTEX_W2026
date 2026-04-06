@@ -4,7 +4,6 @@ import api, { type CurrentUser } from '../api';
 import '../styles/HomePage.css';
 
 export default function HomePage() {
-  const navigate = useNavigate();
   const [user, setUser] = useState<CurrentUser | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
