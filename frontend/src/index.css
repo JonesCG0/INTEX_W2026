@@ -1,14 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Yeseva+One&display=swap');
+
+:root {
+  color-scheme: light;
+  --haven-primary: #1d6968;
+  --haven-secondary: #a0422a;
+  --haven-accent: #dcaf6c;
+  --haven-bg: #f7f2e8;
+  --haven-surface: #ffffff;
+  --haven-border: #d7d0c3;
+  --haven-text: #101e1d;
+  --haven-muted: #8fa89f;
+  --haven-display: 'Yeseva One', Georgia, serif;
+  --haven-body: 'Geist', 'Segoe UI', Arial, sans-serif;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  min-height: 100svh;
+  font-family: var(--haven-body);
+  color: var(--haven-text);
+  background: var(--haven-bg);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
 #root {
   min-height: 100svh;
+}
+
+a {
+  color: inherit;
 }

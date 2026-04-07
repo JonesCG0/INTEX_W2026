@@ -55,9 +55,68 @@ export type CurrentUser = {
   role: string | null;
 };
 
+export type ImpactHero = {
+  headline: string;
+  summary: string;
+  publishedLabel: string;
+  updatedLabel: string;
+};
+
+export type ImpactMetric = {
+  label: string;
+  valueDisplay: string;
+  detail: string;
+};
+
+export type ImpactTrendPoint = {
+  monthLabel: string;
+  donationAmountPhp: number;
+  activeResidents: number;
+  avgEducationProgress: number;
+  avgHealthScore: number;
+};
+
+export type ImpactPlatform = {
+  platform: string;
+  reach: number;
+  donationReferrals: number;
+  engagementRate: number;
+};
+
+export type ImpactSafehouse = {
+  safehouseId: number;
+  name: string;
+  region: string;
+  city: string;
+  currentOccupancy: number;
+  capacityGirls: number;
+  capacityStaff: number;
+  avgEducationProgress: number | null;
+  avgHealthScore: number | null;
+  latestMonthLabel: string | null;
+};
+
+export type ImpactSnapshot = {
+  snapshotDate: string;
+  headline: string;
+  summary: string;
+  publishedAt: string | null;
+};
+
+export type ImpactDashboard = {
+  hero: ImpactHero;
+  metrics: ImpactMetric[];
+  donationTrend: ImpactTrendPoint[];
+  platformPerformance: ImpactPlatform[];
+  safehouses: ImpactSafehouse[];
+  snapshots: ImpactSnapshot[];
+  generatedAt: string;
+};
+
 const api = {
   health: () => requestJson<{ status: string; timestamp: string }>('/api/health'),
   message: () => requestJson<{ message: string }>('/api/message'),
+  publicImpact: () => requestJson<ImpactDashboard>('/api/public/impact'),
   currentUser: () => requestJson<CurrentUser>('/api/auth/me'),
   login: (email: string, password: string) =>
     requestJson<{ isAuthenticated: boolean; email: string; displayName: string; role: string }>(
