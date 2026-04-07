@@ -183,6 +183,8 @@ VITE_API_URL=http://localhost:5262
 | `AdminSeed__DisplayName` | Admin display name to seed on startup |
 | `AllowedOrigins__0` | Frontend URL for CORS (Static Web Apps URL) |
 
+> **Important:** Do NOT set `ASPNETCORE_ENVIRONMENT=Development` in Azure. Development mode sets the auth cookie to `SameSite=Lax`, which breaks cross-origin login between the Static Web App and App Service. Leave it unset (defaults to `Production`).
+
 ---
 
 ## Repo Structure
@@ -226,5 +228,5 @@ VITE_API_URL=http://localhost:5262
 - [x] Privacy policy page
 - [x] GDPR-style cookie consent banner
 - [ ] CSP headers and additional privacy hardening
-- [ ] Azure Blob Storage for file uploads
+- [x] Static image hosting — drop images in `frontend/public/images/`, reference as `/images/filename.jpg`
 - [ ] Lighthouse accessibility audit (target ≥90%)
