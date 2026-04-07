@@ -1,0 +1,147 @@
+.admin-shell {
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  background:
+    radial-gradient(circle at top right, rgba(29, 105, 104, 0.12), transparent 35%),
+    linear-gradient(180deg, #f9f4e8 0%, #f5efe2 100%);
+  color: var(--haven-text);
+}
+
+.admin-sidebar {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  min-height: 100svh;
+  padding: 1.5rem 1.2rem;
+  border-right: 1px solid rgba(215, 208, 195, 0.9);
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(14px);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.admin-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  text-decoration: none;
+  color: inherit;
+  font-family: var(--haven-display);
+  font-size: 1.15rem;
+}
+
+.admin-brand-mark {
+  width: 2.35rem;
+  height: 2.35rem;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--haven-primary);
+  color: #f0ebe0;
+  font-size: 0.76rem;
+  font-family: var(--haven-body);
+  font-weight: 700;
+}
+
+.admin-nav {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.admin-nav a {
+  padding: 0.8rem 0.95rem;
+  border-radius: 0.95rem;
+  text-decoration: none;
+  color: rgba(16, 30, 29, 0.82);
+  font-weight: 600;
+  border: 1px solid transparent;
+}
+
+.admin-nav a:hover,
+.admin-nav a:focus-visible,
+.admin-nav a.active {
+  background: rgba(29, 105, 104, 0.09);
+  color: var(--haven-primary);
+  border-color: rgba(29, 105, 104, 0.12);
+}
+
+.admin-sidebar-footer {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(215, 208, 195, 0.9);
+}
+
+.admin-sidebar-eyebrow,
+.admin-eyebrow {
+  display: block;
+  color: var(--haven-secondary);
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.admin-sidebar-footer p,
+.admin-subtitle {
+  margin: 0.45rem 0 0;
+  color: rgba(16, 30, 29, 0.76);
+  line-height: 1.6;
+}
+
+.admin-sidebar-link {
+  display: inline-flex;
+  margin-top: 0.75rem;
+  color: var(--haven-primary);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.admin-content {
+  padding: 1.5rem 1.5rem 2rem;
+}
+
+.admin-topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-bottom: 1.3rem;
+}
+
+.admin-topbar h1 {
+  margin: 0.25rem 0 0;
+  font-family: var(--haven-display);
+  font-size: clamp(2rem, 3vw, 3rem);
+  line-height: 1.05;
+}
+
+.admin-topbar-chip {
+  padding: 0.7rem 0.9rem;
+  border-radius: 999px;
+  background: rgba(29, 105, 104, 0.1);
+  color: var(--haven-primary);
+  font-size: 0.88rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@media (max-width: 960px) {
+  .admin-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-sidebar {
+    position: relative;
+    min-height: auto;
+  }
+
+  .admin-content {
+    padding: 1rem;
+  }
+
+  .admin-topbar {
+    flex-direction: column;
+  }
+}

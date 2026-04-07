@@ -68,7 +68,7 @@ export default function LoginPage() {
         role: response.role,
       });
       setForm(initialState);
-      navigate('/');
+      navigate(response.role?.toLowerCase() === 'admin' ? '/admin/dashboard' : '/impact');
     } catch (loginError) {
       setError(loginError instanceof Error ? loginError.message : 'Login failed.');
     } finally {

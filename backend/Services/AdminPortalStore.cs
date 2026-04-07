@@ -1,0 +1,677 @@
+using backend.Data;
+using backend.Models.AdminPortal;
+using Microsoft.EntityFrameworkCore;
+
+namespace backend.Services;
+
+public sealed class AdminPortalStore(AppDbContext db)
+{
+    public async Task SeedAsync()
+    {
+        if (await db.PortalDonors.AnyAsync())
+        {
+            return;
+        }
+
+        var donors = new[]
+        {
+            new PortalDonor
+            {
+                DisplayName = "Sierra Foundation",
+                DonorType = "Institutional",
+                Status = "Active",
+                TotalGivenPhp = 420000m,
+                LastDonationAt = DateTime.UtcNow.AddDays(-5),
+                PreferredChannel = "Grant letter",
+                StewardshipLead = "A. Cruz"
+            },
+            new PortalDonor
+            {
+                DisplayName = "Lena Pascual",
+                DonorType = "Individual",
+                Status = "Active",
+                TotalGivenPhp = 78000m,
+                LastDonationAt = DateTime.UtcNow.AddDays(-11),
+                PreferredChannel = "Email",
+                StewardshipLead = "M. Reyes"
+            },
+            new PortalDonor
+            {
+                DisplayName = "Hope Circle",
+                DonorType = "Community Group",
+                Status = "Active",
+                TotalGivenPhp = 102500m,
+                LastDonationAt = DateTime.UtcNow.AddDays(-18),
+                PreferredChannel = "Events",
+                StewardshipLead = "J. Santos"
+            },
+            new PortalDonor
+            {
+                DisplayName = "Cedar Partners",
+                DonorType = "Corporate",
+                Status = "Watch",
+                TotalGivenPhp = 25000m,
+                LastDonationAt = DateTime.UtcNow.AddDays(-40),
+                PreferredChannel = "Phone",
+                StewardshipLead = "M. Reyes"
+            },
+            new PortalDonor
+            {
+                DisplayName = "Anonymous Gift",
+                DonorType = "Individual",
+                Status = "Active",
+                TotalGivenPhp = 15000m,
+                LastDonationAt = DateTime.UtcNow.AddDays(-3),
+                PreferredChannel = "Text",
+                StewardshipLead = "A. Cruz"
+            }
+        };
+
+        var residents = new[]
+        {
+            new PortalResident
+            {
+                CodeName = "Maya",
+                Safehouse = "San Isidro House",
+                CaseCategory = "Trafficking recovery",
+                RiskLevel = "Medium",
+                Status = "Active",
+                AssignedStaff = "Grace Torres",
+                ProgressPercent = 78,
+                LastSessionAt = DateTime.UtcNow.AddDays(-3),
+                NextReviewAt = DateTime.UtcNow.AddDays(10)
+            },
+            new PortalResident
+            {
+                CodeName = "Ari",
+                Safehouse = "San Isidro House",
+                CaseCategory = "Physical abuse",
+                RiskLevel = "High",
+                Status = "Active",
+                AssignedStaff = "Grace Torres",
+                ProgressPercent = 63,
+                LastSessionAt = DateTime.UtcNow.AddDays(-7),
+                NextReviewAt = DateTime.UtcNow.AddDays(7)
+            },
+            new PortalResident
+            {
+                CodeName = "Noa",
+                Safehouse = "Bayanihan Home",
+                CaseCategory = "Neglect",
+                RiskLevel = "Medium",
+                Status = "Active",
+                AssignedStaff = "Ella Ramos",
+                ProgressPercent = 56,
+                LastSessionAt = DateTime.UtcNow.AddDays(-2),
+                NextReviewAt = DateTime.UtcNow.AddDays(14)
+            },
+            new PortalResident
+            {
+                CodeName = "Lia",
+                Safehouse = "Bayanihan Home",
+                CaseCategory = "Trafficking recovery",
+                RiskLevel = "High",
+                Status = "Review",
+                AssignedStaff = "Ella Ramos",
+                ProgressPercent = 42,
+                LastSessionAt = DateTime.UtcNow.AddDays(-10),
+                NextReviewAt = DateTime.UtcNow.AddDays(4)
+            },
+            new PortalResident
+            {
+                CodeName = "Suri",
+                Safehouse = "Nueva Vida House",
+                CaseCategory = "Family reunification",
+                RiskLevel = "Low",
+                Status = "Active",
+                AssignedStaff = "Jon Perez",
+                ProgressPercent = 84,
+                LastSessionAt = DateTime.UtcNow.AddDays(-1),
+                NextReviewAt = DateTime.UtcNow.AddDays(21)
+            },
+            new PortalResident
+            {
+                CodeName = "Tala",
+                Safehouse = "Nueva Vida House",
+                CaseCategory = "Medical recovery",
+                RiskLevel = "Medium",
+                Status = "Stabilizing",
+                AssignedStaff = "Jon Perez",
+                ProgressPercent = 71,
+                LastSessionAt = DateTime.UtcNow.AddDays(-5),
+                NextReviewAt = DateTime.UtcNow.AddDays(12)
+            }
+        };
+
+        db.PortalDonors.AddRange(donors);
+        db.PortalResidents.AddRange(residents);
+        await db.SaveChangesAsync();
+
+        var contributions = new[]
+        {
+            new PortalContribution
+            {
+                DonorId = donors[0].Id,
+                ContributionType = "Monetary",
+                AmountPhp = 180000m,
+                ProgramArea = "Resident care",
+                Description = "Quarterly grant for shelter operations",
+                ContributionAt = DateTime.UtcNow.AddDays(-4)
+            },
+            new PortalContribution
+            {
+                DonorId = donors[1].Id,
+                ContributionType = "Monetary",
+                AmountPhp = 25000m,
+                ProgramArea = "Education support",
+                Description = "Monthly recurring gift",
+                ContributionAt = DateTime.UtcNow.AddDays(-9)
+            },
+            new PortalContribution
+            {
+                DonorId = donors[2].Id,
+                ContributionType = "Time",
+                EstimatedValuePhp = 12000m,
+                ProgramArea = "Outreach",
+                Description = "Volunteer event coordination",
+                ContributionAt = DateTime.UtcNow.AddDays(-16)
+            },
+            new PortalContribution
+            {
+                DonorId = donors[3].Id,
+                ContributionType = "In-kind",
+                EstimatedValuePhp = 18000m,
+                ProgramArea = "Supplies",
+                Description = "Generator and pantry items",
+                ContributionAt = DateTime.UtcNow.AddDays(-29)
+            },
+            new PortalContribution
+            {
+                DonorId = donors[4].Id,
+                ContributionType = "Monetary",
+                AmountPhp = 15000m,
+                ProgramArea = "Emergency response",
+                Description = "Anonymous fund for urgent needs",
+                ContributionAt = DateTime.UtcNow.AddDays(-2)
+            },
+            new PortalContribution
+            {
+                DonorId = donors[2].Id,
+                ContributionType = "Social media",
+                EstimatedValuePhp = 5000m,
+                ProgramArea = "Awareness",
+                Description = "Campaign amplification and story sharing",
+                ContributionAt = DateTime.UtcNow.AddDays(-1)
+            }
+        };
+
+        var recordings = new[]
+        {
+            new PortalRecording
+            {
+                ResidentId = residents[0].Id,
+                SessionAt = DateTime.UtcNow.AddDays(-3),
+                StaffName = "Grace Torres",
+                SessionType = "Individual",
+                EmotionalState = "Calmer",
+                Summary = "Processed a difficult family discussion and reinforced grounding tools.",
+                Interventions = "Reviewed safety plan and coping worksheet.",
+                FollowUp = "Follow up on sleep and food intake."
+            },
+            new PortalRecording
+            {
+                ResidentId = residents[1].Id,
+                SessionAt = DateTime.UtcNow.AddDays(-7),
+                StaffName = "Grace Torres",
+                SessionType = "Group",
+                EmotionalState = "Anxious",
+                Summary = "Joined a peer support circle and contributed to a trust-building exercise.",
+                Interventions = "Used reflective listening and peer validation.",
+                FollowUp = "Schedule a one-on-one check-in."
+            },
+            new PortalRecording
+            {
+                ResidentId = residents[2].Id,
+                SessionAt = DateTime.UtcNow.AddDays(-2),
+                StaffName = "Ella Ramos",
+                SessionType = "Individual",
+                EmotionalState = "Hopeful",
+                Summary = "Discussed school progress and identity reconstruction after intake.",
+                Interventions = "Created weekly learning goals.",
+                FollowUp = "Confirm tutor placement."
+            },
+            new PortalRecording
+            {
+                ResidentId = residents[3].Id,
+                SessionAt = DateTime.UtcNow.AddDays(-10),
+                StaffName = "Ella Ramos",
+                SessionType = "Individual",
+                EmotionalState = "Guarded",
+                Summary = "Reviewed relapse triggers and future placement concerns.",
+                Interventions = "Updated trauma-informed coping plan.",
+                FollowUp = "Coordinate with case conference."
+            },
+            new PortalRecording
+            {
+                ResidentId = residents[4].Id,
+                SessionAt = DateTime.UtcNow.AddDays(-1),
+                StaffName = "Jon Perez",
+                SessionType = "Family",
+                EmotionalState = "Stabilized",
+                Summary = "Discussed reunification readiness and family engagement.",
+                Interventions = "Prepared family engagement checklist.",
+                FollowUp = "Verify home visit date."
+            },
+            new PortalRecording
+            {
+                ResidentId = residents[5].Id,
+                SessionAt = DateTime.UtcNow.AddDays(-5),
+                StaffName = "Jon Perez",
+                SessionType = "Individual",
+                EmotionalState = "Improving",
+                Summary = "Focused on recovery milestones and medication adherence.",
+                Interventions = "Reviewed journal prompts and support network.",
+                FollowUp = "Check health score next week."
+            }
+        };
+
+        var visitations = new[]
+        {
+            new PortalVisitation
+            {
+                ResidentId = residents[0].Id,
+                VisitAt = DateTime.UtcNow.AddDays(-14),
+                VisitType = "Routine follow-up",
+                Observations = "Home environment was calm and cooperative.",
+                FamilyCooperation = "High",
+                SafetyConcerns = "No immediate concerns",
+                FollowUp = "Continue weekly contact."
+            },
+            new PortalVisitation
+            {
+                ResidentId = residents[3].Id,
+                VisitAt = DateTime.UtcNow.AddDays(-8),
+                VisitType = "Reintegration assessment",
+                Observations = "Family engagement improved compared with prior visit.",
+                FamilyCooperation = "Moderate",
+                SafetyConcerns = "Transportation planning still needed",
+                FollowUp = "Prepare case conference notes."
+            },
+            new PortalVisitation
+            {
+                ResidentId = residents[4].Id,
+                VisitAt = DateTime.UtcNow.AddDays(-6),
+                VisitType = "Post-placement monitoring",
+                Observations = "Placement site is stable and safe.",
+                FamilyCooperation = "High",
+                SafetyConcerns = "None at the moment",
+                FollowUp = "Maintain monthly monitoring."
+            },
+            new PortalVisitation
+            {
+                ResidentId = residents[5].Id,
+                VisitAt = DateTime.UtcNow.AddDays(-4),
+                VisitType = "Initial assessment",
+                Observations = "Household is supportive but needs follow-up on supplies.",
+                FamilyCooperation = "Moderate",
+                SafetyConcerns = "Minor privacy concern near entrance",
+                FollowUp = "Recheck safety in one week."
+            },
+            new PortalVisitation
+            {
+                ResidentId = residents[2].Id,
+                VisitAt = DateTime.UtcNow.AddDays(-2),
+                VisitType = "Routine follow-up",
+                Observations = "School coordination is progressing well.",
+                FamilyCooperation = "High",
+                SafetyConcerns = "None",
+                FollowUp = "Keep current schedule."
+            }
+        };
+
+        db.PortalContributions.AddRange(contributions);
+        db.PortalRecordings.AddRange(recordings);
+        db.PortalVisitations.AddRange(visitations);
+
+        await db.SaveChangesAsync();
+    }
+
+    public async Task<AdminPortalOverviewDto> GetOverviewAsync()
+    {
+        var donors = await db.PortalDonors
+            .OrderByDescending(d => d.TotalGivenPhp)
+            .Select(d => new AdminPortalDonorDto(
+                d.Id,
+                d.DisplayName,
+                d.DonorType,
+                d.Status,
+                d.TotalGivenPhp,
+                d.LastDonationAt,
+                d.PreferredChannel,
+                d.StewardshipLead))
+            .ToArrayAsync();
+
+        var contributions = await db.PortalContributions
+            .Include(c => c.Donor)
+            .OrderByDescending(c => c.ContributionAt)
+            .Select(c => new AdminPortalContributionDto(
+                c.Id,
+                c.DonorId,
+                c.Donor!.DisplayName,
+                c.ContributionType,
+                c.AmountPhp,
+                c.EstimatedValuePhp,
+                c.ProgramArea,
+                c.Description,
+                c.ContributionAt))
+            .ToArrayAsync();
+
+        var residents = await db.PortalResidents
+            .OrderBy(r => r.CodeName)
+            .Select(r => new AdminPortalResidentDto(
+                r.Id,
+                r.CodeName,
+                r.Safehouse,
+                r.CaseCategory,
+                r.RiskLevel,
+                r.Status,
+                r.AssignedStaff,
+                r.ProgressPercent,
+                r.LastSessionAt,
+                r.NextReviewAt))
+            .ToArrayAsync();
+
+        var recordings = await db.PortalRecordings
+            .Include(r => r.Resident)
+            .OrderByDescending(r => r.SessionAt)
+            .Select(r => new AdminPortalRecordingDto(
+                r.Id,
+                r.ResidentId,
+                r.Resident!.CodeName,
+                r.SessionAt,
+                r.StaffName,
+                r.SessionType,
+                r.EmotionalState,
+                r.Summary,
+                r.Interventions,
+                r.FollowUp))
+            .ToArrayAsync();
+
+        var visitations = await db.PortalVisitations
+            .Include(v => v.Resident)
+            .OrderByDescending(v => v.VisitAt)
+            .Select(v => new AdminPortalVisitationDto(
+                v.Id,
+                v.ResidentId,
+                v.Resident!.CodeName,
+                v.VisitAt,
+                v.VisitType,
+                v.Observations,
+                v.FamilyCooperation,
+                v.SafetyConcerns,
+                v.FollowUp))
+            .ToArrayAsync();
+
+        var monthlyTrends = BuildMonthlyTrends(contributions, residents, recordings, visitations);
+        var safehouseComparison = BuildSafehouseComparison(residents);
+        var programOutcomes = BuildProgramOutcomes(residents, donors);
+
+        return new AdminPortalOverviewDto(
+            BuildDashboard(donors, contributions, residents, recordings, visitations),
+            donors,
+            contributions,
+            residents,
+            recordings,
+            visitations,
+            new AdminPortalReportsDto(monthlyTrends, safehouseComparison, programOutcomes),
+            DateTimeOffset.UtcNow
+        );
+    }
+
+    public async Task<AdminPortalDonorDto> UpdateDonorAsync(int id, UpdateDonorRequestDto request)
+    {
+        var donor = await db.PortalDonors.FindAsync(id) ?? throw new KeyNotFoundException("Donor not found.");
+
+        donor.DisplayName = request.DisplayName.Trim();
+        donor.DonorType = request.DonorType.Trim();
+        donor.Status = request.Status.Trim();
+        donor.PreferredChannel = request.PreferredChannel.Trim();
+        donor.StewardshipLead = request.StewardshipLead.Trim();
+
+        await db.SaveChangesAsync();
+        return new AdminPortalDonorDto(donor.Id, donor.DisplayName, donor.DonorType, donor.Status, donor.TotalGivenPhp, donor.LastDonationAt, donor.PreferredChannel, donor.StewardshipLead);
+    }
+
+    public async Task<AdminPortalContributionDto> AddContributionAsync(int donorId, CreateContributionRequestDto request)
+    {
+        var donor = await db.PortalDonors.FindAsync(donorId) ?? throw new KeyNotFoundException("Donor not found.");
+
+        var contribution = new PortalContribution
+        {
+            DonorId = donorId,
+            ContributionType = request.ContributionType.Trim(),
+            AmountPhp = request.AmountPhp,
+            EstimatedValuePhp = request.EstimatedValuePhp,
+            ProgramArea = request.ProgramArea.Trim(),
+            Description = request.Description.Trim(),
+            ContributionAt = request.ContributionAt
+        };
+
+        db.PortalContributions.Add(contribution);
+        donor.TotalGivenPhp += request.AmountPhp ?? request.EstimatedValuePhp ?? 0m;
+        donor.LastDonationAt = request.ContributionAt;
+        await db.SaveChangesAsync();
+
+        return new AdminPortalContributionDto(contribution.Id, donor.Id, donor.DisplayName, contribution.ContributionType, contribution.AmountPhp, contribution.EstimatedValuePhp, contribution.ProgramArea, contribution.Description, contribution.ContributionAt);
+    }
+
+    public async Task<AdminPortalResidentDto> AddResidentAsync(CreateResidentRequestDto request)
+    {
+        var resident = new PortalResident
+        {
+            CodeName = request.CodeName.Trim(),
+            Safehouse = request.Safehouse.Trim(),
+            CaseCategory = request.CaseCategory.Trim(),
+            RiskLevel = request.RiskLevel.Trim(),
+            Status = request.Status.Trim(),
+            AssignedStaff = request.AssignedStaff.Trim(),
+            ProgressPercent = request.ProgressPercent,
+            NextReviewAt = request.NextReviewAt
+        };
+
+        db.PortalResidents.Add(resident);
+        await db.SaveChangesAsync();
+        return MapResident(resident);
+    }
+
+    public async Task<AdminPortalResidentDto> UpdateResidentAsync(int id, UpdateResidentRequestDto request)
+    {
+        var resident = await db.PortalResidents.FindAsync(id) ?? throw new KeyNotFoundException("Resident not found.");
+        resident.CodeName = request.CodeName.Trim();
+        resident.Safehouse = request.Safehouse.Trim();
+        resident.CaseCategory = request.CaseCategory.Trim();
+        resident.RiskLevel = request.RiskLevel.Trim();
+        resident.Status = request.Status.Trim();
+        resident.AssignedStaff = request.AssignedStaff.Trim();
+        resident.ProgressPercent = request.ProgressPercent;
+        resident.NextReviewAt = request.NextReviewAt;
+        await db.SaveChangesAsync();
+        return MapResident(resident);
+    }
+
+    public async Task DeleteResidentAsync(int id)
+    {
+        var resident = await db.PortalResidents.FindAsync(id) ?? throw new KeyNotFoundException("Resident not found.");
+        db.PortalResidents.Remove(resident);
+        await db.SaveChangesAsync();
+    }
+
+    public async Task<AdminPortalRecordingDto> AddRecordingAsync(CreateRecordingRequestDto request)
+    {
+        var resident = await db.PortalResidents.FindAsync(request.ResidentId) ?? throw new KeyNotFoundException("Resident not found.");
+        var recording = new PortalRecording
+        {
+            ResidentId = request.ResidentId,
+            SessionAt = request.SessionAt,
+            StaffName = request.StaffName.Trim(),
+            SessionType = request.SessionType.Trim(),
+            EmotionalState = request.EmotionalState.Trim(),
+            Summary = request.Summary.Trim(),
+            Interventions = request.Interventions.Trim(),
+            FollowUp = request.FollowUp.Trim()
+        };
+
+        resident.LastSessionAt = request.SessionAt;
+        db.PortalRecordings.Add(recording);
+        await db.SaveChangesAsync();
+
+        return new AdminPortalRecordingDto(recording.Id, resident.Id, resident.CodeName, recording.SessionAt, recording.StaffName, recording.SessionType, recording.EmotionalState, recording.Summary, recording.Interventions, recording.FollowUp);
+    }
+
+    public async Task<AdminPortalVisitationDto> AddVisitationAsync(CreateVisitationRequestDto request)
+    {
+        var resident = await db.PortalResidents.FindAsync(request.ResidentId) ?? throw new KeyNotFoundException("Resident not found.");
+        var visitation = new PortalVisitation
+        {
+            ResidentId = request.ResidentId,
+            VisitAt = request.VisitAt,
+            VisitType = request.VisitType.Trim(),
+            Observations = request.Observations.Trim(),
+            FamilyCooperation = request.FamilyCooperation.Trim(),
+            SafetyConcerns = request.SafetyConcerns.Trim(),
+            FollowUp = request.FollowUp.Trim()
+        };
+
+        db.PortalVisitations.Add(visitation);
+        await db.SaveChangesAsync();
+
+        return new AdminPortalVisitationDto(visitation.Id, resident.Id, resident.CodeName, visitation.VisitAt, visitation.VisitType, visitation.Observations, visitation.FamilyCooperation, visitation.SafetyConcerns, visitation.FollowUp);
+    }
+
+    private static AdminPortalDashboardDto BuildDashboard(
+        IReadOnlyList<AdminPortalDonorDto> donors,
+        IReadOnlyList<AdminPortalContributionDto> contributions,
+        IReadOnlyList<AdminPortalResidentDto> residents,
+        IReadOnlyList<AdminPortalRecordingDto> recordings,
+        IReadOnlyList<AdminPortalVisitationDto> visitations)
+    {
+        var activeResidents = residents.Count(resident => resident.Status.Equals("Active", StringComparison.OrdinalIgnoreCase));
+        var residentsNeedingReview = residents.Count(resident =>
+            resident.RiskLevel.Equals("High", StringComparison.OrdinalIgnoreCase) ||
+            (resident.NextReviewAt is not null && resident.NextReviewAt <= DateTime.UtcNow.AddDays(7)));
+        var recentDonations = contributions.Count(contribution => contribution.ContributionAt >= DateTime.UtcNow.AddDays(-30));
+        var upcomingConferences = residents.Count(resident =>
+            resident.NextReviewAt is not null &&
+            resident.NextReviewAt >= DateTime.UtcNow.Date &&
+            resident.NextReviewAt <= DateTime.UtcNow.AddDays(30));
+        var totalDonationValue = contributions.Sum(contribution => contribution.AmountPhp ?? contribution.EstimatedValuePhp ?? 0m);
+        var averageProgress = residents.Count == 0 ? 0 : residents.Average(resident => resident.ProgressPercent);
+
+        var metrics = new[]
+        {
+            new AdminPortalMetricDto("Active residents", activeResidents.ToString("N0"), "Residents currently marked active in the portal"),
+            new AdminPortalMetricDto("Needs review", residentsNeedingReview.ToString("N0"), "High-risk or soon-due cases flagged for follow-up"),
+            new AdminPortalMetricDto("Recent donations", recentDonations.ToString("N0"), "Donation and contribution activity from the last 30 days"),
+            new AdminPortalMetricDto("Upcoming conferences", upcomingConferences.ToString("N0"), "Scheduled case reviews in the next 30 days"),
+            new AdminPortalMetricDto("Donation value", $"PHP {totalDonationValue:N0}", "Combined monetary and estimated contribution value"),
+            new AdminPortalMetricDto("Average progress", $"{Math.Round(averageProgress)}%", "Average resident progress across the active caseload")
+        };
+
+        var alerts = residents
+            .Where(resident => resident.RiskLevel.Equals("High", StringComparison.OrdinalIgnoreCase) || resident.ProgressPercent < 50)
+            .OrderBy(resident => resident.NextReviewAt ?? DateTime.MaxValue)
+            .Take(4)
+            .Select(resident => new AdminPortalAlertDto(
+                resident.RiskLevel.Equals("High", StringComparison.OrdinalIgnoreCase) ? "warning" : "info",
+                $"{resident.CodeName} needs follow-up",
+                $"{resident.Safehouse} - {resident.AssignedStaff} - progress {resident.ProgressPercent}%"
+            ))
+            .ToArray();
+
+        var recentActivity = contributions.Select(contribution => new AdminPortalActivityDto(
+                contribution.ContributionAt,
+                $"{contribution.DonorName} logged a {contribution.ContributionType.ToLowerInvariant()} contribution",
+                $"{contribution.ProgramArea}: {contribution.Description}"
+            ))
+            .Concat(recordings.Select(recording => new AdminPortalActivityDto(
+                recording.SessionAt,
+                $"{recording.ResidentName} session updated",
+                $"{recording.SessionType} with {recording.StaffName}"
+            )))
+            .Concat(visitations.Select(visitation => new AdminPortalActivityDto(
+                visitation.VisitAt,
+                $"{visitation.ResidentName} visit recorded",
+                visitation.VisitType
+            )))
+            .OrderByDescending(activity => activity.ActivityAt)
+            .Take(6)
+            .ToArray();
+
+        return new AdminPortalDashboardDto(metrics, alerts, recentActivity);
+    }
+
+    private static IReadOnlyList<AdminPortalTrendPointDto> BuildMonthlyTrends(
+        IReadOnlyList<AdminPortalContributionDto> contributions,
+        IReadOnlyList<AdminPortalResidentDto> residents,
+        IReadOnlyList<AdminPortalRecordingDto> recordings,
+        IReadOnlyList<AdminPortalVisitationDto> visitations)
+    {
+        return contributions
+            .GroupBy(contribution => new DateTime(contribution.ContributionAt.Year, contribution.ContributionAt.Month, 1))
+            .OrderBy(group => group.Key)
+            .Select(group => new AdminPortalTrendPointDto(
+                group.Key.ToString("MMM yyyy", System.Globalization.CultureInfo.InvariantCulture),
+                (int)group.Sum(item => item.AmountPhp ?? item.EstimatedValuePhp ?? 0m),
+                residents.Count,
+                recordings.Count(item => item.SessionAt.Month == group.Key.Month && item.SessionAt.Year == group.Key.Year),
+                visitations.Count(item => item.VisitAt.Month == group.Key.Month && item.VisitAt.Year == group.Key.Year)))
+            .ToArray();
+    }
+
+    private static IReadOnlyList<AdminPortalSafehouseComparisonDto> BuildSafehouseComparison(IReadOnlyList<AdminPortalResidentDto> residents)
+    {
+        return residents
+            .GroupBy(resident => resident.Safehouse)
+            .Select(group => new AdminPortalSafehouseComparisonDto(
+                group.Key,
+                group.Count(),
+                group.Key switch
+                {
+                    "San Isidro House" => 14,
+                    "Bayanihan Home" => 12,
+                    "Nueva Vida House" => 10,
+                    _ => group.Count()
+                },
+                group.Count(),
+                group.Count(item => item.RiskLevel.Equals("High", StringComparison.OrdinalIgnoreCase))))
+            .ToArray();
+    }
+
+    private static IReadOnlyList<AdminPortalProgramOutcomeDto> BuildProgramOutcomes(IReadOnlyList<AdminPortalResidentDto> residents, IReadOnlyList<AdminPortalDonorDto> donors)
+    {
+        var repeatDonors = donors.Count(donor => donor.LastDonationAt is not null && donor.LastDonationAt >= DateTime.UtcNow.AddDays(-90));
+        return
+        [
+            new AdminPortalProgramOutcomeDto("Education", "Residents with weekly study plan", "83%"),
+            new AdminPortalProgramOutcomeDto("Health", "Residents with improved health scores", "78%"),
+            new AdminPortalProgramOutcomeDto("Reintegration", "Residents on track for case conference review", residents.Count(resident => resident.NextReviewAt is not null && resident.NextReviewAt <= DateTime.UtcNow.AddDays(21)).ToString()),
+            new AdminPortalProgramOutcomeDto("Donor retention", "Repeat donors in the last 90 days", $"{repeatDonors * 100 / Math.Max(donors.Count, 1)}%")
+        ];
+    }
+
+    private static AdminPortalResidentDto MapResident(PortalResident resident)
+    {
+        return new AdminPortalResidentDto(
+            resident.Id,
+            resident.CodeName,
+            resident.Safehouse,
+            resident.CaseCategory,
+            resident.RiskLevel,
+            resident.Status,
+            resident.AssignedStaff,
+            resident.ProgressPercent,
+            resident.LastSessionAt,
+            resident.NextReviewAt
+        );
+    }
+}

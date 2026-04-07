@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import api, { type UserSummary } from '../api';
+import { AdminShell } from '../components/AdminShell';
 import './AdminPage.css';
 
 export default function AdminPage() {
@@ -67,18 +67,9 @@ export default function AdminPage() {
     u.lockoutEnd !== null && new Date(u.lockoutEnd) > new Date();
 
   return (
-    <div className="admin-page">
-      <header className="admin-header">
-        <div className="admin-header-inner">
-          <div>
-            <Link to="/" className="admin-back">← Home</Link>
-            <h1>User Management</h1>
-          </div>
-          <Link to="/admin/query" className="admin-nav-link">Database Query →</Link>
-        </div>
-      </header>
-
-      <main className="admin-main">
+    <AdminShell title="User Management" subtitle="Change roles, unlock accounts, and remove access">
+      <div className="admin-page">
+        <main className="admin-main">
         {error !== null && (
           <div className="admin-error">{error}</div>
         )}
@@ -146,31 +137,32 @@ export default function AdminPage() {
             </table>
           </div>
         )}
-      </main>
+        </main>
 
-      {/* Delete confirmation modal */}
-      {confirmDelete !== null && (
-        <div className="admin-modal-backdrop" onClick={() => setConfirmDelete(null)}>
-          <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>Delete account?</h2>
-            <p>
-              This will permanently delete <strong>{confirmDelete.email}</strong>. This action
-              cannot be undone.
-            </p>
-            <div className="admin-modal-actions">
-              <button className="btn-action" onClick={() => setConfirmDelete(null)}>
-                Cancel
-              </button>
-              <button
-                className="btn-action btn-delete"
-                onClick={() => void handleDelete(confirmDelete)}
-              >
-                Yes, delete
-              </button>
+        {/* Delete confirmation modal */}
+        {confirmDelete !== null && (
+          <div className="admin-modal-backdrop" onClick={() => setConfirmDelete(null)}>
+            <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
+              <h2>Delete account?</h2>
+              <p>
+                This will permanently delete <strong>{confirmDelete.email}</strong>. This action
+                cannot be undone.
+              </p>
+              <div className="admin-modal-actions">
+                <button className="btn-action" onClick={() => setConfirmDelete(null)}>
+                  Cancel
+                </button>
+                <button
+                  className="btn-action btn-delete"
+                  onClick={() => void handleDelete(confirmDelete)}
+                >
+                  Yes, delete
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </AdminShell>
   );
 }

@@ -1,6 +1,6 @@
 import { type FormEvent, useState } from 'react';
-import { Link } from 'react-router-dom';
 import api, { type QueryResult } from '../api';
+import { AdminShell } from '../components/AdminShell';
 import './AdminPage.css';
 import './QueryPage.css';
 
@@ -35,18 +35,9 @@ export default function QueryPage() {
   }
 
   return (
-    <div className="admin-page">
-      <header className="admin-header">
-        <div className="admin-header-inner">
-          <div>
-            <Link to="/" className="admin-back">← Home</Link>
-            <h1>Database Query</h1>
-          </div>
-          <Link to="/admin/users" className="admin-nav-link">User Management →</Link>
-        </div>
-      </header>
-
-      <main className="admin-main">
+    <AdminShell title="Database Query" subtitle="SELECT-only SQL access for authenticated admins">
+      <div className="admin-page">
+        <main className="admin-main">
         <div className="query-examples">
           <span className="query-examples-label">Examples:</span>
           {EXAMPLE_QUERIES.map((q) => (
@@ -107,7 +98,8 @@ export default function QueryPage() {
             </div>
           </div>
         )}
-      </main>
-    </div>
+        </main>
+      </div>
+    </AdminShell>
   );
 }

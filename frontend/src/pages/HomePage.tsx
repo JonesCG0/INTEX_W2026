@@ -70,7 +70,7 @@ function HomePage() {
       ? 'Open admin tools'
       : 'Review impact'
     : 'Log in';
-  const primaryActionTo = isAuthenticated ? (isAdmin ? '/admin/users' : '/impact') : '/login';
+  const primaryActionTo = isAuthenticated ? (isAdmin ? '/admin/dashboard' : '/impact') : '/login';
 
   return (
     <div className="home-page">
@@ -94,7 +94,7 @@ function HomePage() {
                   {user.displayName ?? user.email ?? 'Signed in'}
                 </span>
                 {isAdmin ? (
-                  <Link to="/admin/users" className="home-button home-button-secondary">
+                  <Link to="/admin/dashboard" className="home-button home-button-secondary">
                     Admin portal
                   </Link>
                 ) : null}

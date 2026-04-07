@@ -113,6 +113,126 @@ export type ImpactDashboard = {
   generatedAt: string;
 };
 
+export type AdminPortalMetric = {
+  label: string;
+  value: string;
+  detail: string;
+};
+
+export type AdminPortalAlert = {
+  severity: string;
+  title: string;
+  detail: string;
+};
+
+export type AdminPortalActivity = {
+  activityAt: string;
+  label: string;
+  detail: string;
+};
+
+export type AdminPortalDonor = {
+  id: number;
+  displayName: string;
+  donorType: string;
+  status: string;
+  totalGivenPhp: number;
+  lastDonationAt: string | null;
+  preferredChannel: string;
+  stewardshipLead: string;
+};
+
+export type AdminPortalContribution = {
+  id: number;
+  donorId: number;
+  donorName: string;
+  contributionType: string;
+  amountPhp: number | null;
+  estimatedValuePhp: number | null;
+  programArea: string;
+  description: string;
+  contributionAt: string;
+};
+
+export type AdminPortalResident = {
+  id: number;
+  codeName: string;
+  safehouse: string;
+  caseCategory: string;
+  riskLevel: string;
+  status: string;
+  assignedStaff: string;
+  progressPercent: number;
+  lastSessionAt: string | null;
+  nextReviewAt: string | null;
+};
+
+export type AdminPortalRecording = {
+  id: number;
+  residentId: number;
+  residentName: string;
+  sessionAt: string;
+  staffName: string;
+  sessionType: string;
+  emotionalState: string;
+  summary: string;
+  interventions: string;
+  followUp: string;
+};
+
+export type AdminPortalVisitation = {
+  id: number;
+  residentId: number;
+  residentName: string;
+  visitAt: string;
+  visitType: string;
+  observations: string;
+  familyCooperation: string;
+  safetyConcerns: string;
+  followUp: string;
+};
+
+export type AdminPortalTrendPoint = {
+  monthLabel: string;
+  donationsPhp: number;
+  activeResidents: number;
+  processRecordings: number;
+  visitations: number;
+};
+
+export type AdminPortalSafehouseComparison = {
+  safehouse: string;
+  occupancy: number;
+  capacity: number;
+  activeResidents: number;
+  highRiskResidents: number;
+};
+
+export type AdminPortalProgramOutcome = {
+  programArea: string;
+  outcome: string;
+  value: string;
+};
+
+export type AdminPortalOverview = {
+  dashboard: {
+    metrics: AdminPortalMetric[];
+    alerts: AdminPortalAlert[];
+    recentActivity: AdminPortalActivity[];
+  };
+  donors: AdminPortalDonor[];
+  contributions: AdminPortalContribution[];
+  residents: AdminPortalResident[];
+  recordings: AdminPortalRecording[];
+  visitations: AdminPortalVisitation[];
+  reports: {
+    monthlyTrends: AdminPortalTrendPoint[];
+    safehouseComparison: AdminPortalSafehouseComparison[];
+    programOutcomes: AdminPortalProgramOutcome[];
+  };
+  generatedAt: string;
+};
+
 const api = {
   health: () => requestJson<{ status: string; timestamp: string }>('/api/health'),
   message: () => requestJson<{ message: string }>('/api/message'),
@@ -142,6 +262,88 @@ const api = {
     requestJson<void>(`/api/admin/users/${id}/unlock`, { method: 'POST' }),
   adminGetRoles: () =>
     requestJson<string[]>('/api/admin/roles'),
+  adminPortalOverview: () =>
+    requestJson<AdminPortalOverview>('/api/admin/portal'),
+  adminUpdateDonor: (id: number, donor: {
+    displayName: string;
+    donorType: string;
+    status: string;
+    preferredChannel: string;
+    stewardshipLead: string;
+  }) =>
+    requestJson<AdminPortalDonor>(`/api/admin/portal/donors/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(donor),
+    }),
+  adminAddContribution: (donorId: number, contribution: {
+    contributionType: string;
+    amountPhp: number | null;
+    estimatedValuePhp: number | null;
+    programArea: string;
+    description: string;
+    contributionAt: string;
+  }) =>
+    requestJson<AdminPortalContribution>(`/api/admin/portal/donors/${donorId}/contributions`, {
+      method: 'POST',
+      body: JSON.stringify(contribution),
+    }),
+  adminAddResident: (resident: {
+    codeName: string;
+    safehouse: string;
+    caseCategory: string;
+    riskLevel: string;
+    status: string;
+    assignedStaff: string;
+    progressPercent: number;
+    nextReviewAt: string | null;
+  }) =>
+    requestJson<AdminPortalResident>('/api/admin/portal/residents', {
+      method: 'POST',
+      body: JSON.stringify(resident),
+    }),
+  adminUpdateResident: (id: number, resident: {
+    codeName: string;
+    safehouse: string;
+    caseCategory: string;
+    riskLevel: string;
+    status: string;
+    assignedStaff: string;
+    progressPercent: number;
+    nextReviewAt: string | null;
+  }) =>
+    requestJson<AdminPortalResident>(`/api/admin/portal/residents/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(resident),
+    }),
+  adminDeleteResident: (id: number) =>
+    requestJson<void>(`/api/admin/portal/residents/${id}`, { method: 'DELETE' }),
+  adminAddRecording: (recording: {
+    residentId: number;
+    sessionAt: string;
+    staffName: string;
+    sessionType: string;
+    emotionalState: string;
+    summary: string;
+    interventions: string;
+    followUp: string;
+  }) =>
+    requestJson<AdminPortalRecording>('/api/admin/portal/recordings', {
+      method: 'POST',
+      body: JSON.stringify(recording),
+    }),
+  adminAddVisitation: (visitation: {
+    residentId: number;
+    visitAt: string;
+    visitType: string;
+    observations: string;
+    familyCooperation: string;
+    safetyConcerns: string;
+    followUp: string;
+  }) =>
+    requestJson<AdminPortalVisitation>('/api/admin/portal/visitations', {
+      method: 'POST',
+      body: JSON.stringify(visitation),
+    }),
 
   // Admin — database query
   adminQuery: (sql: string) =>

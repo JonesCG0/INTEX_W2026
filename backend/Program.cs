@@ -53,6 +53,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddScoped<CsvDatabaseSeeder>();
 builder.Services.AddScoped<AdminSeeder>();
+builder.Services.AddSingleton<AdminPortalStore>();
 builder.Services.Configure<AdminSeedOptions>(builder.Configuration.GetSection("AdminSeed"));
 
 builder.Services.AddControllers();
@@ -99,6 +100,9 @@ if (!string.IsNullOrWhiteSpace(connectionString))
     // Auto-apply migrations on startup
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
+
+    var portalStore = scope.ServiceProvider.GetRequiredService<AdminPortalStore>();
+    await portalStore.SeedAsync();
 
     var adminSeeder = scope.ServiceProvider.GetRequiredService<AdminSeeder>();
     await adminSeeder.EnsureAdminAsync();

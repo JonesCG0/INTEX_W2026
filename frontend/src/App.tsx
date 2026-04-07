@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import AdminPage from './pages/AdminPage';
+import AdminDashboardPage from './pages/AdminDashboardPage';
 import HomePage from './pages/HomePage';
 import ImpactPage from './pages/ImpactPage';
 import LoginPage from './pages/LoginPage';
@@ -30,7 +31,15 @@ function App() {
           path="/admin/dashboard"
           element={
             <ProtectedRoute requiredRole="Admin">
-              <AdminPage />
+              <AdminDashboardPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute requiredRole="Admin">
+              <AdminDashboardPage />
             </ProtectedRoute>
           }
         />
