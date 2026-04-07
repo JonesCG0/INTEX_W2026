@@ -59,13 +59,24 @@ builder.Services.Configure<AdminSeedOptions>(builder.Configuration.GetSection("A
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
-// Read allowed origins from config (set in appsettings.json per environment)
-var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? [];
+// Read allowed origins from config and keep a safe fallback for the deployed Static Web Apps origin.
+var configuredOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>() ?? [];
+var fallbackOrigins = new[]
+{
+    "https://polite-rock-003bb5b1e.1.azurestaticapps.net",
+    "http://localhost:5173",
+    "https://localhost:5173",
+};
+var allowedOrigins = configuredOrigins
+    .Concat(fallbackOrigins)
+    .Distinct(StringComparer.OrdinalIgnoreCase)
+    .ToArray();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("Frontend", policy =>
     {
-        policy.WithOrigins(allowedOrigins)
+        policy.SetIsOriginAllowed(origin => allowedOrigins.Contains(origin, StringComparer.OrdinalIgnoreCase))
               .AllowCredentials()
               .AllowAnyHeader()
               .AllowAnyMethod();
@@ -111,6 +122,8 @@ else
 {
     app.Logger.LogWarning("DefaultConnection is not configured. Skipping database bootstrap and admin seeding.");
 }
+
+app.Logger.LogInformation("CORS allowed origins: {Origins}", string.Join(", ", allowedOrigins));
 
 if (app.Environment.IsDevelopment())
 {
