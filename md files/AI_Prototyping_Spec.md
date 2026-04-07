@@ -4,6 +4,10 @@
 
 Project Haven is a secure, role-based web platform designed for a Native American youth safehouse nonprofit, beginning with the Hopi tribe in Arizona and intended for expansion across tribal nations. The product has two primary fronts: a visually-rich, culturally evocative public site for visitors and donors; and a secure, clean admin/staff portal for resident case management, donor management, and organizational reporting. The prototype covers the public home page (with signature scroll animation), a public impact dashboard, login/auth, admin dashboard, resident inventory (caseload management), process/session logs, donor & contribution manager, and the donor-facing dashboard. Excluded in this prototype: home visitation/case conferences, machine learning pipeline outputs, OAuth/MFA, analytics export module.
 
+## Current Implementation Note
+
+The current repository has implemented the public home page, public impact dashboard, privacy policy page, and cookie-consent flow against the Azure-connected backend. The remaining items in this document are still the design target for the broader prototype and should be treated as planned direction unless they have already been built.
+
 ---
 
 ## Design & Visual Style

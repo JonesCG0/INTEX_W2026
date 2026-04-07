@@ -24,6 +24,17 @@ By the end of this setup, we should have:
 - placeholders for expanded auth, DB migrations, and blob storage
 - a task board and team ownership plan
 
+## Current Status
+
+Completed in the current repository:
+
+- the public home page
+- the public impact dashboard
+- the privacy policy page
+- the cookie-consent banner and browser cookie storage
+- the Azure-connected backend path for public impact data
+- the secure login, sign-up, and admin area
+
 ---
 
 ## Recommended Repo Structure
@@ -271,6 +282,10 @@ Use this checklist before the week starts:
 - [x] Admin seed account wired via App Service env vars
 - [x] Login page built and deployed
 - [x] Login confirmed working end-to-end in production
+- [x] Public home page polished
+- [x] Public impact dashboard built
+- [x] Privacy policy page added
+- [x] Cookie-consent banner added
 - [x] Sign-up page (Donor self-registration)
 - [x] Admin user management page (/admin/users)
 - [x] Admin database query page (/admin/query)

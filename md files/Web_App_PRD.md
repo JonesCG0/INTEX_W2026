@@ -4,6 +4,10 @@
 
 Project Haven is a secure, full-stack web application designed for a Philippine nonprofit safehouse serving abuse and trafficking survivors. Built with a .NET 10/C# backend and a React/TypeScript frontend, utilizing Azure SQL Database and deployed on Microsoft Azure, it supports unauthenticated public visitors/donors as well as authenticated staff/admin users. Features include donor management, resident case management, process/counseling session logs, home visitation and conference tracking, and robust outcome reporting—all with strong privacy and compliance controls.
 
+### Current Implementation Status
+
+The current build already includes the public home page, donor-facing impact dashboard, privacy policy page, cookie-consent banner, and secure login/admin routes. Public impact data is read from the connected Azure SQL database rather than mocked.
+
 ---
 
 ## Goals

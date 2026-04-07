@@ -131,6 +131,18 @@ Before the main assignment week, we want a working default application with:
 - placeholder support for image/file storage
 - clear README and setup steps
 
+## Current Implementation Status
+
+The repository is no longer just a starter. The current build includes:
+
+- a polished public home page
+- a live donor-facing impact dashboard backed by the connected Azure SQL database
+- a privacy policy page
+- a working cookie-consent banner that stores the visitor choice in a browser cookie
+- a secure login, sign-up, and admin area
+
+Use this file to keep future AI work small and coordinated around the current codebase instead of re-laying the foundation.
+
 ---
 
 ## Suggested Repo Structure

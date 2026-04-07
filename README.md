@@ -1,6 +1,6 @@
 # Project Haven
 
-A secure, full-stack case management web application for a nonprofit safehouse supporting abuse and trafficking survivors. Built as a BYU INTEX project.
+A secure, full-stack case management web application for a nonprofit safehouse supporting abuse and trafficking survivors. The current build includes the public home page, public impact dashboard, privacy policy, cookie-consent flow, and a secure authenticated admin area.
 
 ---
 
@@ -32,6 +32,8 @@ A secure, full-stack case management web application for a nonprofit safehouse s
 | Route | Access | Description |
 |---|---|---|
 | `/` | Public | Home page — auth-aware nav, impact stats |
+| `/impact` | Public | Donor-facing impact dashboard — live anonymized metrics |
+| `/privacy` | Public | Privacy policy and cookie-consent information |
 | `/login` | Public | Login form |
 | `/signup` | Public | Registration (creates Donor account) |
 | `/admin/users` | Admin only | User management — change roles, delete, unlock |
@@ -49,6 +51,12 @@ A secure, full-stack case management web application for a nonprofit safehouse s
 | POST | `/logout` | Any | Clear session cookie |
 | GET | `/me` | Public | Get current session user |
 | POST | `/register` | Public | Create Donor account |
+
+### Public Impact (`/api/public`)
+
+| Method | Route | Auth | Description |
+|---|---|---|---|
+| GET | `/impact` | Public | Read-only impact dashboard backed by the connected SQL database |
 
 ### Admin (`/api/admin`)
 
@@ -133,6 +141,7 @@ VITE_API_URL=http://localhost:5262
 ### Frontend — Azure Static Web Apps
 - Auto-deploys on push to `main` via `.github/workflows/azure-static-web-apps-polite-rock-003bb5b1e.yml`
 - Build: `npm install && npm run build` → `frontend/dist`
+- Public routes include `/`, `/impact`, `/privacy`, `/login`, and `/signup`
 
 ### Backend — Azure App Service
 - Auto-deploys on push to `main` (changes to `backend/`) via `.github/workflows/deploy-backend.yml`
@@ -197,9 +206,11 @@ VITE_API_URL=http://localhost:5262
 
 ## TODOs
 
-- [ ] Build out full admin portal per PRD — residents, donors, process recordings, visitations
+- [ ] Build out the remaining admin portal per PRD — residents, donors, process recordings, visitations, reports
 - [ ] EF Core typed entity models for CSV-seeded business tables
 - [ ] Donor dashboard — donation history, anonymized impact view
-- [ ] CSP headers, GDPR cookie consent banner, privacy policy page
+- [x] Privacy policy page
+- [x] GDPR-style cookie consent banner
+- [ ] CSP headers and additional privacy hardening
 - [ ] Azure Blob Storage for file uploads
 - [ ] Lighthouse accessibility audit (target ≥90%)

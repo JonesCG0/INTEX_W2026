@@ -8,6 +8,10 @@ This document defines comprehensive coding conventions, patterns, and requiremen
 
 Project Haven is a secure, full-stack case management web application supporting a Philippine nonprofit safehouse serving survivors of abuse and trafficking. Built as an INTEX academic project, it aims for production-grade security, usability, and code quality.
 
+### Current Implementation Snapshot
+
+The current repository uses `frontend/` and `backend/` as the top-level app folders. The public home page, impact dashboard, privacy policy, and cookie-consent flow are implemented, and the public impact dashboard reads from the connected Azure SQL database.
+
 The application supports three user types:
 
 - **Unauthenticated visitors:** can access general information and impact data.
@@ -16,16 +20,16 @@ The application supports three user types:
 
 ### Repository Structure
 
-- `/client`: React + TypeScript + Vite frontend application.
-- `/client/src/components/`: Feature-organized React components.
-- `/client/src/pages/`: Route/page components.
-- `/client/src/components/ui/`: Shared UI components (from shadcn/ui and extensions).
-- `/client/src/lib/`: Utilities and custom hooks (incl. `api-client.ts`).
-- `/server`: ASP.NET Core (.NET 10) backend API.
-- `/server/Controllers/`: API controllers.
-- `/server/Data/`: EF Core DbContext and migrations.
-- `/server/Models/`: Entity models.
-- `/server/DTOs/`: Data transfer objects (DTOs).
+- `/frontend`: React + TypeScript + Vite frontend application.
+- `/frontend/src/components/`: Shared and feature components.
+- `/frontend/src/pages/`: Route/page components.
+- `/frontend/src/styles/`: Page-scoped CSS modules.
+- `/frontend/src/lib/`: Small client-side utilities.
+- `/backend`: ASP.NET Core (.NET 10) backend API.
+- `/backend/Controllers/`: API controllers.
+- `/backend/Data/`: EF Core DbContext and migrations.
+- `/backend/Models/`: Entity models and DTOs.
+- `/backend/Services/`: Data seeding and bootstrap services.
 
 ### Project Status
 

@@ -6,6 +6,10 @@
 
 This specification defines the visual system for Project Haven, a platform supporting a Native American youth safehouse nonprofit. The system embodies a dual design identity: a cinematic, culturally resonant public site for donors and community members, and a clean, grounded admin portal for staff operations. Every decision documented herein intentionally addresses the needs of both audiences with appropriate tone, clarity, and trustworthiness.
 
+## Current Implementation Note
+
+The live frontend now uses this visual direction for the public home page, donor-facing impact dashboard, and privacy policy page. Use the tokens, typography, and spacing below as the source of truth when extending those surfaces.
+
 ---
 
 ## Color System
