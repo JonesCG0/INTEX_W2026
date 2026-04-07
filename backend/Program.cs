@@ -53,7 +53,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddScoped<CsvDatabaseSeeder>();
 builder.Services.AddScoped<AdminSeeder>();
-builder.Services.AddSingleton<AdminPortalStore>();
+builder.Services.AddScoped<AdminPortalStore>();
 builder.Services.Configure<AdminSeedOptions>(builder.Configuration.GetSection("AdminSeed"));
 
 builder.Services.AddControllers();

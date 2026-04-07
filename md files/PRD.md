@@ -9,7 +9,7 @@ Project Haven is a digital platform supporting a Native American youth safehouse
 
 ## Current Implementation Status
 
-The current codebase has already implemented the public home page, donor-facing impact dashboard, privacy policy page, and cookie-consent flow, along with the secure login and admin shell. The remaining work in this PRD is now focused on expanding the secure internal workflows and tightening the public-facing polish.
+The current codebase has already implemented the public home page, donor-facing impact dashboard, privacy policy page, and cookie-consent flow, along with the secure login and admin shell. The authenticated admin/staff portal is also live with dashboard, donor, resident, process recording, visitation, and reporting workflows backed by EF Core tables. The remaining work in this PRD is now focused on refinement, accessibility, and any features not yet modeled in the current build.
 
 ---
 

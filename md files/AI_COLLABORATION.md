@@ -140,6 +140,9 @@ The repository is no longer just a starter. The current build includes:
 - a privacy policy page
 - a working cookie-consent banner that stores the visitor choice in a browser cookie
 - a secure login, sign-up, and admin area
+- a dedicated authenticated admin/staff portal with dashboard, donors, residents, process recordings, visitations, and reports
+- a shared admin shell for the staff dashboard, user management, and SQL query pages
+- EF-backed persistence for the portal tables instead of in-memory state
 
 Use this file to keep future AI work small and coordinated around the current codebase instead of re-laying the foundation.
 

@@ -36,6 +36,8 @@ A secure, full-stack case management web application for a nonprofit safehouse s
 | `/privacy` | Public | Privacy policy and cookie-consent information |
 | `/login` | Public | Login form |
 | `/signup` | Public | Registration (creates Donor account) |
+| `/admin` | Admin only | Admin portal entry point — redirects to the authenticated staff dashboard |
+| `/admin/dashboard` | Admin only | Admin / Staff dashboard — operational overview for residents, donors, recordings, visitation, and reports |
 | `/admin/users` | Admin only | User management — change roles, delete, unlock |
 | `/admin/query` | Admin only | SQL query interface (SELECT only) |
 
@@ -62,6 +64,14 @@ A secure, full-stack case management web application for a nonprofit safehouse s
 
 | Method | Route | Auth | Description |
 |---|---|---|---|
+| GET | `/portal` | Admin | Load the authenticated staff dashboard overview |
+| PUT | `/portal/donors/{id}` | Admin | Update donor records in the portal |
+| POST | `/portal/contributions` | Admin | Add a contribution record |
+| POST | `/portal/residents` | Admin | Add a resident / caseload record |
+| PUT | `/portal/residents/{id}` | Admin | Update a resident / caseload record |
+| DELETE | `/portal/residents/{id}` | Admin | Delete a resident / caseload record |
+| POST | `/portal/recordings` | Admin | Add a process recording |
+| POST | `/portal/visitations` | Admin | Add a home visitation or case conference record |
 | GET | `/users` | Admin | List all users with roles |
 | PUT | `/users/{id}/role` | Admin | Change a user's role |
 | DELETE | `/users/{id}` | Admin | Delete a user |
@@ -142,10 +152,12 @@ VITE_API_URL=http://localhost:5262
 - Auto-deploys on push to `main` via `.github/workflows/azure-static-web-apps-polite-rock-003bb5b1e.yml`
 - Build: `npm install && npm run build` → `frontend/dist`
 - Public routes include `/`, `/impact`, `/privacy`, `/login`, and `/signup`
+- Authenticated admin routes include `/admin`, `/admin/dashboard`, `/admin/users`, and `/admin/query`
 
 ### Backend — Azure App Service
 - Auto-deploys on push to `main` (changes to `backend/`) via `.github/workflows/deploy-backend.yml`
 - EF Core migrations run automatically on startup
+- The backend also seeds the admin portal tables and starter staff records after migrations complete
 
 ### Azure SQL Seed Workflow
 - Manual workflow: `.github/workflows/seed-azure-db.yml`
@@ -195,9 +207,11 @@ VITE_API_URL=http://localhost:5262
 │   │   ├── AppUser.cs         # IdentityUser<int> with DisplayName
 │   │   ├── Auth/              # DTOs: Login, Register, CurrentUser, AuthResponse
 │   │   └── Admin/             # DTOs: UserSummary, ChangeRole, QueryRequest
-│   ├── Services/              # AdminSeeder, CsvDatabaseSeeder
+│   │   └── AdminPortal/       # Portal entities + DTOs for donors, residents, recordings, visitations
+│   ├── Services/              # AdminSeeder, AdminPortalStore, CsvDatabaseSeeder
+│   ├── Controllers/           # AuthController, AdminController, AdminPortalController, HealthController
 │   └── Program.cs             # Identity, CORS, cookie auth, auto-migrate
-├── md files/                  # Project docs (PRD, CLAUDE.md, setup tasks)
+├── md files/                  # Project docs (PRD, collaboration notes, setup tasks, design specs)
 ├── .github/workflows/         # CI/CD pipelines
 └── README.md
 ```
@@ -206,7 +220,7 @@ VITE_API_URL=http://localhost:5262
 
 ## TODOs
 
-- [ ] Build out the remaining admin portal per PRD — residents, donors, process recordings, visitations, reports
+- [x] Admin/staff portal dashboard with persisted donor, resident, recording, visitation, and report workflows
 - [ ] EF Core typed entity models for CSV-seeded business tables
 - [ ] Donor dashboard — donation history, anonymized impact view
 - [x] Privacy policy page

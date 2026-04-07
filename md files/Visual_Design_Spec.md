@@ -8,7 +8,7 @@ This specification defines the visual system for Project Haven, a platform suppo
 
 ## Current Implementation Note
 
-The live frontend now uses this visual direction for the public home page, donor-facing impact dashboard, and privacy policy page. Use the tokens, typography, and spacing below as the source of truth when extending those surfaces.
+The live frontend now uses this visual direction for the public home page, donor-facing impact dashboard, privacy policy page, and authenticated admin/staff portal. Use the tokens, typography, and spacing below as the source of truth when extending those surfaces.
 
 ---
 

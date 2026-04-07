@@ -34,6 +34,8 @@ Completed in the current repository:
 - the cookie-consent banner and browser cookie storage
 - the Azure-connected backend path for public impact data
 - the secure login, sign-up, and admin area
+- the authenticated admin/staff portal dashboard
+- the persisted portal workflows for donors, residents, process recordings, visitations, and reports
 
 ---
 
@@ -152,6 +154,11 @@ Tasks:
 - Document how Azure SQL is connected in development and deployment
 - Keep any future domain tables separate from the bootstrap/auth pieces
 
+Current repository note:
+- The portal now has its own EF Core tables for donors, contributions, residents, process recordings, and visitations
+- Portal seed data is loaded after migrations so the authenticated dashboard has immediate starter content
+- Any future schema work should extend those tables rather than replacing them with in-memory storage
+
 Important:
 - Do not overbuild this part yet
 - Keep the bootstrap schema small and understandable
@@ -184,6 +191,11 @@ Tasks:
 - Document the current admin seed env vars and login flow
 - Keep the app open/simple for unauthenticated visitors
 - Add TODO comments for fuller role management, protected routes, and donor/admin authorization
+
+Current repository note:
+- Authenticated staff now land on the dedicated admin/staff portal dashboard
+- The shared admin shell is used by the dashboard, user management, and SQL query pages
+- Role-based redirects now distinguish between donor-facing and staff-facing flows
 
 Suggested prompt for Codex:
 > Add the minimum project structure and documentation needed for future authentication/authorization support in the ASP.NET backend and React frontend. Do not fully implement auth yet.
