@@ -234,6 +234,8 @@ The application supports three user types:
   * **Correct approach:** GDPR banner must actually set an accessible cookie and block non-essential cookies until user opts in.
 * **Pitfall:** Using synchronous EF Core calls in controllers/services.
   * **Correct approach:** Use `ToListAsync()`, `FirstOrDefaultAsync()`, `SaveChangesAsync()` exclusively for DB access.
+* **Pitfall:** Using `roles.FirstOrDefault()` to get a user's primary role — order is not guaranteed when a user has multiple roles.
+  * **Correct approach:** Use `ResolvePrimaryRole()` in `AuthController` which explicitly prioritizes Admin > Donor > other. Always resolve role by priority, never by DB order.
 
 ---
 
