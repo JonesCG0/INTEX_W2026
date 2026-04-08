@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
-import PublicNav from '../components/PublicNav';
 import HeroScrollSequence from '../components/HeroScrollSequence';
 import MobileHero from '../components/MobileHero';
 import StorySection from '../components/StorySection';
 import ImpactStatCard from '../components/ImpactStatCard';
 import DonateSection from '../components/DonateSection';
-import PublicFooter from '../components/PublicFooter';
 import CulturalDivider from '../components/CulturalDivider';
 import { motion } from 'framer-motion';
 
@@ -21,8 +19,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      <PublicNav />
-      
       {/* Hero */}
       {isMobile ? <MobileHero /> : <HeroScrollSequence />}
       
@@ -58,9 +54,6 @@ export default function Home() {
 
       {/* Donate */}
       <DonateSection />
-
-      {/* Footer */}
-      <PublicFooter />
     </div>
   );
 }

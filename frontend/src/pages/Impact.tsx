@@ -1,7 +1,5 @@
 import { useState, useEffect } from 'react';
 import { API_BASE } from '@/lib/api-base';
-import PublicNav from '../components/PublicNav';
-import PublicFooter from '../components/PublicFooter';
 import ImpactStatCard from '../components/ImpactStatCard';
 import CulturalDivider from '../components/CulturalDivider';
 import { motion } from 'framer-motion';
@@ -98,8 +96,6 @@ export default function Impact() {
 
   return (
     <div className="min-h-screen bg-background">
-      <PublicNav />
-      
       <div className="pt-24 pb-16 px-6">
         <div className="max-w-6xl mx-auto">
           <motion.div
@@ -153,71 +149,79 @@ export default function Impact() {
             >
               <h3 className="font-body text-lg font-semibold text-foreground mb-4 text-center">Impact Trends</h3>
               <div className="h-[300px]">
-                <ResponsiveLine
-                  data={lineData}
-                  margin={{ top: 20, right: 110, bottom: 50, left: 60 }}
-                  xScale={{ type: 'point' }}
-                  yScale={{ type: 'linear', min: 'auto', max: 'auto', stacked: false, reverse: false }}
-                  axisTop={null}
-                  axisRight={null}
-                  axisBottom={{
-                    tickSize: 5,
-                    tickPadding: 5,
-                    tickRotation: 0,
-                    legend: 'Timeline',
-                    legendOffset: 36,
-                    legendPosition: 'middle'
-                  }}
-                  axisLeft={{
-                    tickSize: 5,
-                    tickPadding: 5,
-                    tickRotation: 0,
-                    legend: 'Volume',
-                    legendOffset: -45,
-                    legendPosition: 'middle'
-                  }}
-                  colors={{ datum: 'color' }}
-                  pointSize={10}
-                  pointColor={{ theme: 'background' }}
-                  pointBorderWidth={2}
-                  pointBorderColor={{ from: 'serieColor' }}
-                  pointLabelYOffset={-12}
-                  useMesh={true}
-                  legends={[
-                    {
-                      anchor: 'bottom-right',
-                      direction: 'column',
-                      justify: false,
-                      translateX: 100,
-                      translateY: 0,
-                      itemsSpacing: 0,
-                      itemDirection: 'left-to-right',
-                      itemWidth: 80,
-                      itemHeight: 20,
-                      itemOpacity: 0.75,
-                      symbolSize: 12,
-                      symbolShape: 'circle',
-                      symbolBorderColor: 'rgba(0, 0, 0, .5)',
-                      effects: [
-                        {
-                          on: 'hover',
-                          style: {
-                            itemBackground: 'rgba(0, 0, 0, .03)',
-                            itemOpacity: 1
+                {lineData.some(series => series.data.length > 0) ? (
+                  <ResponsiveLine
+                    data={lineData}
+                    margin={{ top: 20, right: 110, bottom: 50, left: 60 }}
+                    xScale={{ type: 'point' }}
+                    yScale={{ type: 'linear', min: 'auto', max: 'auto', stacked: false, reverse: false }}
+                    axisTop={null}
+                    axisRight={null}
+                    axisBottom={{
+                      tickSize: 5,
+                      tickPadding: 5,
+                      tickRotation: 0,
+                      legend: 'Timeline',
+                      legendOffset: 36,
+                      legendPosition: 'middle'
+                    }}
+                    axisLeft={{
+                      tickSize: 5,
+                      tickPadding: 5,
+                      tickRotation: 0,
+                      legend: 'Volume',
+                      legendOffset: -45,
+                      legendPosition: 'middle'
+                    }}
+                    colors={{ datum: 'color' }}
+                    pointSize={10}
+                    pointColor={{ theme: 'background' }}
+                    pointBorderWidth={2}
+                    pointBorderColor={{ from: 'serieColor' }}
+                    pointLabelYOffset={-12}
+                    useMesh={true}
+                    legends={[
+                      {
+                        anchor: 'bottom-right',
+                        direction: 'column',
+                        justify: false,
+                        translateX: 100,
+                        translateY: 0,
+                        itemsSpacing: 0,
+                        itemDirection: 'left-to-right',
+                        itemWidth: 80,
+                        itemHeight: 20,
+                        itemOpacity: 0.75,
+                        symbolSize: 12,
+                        symbolShape: 'circle',
+                        symbolBorderColor: 'rgba(0, 0, 0, .5)',
+                        effects: [
+                          {
+                            on: 'hover',
+                            style: {
+                              itemBackground: 'rgba(0, 0, 0, .03)',
+                              itemOpacity: 1
+                            }
                           }
-                        }
-                      ]
-                    }
-                  ]}
-                  theme={{
-                    axis: {
-                      ticks: { text: { fill: 'hsl(var(--muted-foreground))' } },
-                      legend: { text: { fill: 'hsl(var(--muted-foreground))' } }
-                    },
-                    grid: { line: { stroke: 'hsl(var(--border))' } },
-                    legends: { text: { fill: 'hsl(var(--foreground))' } }
-                  }}
-                />
+                        ]
+                      }
+                    ]}
+                    theme={{
+                      axis: {
+                        ticks: { text: { fill: 'hsl(var(--muted-foreground))' } },
+                        legend: { text: { fill: 'hsl(var(--muted-foreground))' } }
+                      },
+                      grid: { line: { stroke: 'hsl(var(--border))' } },
+                      legends: { text: { fill: 'hsl(var(--foreground))' } }
+                    }}
+                  />
+                ) : (
+                  <div className="h-full flex items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 px-6 text-center">
+                    <p className="text-sm text-muted-foreground">
+                      Trend data is not available yet. Once the backend returns monthly records, this chart will populate automatically.
+                    </p>
+                  </div>
+                )}
               </div>
             </motion.div>
 
@@ -230,59 +234,67 @@ export default function Impact() {
             >
               <h3 className="font-body text-lg font-semibold text-foreground mb-4 text-center">Safehouse Occupancy</h3>
               <div className="h-[300px]">
-                <ResponsiveBar
-                  data={barData}
-                  keys={['Occupancy', 'Capacity']}
-                  indexBy="name"
-                  margin={{ top: 20, right: 130, bottom: 50, left: 60 }}
-                  padding={0.3}
-                  groupMode="grouped"
-                  valueScale={{ type: 'linear' }}
-                  indexScale={{ type: 'band', round: true }}
-                  colors={[COLORS[0], COLORS[2]]}
-                  borderColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
-                  axisTop={null}
-                  axisRight={null}
-                  axisBottom={{
-                    tickSize: 5,
-                    tickPadding: 5,
-                    tickRotation: -45,
-                  }}
-                  labelSkipWidth={12}
-                  labelSkipHeight={12}
-                  labelTextColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
-                  legends={[
-                    {
-                      dataFrom: 'keys',
-                      anchor: 'bottom-right',
-                      direction: 'column',
-                      justify: false,
-                      translateX: 120,
-                      translateY: 0,
-                      itemsSpacing: 2,
-                      itemWidth: 100,
-                      itemHeight: 20,
-                      itemDirection: 'left-to-right',
-                      itemOpacity: 0.85,
-                      symbolSize: 20,
-                      effects: [
-                        {
-                          on: 'hover',
-                          style: {
-                            itemOpacity: 1
+                {barData.length > 0 ? (
+                  <ResponsiveBar
+                    data={barData}
+                    keys={['Occupancy', 'Capacity']}
+                    indexBy="name"
+                    margin={{ top: 20, right: 130, bottom: 50, left: 60 }}
+                    padding={0.3}
+                    groupMode="grouped"
+                    valueScale={{ type: 'linear' }}
+                    indexScale={{ type: 'band', round: true }}
+                    colors={[COLORS[0], COLORS[2]]}
+                    borderColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
+                    axisTop={null}
+                    axisRight={null}
+                    axisBottom={{
+                      tickSize: 5,
+                      tickPadding: 5,
+                      tickRotation: -45,
+                    }}
+                    labelSkipWidth={12}
+                    labelSkipHeight={12}
+                    labelTextColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
+                    legends={[
+                      {
+                        dataFrom: 'keys',
+                        anchor: 'bottom-right',
+                        direction: 'column',
+                        justify: false,
+                        translateX: 120,
+                        translateY: 0,
+                        itemsSpacing: 2,
+                        itemWidth: 100,
+                        itemHeight: 20,
+                        itemDirection: 'left-to-right',
+                        itemOpacity: 0.85,
+                        symbolSize: 20,
+                        effects: [
+                          {
+                            on: 'hover',
+                            style: {
+                              itemOpacity: 1
+                            }
                           }
-                        }
-                      ]
-                    }
-                  ]}
-                  theme={{
-                    axis: {
-                      ticks: { text: { fill: 'hsl(var(--muted-foreground))' } },
-                    },
-                    grid: { line: { stroke: 'hsl(var(--border))' } },
-                    legends: { text: { fill: 'hsl(var(--foreground))' } }
-                  }}
-                />
+                        ]
+                      }
+                    ]}
+                    theme={{
+                      axis: {
+                        ticks: { text: { fill: 'hsl(var(--muted-foreground))' } },
+                      },
+                      grid: { line: { stroke: 'hsl(var(--border))' } },
+                      legends: { text: { fill: 'hsl(var(--foreground))' } }
+                    }}
+                  />
+                ) : (
+                  <div className="h-full flex items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 px-6 text-center">
+                    <p className="text-sm text-muted-foreground">
+                      Safehouse occupancy data is not available yet. Once the dashboard has live safehouse records, this chart will render here.
+                    </p>
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>
@@ -305,8 +317,6 @@ export default function Impact() {
           </motion.div>
         </div>
       </div>
-
-      <PublicFooter />
     </div>
   );
 }

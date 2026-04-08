@@ -124,6 +124,7 @@ public class PublicImpactController(AppDbContext db) : ControllerBase
         await using var command = connection.CreateCommand();
         command.CommandText = """
             SELECT
+                TOP 1
                 snapshot_date,
                 headline,
                 summary_text,
@@ -131,7 +132,7 @@ public class PublicImpactController(AppDbContext db) : ControllerBase
             FROM public_impact_snapshots
             WHERE is_published = 1
             ORDER BY snapshot_date DESC, published_at DESC
-            LIMIT 1;
+            ;
             """;
 
         await using var reader = await command.ExecuteReaderAsync();
@@ -155,6 +156,7 @@ public class PublicImpactController(AppDbContext db) : ControllerBase
         await using var command = connection.CreateCommand();
         command.CommandText = """
             SELECT
+                TOP 3
                 snapshot_date,
                 headline,
                 summary_text,
@@ -162,7 +164,7 @@ public class PublicImpactController(AppDbContext db) : ControllerBase
             FROM public_impact_snapshots
             WHERE is_published = 1
             ORDER BY snapshot_date DESC, published_at DESC
-            LIMIT 3;
+            ;
             """;
 
         await using var reader = await command.ExecuteReaderAsync();
@@ -188,12 +190,12 @@ public class PublicImpactController(AppDbContext db) : ControllerBase
         await using var command = connection.CreateCommand();
         command.CommandText = """
             SELECT
-                strftime('%Y-%m-01', donation_date) AS month_start,
+                DATEFROMPARTS(YEAR(donation_date), MONTH(donation_date), 1) AS month_start,
                 SUM(COALESCE(amount, estimated_value, 0)) AS donation_amount_php
             FROM donations
-            GROUP BY strftime('%Y-%m-01', donation_date)
+            GROUP BY DATEFROMPARTS(YEAR(donation_date), MONTH(donation_date), 1)
             ORDER BY month_start DESC
-            LIMIT 6;
+            OFFSET 0 ROWS FETCH NEXT 6 ROWS ONLY;
             """;
 
         await using var reader = await command.ExecuteReaderAsync();
@@ -225,7 +227,7 @@ public class PublicImpactController(AppDbContext db) : ControllerBase
             FROM safehouse_monthly_metrics
             GROUP BY month_start
             ORDER BY month_start DESC
-            LIMIT 6;
+            OFFSET 0 ROWS FETCH NEXT 6 ROWS ONLY;
             """;
 
         await using var reader = await command.ExecuteReaderAsync();

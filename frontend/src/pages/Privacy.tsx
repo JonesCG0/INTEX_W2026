@@ -1,11 +1,8 @@
-import PublicNav from '../components/PublicNav';
-import PublicFooter from '../components/PublicFooter';
 import { motion } from 'framer-motion';
 
 export default function Privacy() {
   return (
     <div className="min-h-screen bg-background">
-      <PublicNav />
       <div className="pt-24 pb-16 px-6">
         <div className="max-w-3xl mx-auto">
           <motion.div
@@ -53,7 +50,6 @@ export default function Privacy() {
           </motion.div>
         </div>
       </div>
-      <PublicFooter />
     </div>
   );
 }

@@ -80,7 +80,7 @@ public class HealthController(AppDbContext db, StartupDiagnostics startupDiagnos
                 status = dbConnected ? "connected" : "unavailable",
                 detail = dbConnected ? "database connectivity verified" : "database connectivity failed",
                 error = details ? invalidOperationException?.Message ?? dbException?.Message : null,
-                elapsedMs = details ? dbElapsedMs : null
+                elapsedMs = details ? (long?)dbElapsedMs : null
             }
         };
 

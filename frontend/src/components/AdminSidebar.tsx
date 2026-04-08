@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { 
+  IconHome,
   IconLayoutDashboard, 
   IconUsers, 
   IconHeart, 
@@ -14,6 +15,7 @@ import { useState } from 'react';
 import { useAuth } from '@/lib/AuthContext';
 
 const navItems = [
+  { to: "/", icon: IconHome, label: "Home", exact: true },
   { to: "/admin", icon: IconLayoutDashboard, label: "Dashboard", exact: true },
   { to: "/admin/residents", icon: IconUsers, label: "Residents" },
   { to: "/admin/donors", icon: IconHeart, label: "Supporters" },
