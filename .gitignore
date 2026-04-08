@@ -28,3 +28,5 @@ Thumbs.db
 *.pdf
 *.docx
 *.pptx
+# Lock files (platform-specific, let CI generate fresh)
+frontend/package-lock.json
