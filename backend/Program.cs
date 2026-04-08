@@ -126,14 +126,24 @@ if (!string.IsNullOrWhiteSpace(connectionString))
         using var scope = app.Services.CreateScope();
 
         // Auto-apply migrations on startup
+        startupDiagnostics.RecordCheckpoint("ef-migrations", "running");
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await db.Database.MigrateAsync();
+        startupDiagnostics.RecordCheckpoint("ef-migrations", "ok");
 
+        startupDiagnostics.RecordCheckpoint("schema-repair", "running");
+        await EnsurePortalDonorLinkedEmailSchemaAsync(db);
+        startupDiagnostics.RecordCheckpoint("schema-repair", "ok");
+
+        startupDiagnostics.RecordCheckpoint("portal-seed", "running");
         var portalStore = scope.ServiceProvider.GetRequiredService<AdminPortalStore>();
         await portalStore.SeedAsync();
+        startupDiagnostics.RecordCheckpoint("portal-seed", "ok");
 
+        startupDiagnostics.RecordCheckpoint("admin-seed", "running");
         var adminSeeder = scope.ServiceProvider.GetRequiredService<AdminSeeder>();
         await adminSeeder.EnsureAdminAsync();
+        startupDiagnostics.RecordCheckpoint("admin-seed", "ok");
     }
     catch (Exception ex)
     {
@@ -159,3 +169,30 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
+
+static async Task EnsurePortalDonorLinkedEmailSchemaAsync(AppDbContext db)
+{
+    const string addColumnSql = """
+        IF COL_LENGTH('portal_donors', 'LinkedEmail') IS NULL
+        BEGIN
+            ALTER TABLE portal_donors ADD LinkedEmail nvarchar(256) NULL;
+        END
+        """;
+
+    const string addIndexSql = """
+        IF NOT EXISTS (
+            SELECT 1
+            FROM sys.indexes
+            WHERE name = 'IX_portal_donors_LinkedEmail'
+              AND object_id = OBJECT_ID('portal_donors')
+        )
+        BEGIN
+            CREATE UNIQUE INDEX IX_portal_donors_LinkedEmail
+            ON portal_donors(LinkedEmail)
+            WHERE LinkedEmail IS NOT NULL;
+        END
+        """;
+
+    await db.Database.ExecuteSqlRawAsync(addColumnSql);
+    await db.Database.ExecuteSqlRawAsync(addIndexSql);
+}
