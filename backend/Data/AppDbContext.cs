@@ -29,11 +29,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
         {
             entity.ToTable("portal_donors");
             entity.Property(d => d.DisplayName).HasMaxLength(256).IsRequired();
+            entity.Property(d => d.LinkedEmail).HasMaxLength(256).IsRequired(false);
+            entity.HasIndex(d => d.LinkedEmail).IsUnique();
             entity.Property(d => d.DonorType).HasMaxLength(100).IsRequired();
             entity.Property(d => d.Status).HasMaxLength(50).IsRequired();
             entity.Property(d => d.PreferredChannel).HasMaxLength(100).IsRequired();
             entity.Property(d => d.StewardshipLead).HasMaxLength(100).IsRequired();
-            entity.Property(d => d.TotalGivenPhp).HasPrecision(18, 2);
+            entity.Property(d => d.TotalGivenPhp).HasColumnType("TEXT");
             entity.HasMany(d => d.Contributions)
                 .WithOne(c => c.Donor)
                 .HasForeignKey(c => c.DonorId)
@@ -46,8 +48,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
             entity.Property(c => c.ContributionType).HasMaxLength(100).IsRequired();
             entity.Property(c => c.ProgramArea).HasMaxLength(100).IsRequired();
             entity.Property(c => c.Description).HasMaxLength(1000).IsRequired();
-            entity.Property(c => c.AmountPhp).HasPrecision(18, 2);
-            entity.Property(c => c.EstimatedValuePhp).HasPrecision(18, 2);
+            entity.Property(c => c.AmountPhp).HasColumnType("TEXT");
+            entity.Property(c => c.EstimatedValuePhp).HasColumnType("TEXT");
         });
 
         modelBuilder.Entity<PortalResident>(entity =>

@@ -123,14 +123,15 @@ public class PublicImpactController(AppDbContext db) : ControllerBase
     {
         await using var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT TOP (1)
+            SELECT
                 snapshot_date,
                 headline,
                 summary_text,
                 published_at
-            FROM dbo.public_impact_snapshots
+            FROM public_impact_snapshots
             WHERE is_published = 1
-            ORDER BY snapshot_date DESC, published_at DESC;
+            ORDER BY snapshot_date DESC, published_at DESC
+            LIMIT 1;
             """;
 
         await using var reader = await command.ExecuteReaderAsync();
@@ -153,14 +154,15 @@ public class PublicImpactController(AppDbContext db) : ControllerBase
     {
         await using var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT TOP (3)
+            SELECT
                 snapshot_date,
                 headline,
                 summary_text,
                 published_at
-            FROM dbo.public_impact_snapshots
+            FROM public_impact_snapshots
             WHERE is_published = 1
-            ORDER BY snapshot_date DESC, published_at DESC;
+            ORDER BY snapshot_date DESC, published_at DESC
+            LIMIT 3;
             """;
 
         await using var reader = await command.ExecuteReaderAsync();
@@ -185,12 +187,13 @@ public class PublicImpactController(AppDbContext db) : ControllerBase
     {
         await using var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT TOP (6)
-                DATEFROMPARTS(YEAR(donation_date), MONTH(donation_date), 1) AS month_start,
+            SELECT
+                strftime('%Y-%m-01', donation_date) AS month_start,
                 SUM(COALESCE(amount, estimated_value, 0)) AS donation_amount_php
-            FROM dbo.donations
-            GROUP BY DATEFROMPARTS(YEAR(donation_date), MONTH(donation_date), 1)
-            ORDER BY month_start DESC;
+            FROM donations
+            GROUP BY strftime('%Y-%m-01', donation_date)
+            ORDER BY month_start DESC
+            LIMIT 6;
             """;
 
         await using var reader = await command.ExecuteReaderAsync();
@@ -214,14 +217,15 @@ public class PublicImpactController(AppDbContext db) : ControllerBase
     {
         await using var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT TOP (6)
+            SELECT
                 month_start,
                 SUM(active_residents) AS active_residents,
-                AVG(CAST(avg_education_progress AS decimal(18,2))) AS avg_education_progress,
-                AVG(CAST(avg_health_score AS decimal(18,2))) AS avg_health_score
-            FROM dbo.safehouse_monthly_metrics
+                AVG(avg_education_progress) AS avg_education_progress,
+                AVG(avg_health_score) AS avg_health_score
+            FROM safehouse_monthly_metrics
             GROUP BY month_start
-            ORDER BY month_start DESC;
+            ORDER BY month_start DESC
+            LIMIT 6;
             """;
 
         await using var reader = await command.ExecuteReaderAsync();
@@ -255,8 +259,8 @@ public class PublicImpactController(AppDbContext db) : ControllerBase
                 platform,
                 SUM(reach) AS reach,
                 SUM(donation_referrals) AS donation_referrals,
-                AVG(CAST(engagement_rate AS decimal(18,4))) AS engagement_rate
-            FROM dbo.social_media_posts
+                AVG(engagement_rate) AS engagement_rate
+            FROM social_media_posts
             GROUP BY platform
             ORDER BY SUM(reach) DESC;
             """;
@@ -298,16 +302,16 @@ public class PublicImpactController(AppDbContext db) : ControllerBase
                 m.month_start,
                 m.avg_education_progress,
                 m.avg_health_score
-            FROM dbo.safehouses AS s
-            OUTER APPLY (
-                SELECT TOP (1)
-                    sm.month_start,
-                    sm.avg_education_progress,
-                    sm.avg_health_score
-                FROM dbo.safehouse_monthly_metrics AS sm
-                WHERE sm.safehouse_id = s.safehouse_id
-                ORDER BY sm.month_start DESC
-            ) AS m
+            FROM safehouses AS s
+            LEFT JOIN (
+                SELECT sm.safehouse_id, sm.month_start, sm.avg_education_progress, sm.avg_health_score
+                FROM safehouse_monthly_metrics sm
+                INNER JOIN (
+                    SELECT safehouse_id, MAX(month_start) as latest_month
+                    FROM safehouse_monthly_metrics
+                    GROUP BY safehouse_id
+                ) sm_desc ON sm.safehouse_id = sm_desc.safehouse_id AND sm.month_start = sm_desc.latest_month
+            ) AS m ON s.safehouse_id = m.safehouse_id
             ORDER BY s.name;
             """;
 
@@ -347,11 +351,11 @@ public class PublicImpactController(AppDbContext db) : ControllerBase
 
     private static async Task<ImpactTotals> ReadTotalsAsync(DbConnection connection)
     {
-        var safehouses = await ExecuteScalarIntAsync(connection, "SELECT COUNT(*) FROM dbo.safehouses;");
-        var supporters = await ExecuteScalarIntAsync(connection, "SELECT COUNT(*) FROM dbo.supporters;");
-        var activeResidents = await ExecuteScalarIntAsync(connection, "SELECT COUNT(*) FROM dbo.residents WHERE case_status = 'Active';");
-        var totalDonations = await ExecuteScalarIntAsync(connection, "SELECT COUNT(*) FROM dbo.donations;");
-        var totalDonationValue = await ExecuteScalarDecimalAsync(connection, "SELECT COALESCE(SUM(COALESCE(amount, estimated_value, 0)), 0) FROM dbo.donations;");
+        var safehouses = await ExecuteScalarIntAsync(connection, "SELECT COUNT(*) FROM safehouses;");
+        var supporters = await ExecuteScalarIntAsync(connection, "SELECT COUNT(*) FROM supporters;");
+        var activeResidents = await ExecuteScalarIntAsync(connection, "SELECT COUNT(*) FROM residents WHERE case_status = 'Active';");
+        var totalDonations = await ExecuteScalarIntAsync(connection, "SELECT COUNT(*) FROM donations;");
+        var totalDonationValue = await ExecuteScalarDecimalAsync(connection, "SELECT COALESCE(SUM(COALESCE(amount, estimated_value, 0)), 0) FROM donations;");
 
         return new ImpactTotals(
             Safehouses: safehouses,

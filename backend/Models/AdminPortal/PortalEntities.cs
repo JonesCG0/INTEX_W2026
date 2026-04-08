@@ -4,6 +4,7 @@ public sealed class PortalDonor
 {
     public int Id { get; set; }
     public string DisplayName { get; set; } = string.Empty;
+    public string? LinkedEmail { get; set; }
     public string DonorType { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
     public decimal TotalGivenPhp { get; set; }

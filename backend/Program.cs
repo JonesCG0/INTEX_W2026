@@ -9,7 +9,16 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(connectionString));
+{
+    if (connectionString?.Contains(".db") == true || connectionString?.Contains("DataSource=") == true || connectionString?.Contains("Data Source=") == true)
+    {
+        options.UseSqlite(connectionString);
+    }
+    else
+    {
+        options.UseSqlServer(connectionString);
+    }
+});
 
 builder.Services.AddIdentity<AppUser, IdentityRole<int>>(options =>
 {
@@ -83,7 +92,7 @@ builder.Services.AddCors(options =>
     });
 });
 
-if (args.Length >= 2 && args[0].Equals("--seed-csv", StringComparison.OrdinalIgnoreCase))
+if (args.Any(a => a.Equals("--seed-csv", StringComparison.OrdinalIgnoreCase)))
 {
     using var seedApp = builder.Build();
     if (string.IsNullOrWhiteSpace(connectionString))
@@ -97,8 +106,20 @@ if (args.Length >= 2 && args[0].Equals("--seed-csv", StringComparison.OrdinalIgn
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await db.Database.MigrateAsync();
 
-    var seeder = scope.ServiceProvider.GetRequiredService<CsvDatabaseSeeder>();
-    await seeder.SeedAsync(args[1]);
+    try 
+    {
+        var seeder = scope.ServiceProvider.GetRequiredService<CsvDatabaseSeeder>();
+        var index = Array.FindIndex(args, a => a.Equals("--seed-csv", StringComparison.OrdinalIgnoreCase));
+        var csvPath = (args.Length > index + 1) ? args[index + 1] : "seed_data";
+        await seeder.SeedAsync(csvPath);
+        Console.WriteLine("[INFO] Seeding completed successfully.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"[FATAL] Seeding failed: {ex.Message}");
+        Console.WriteLine(ex.StackTrace);
+        Environment.Exit(1);
+    }
     return;
 }
 

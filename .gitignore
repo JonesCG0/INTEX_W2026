@@ -12,10 +12,19 @@ frontend/dist/
 # Environment
 .env
 .env.local
+.env.production
 .env.*.local
 !.env.example
-!.env.production
 
 # OS
 .DS_Store
 Thumbs.db
+
+/node_modules
+
+*.txt
+*.md
+*.log
+*.pdf
+*.docx
+*.pptx

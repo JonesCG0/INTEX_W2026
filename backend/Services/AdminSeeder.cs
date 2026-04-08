@@ -1,5 +1,6 @@
 using backend.Models;
 using backend.Models.Auth;
+using backend.Models.AdminPortal;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 
@@ -66,5 +67,61 @@ public sealed class AdminSeeder(
         }
 
         await userManager.AddToRoleAsync(user, AdminRole);
+
+        // Ensure a test Donor account
+        var donorEmail = "donor@example.com";
+        if (await userManager.FindByEmailAsync(donorEmail) == null)
+        {
+            var donor = new AppUser
+            {
+                UserName = donorEmail,
+                Email = donorEmail,
+                DisplayName = "Project Haven Donor",
+                EmailConfirmed = true
+            };
+            await userManager.CreateAsync(donor, "ProjectHaven2026!");
+            await userManager.AddToRoleAsync(donor, "Donor");
+
+            // Seed the physical donor record in the portal table
+            using var scope = userManager.GetType().GetProperty("Context")?.GetValue(userManager) as backend.Data.AppDbContext;
+            if (scope != null)
+            {
+                var portalDonor = new PortalDonor
+                {
+                    DisplayName = "Project Haven Donor",
+                    LinkedEmail = donorEmail,
+                    DonorType = "Individual",
+                    Status = "Active",
+                    PreferredChannel = "Website",
+                    StewardshipLead = "Staff Member",
+                    TotalGivenPhp = 2500000m,
+                    LastDonationAt = DateTime.UtcNow.AddDays(-14)
+                };
+                scope.PortalDonors.Add(portalDonor);
+                await scope.SaveChangesAsync(cancellationToken);
+
+                // Seed some contribution history
+                scope.PortalContributions.AddRange(new List<PortalContribution>
+                {
+                    new() { 
+                        DonorId = portalDonor.Id, 
+                        ContributionType = "Monetary", 
+                        AmountPhp = 1000000m, 
+                        ProgramArea = "Safehouse Ops", 
+                        Description = "Annual major gift", 
+                        ContributionAt = DateTime.UtcNow.AddMonths(-6) 
+                    },
+                    new() { 
+                        DonorId = portalDonor.Id, 
+                        ContributionType = "Monetary", 
+                        AmountPhp = 1500000m, 
+                        ProgramArea = "Education Funds", 
+                        Description = "Scholarship endowment", 
+                        ContributionAt = DateTime.UtcNow.AddDays(-14) 
+                    }
+                });
+                await scope.SaveChangesAsync(cancellationToken);
+            }
+        }
     }
 }

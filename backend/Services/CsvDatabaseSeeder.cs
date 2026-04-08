@@ -17,6 +17,12 @@ public sealed class CsvDatabaseSeeder(AppDbContext db)
         }
 
         var rootDirectory = ResolveCsvDirectory(csvPath);
+
+        if (!Directory.Exists(rootDirectory))
+        {
+             throw new DirectoryNotFoundException($"[Seeder] Final attempt failed. Could not find directory: {csvPath} (Full: {rootDirectory})");
+        }
+
         var csvFiles = Directory.GetFiles(rootDirectory, "*.csv", System.IO.SearchOption.TopDirectoryOnly)
             .OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -64,25 +70,7 @@ public sealed class CsvDatabaseSeeder(AppDbContext db)
 
     private static string ResolveCsvDirectory(string csvPath)
     {
-        var fullPath = Path.GetFullPath(csvPath, Directory.GetCurrentDirectory());
-
-        if (Directory.Exists(fullPath) && Directory.GetFiles(fullPath, "*.csv", System.IO.SearchOption.TopDirectoryOnly).Length > 0)
-        {
-            return fullPath;
-        }
-
-        if (Directory.Exists(fullPath))
-        {
-            var nestedCsvDirectory = Directory.GetDirectories(fullPath)
-                .FirstOrDefault(directory => Directory.GetFiles(directory, "*.csv", System.IO.SearchOption.TopDirectoryOnly).Length > 0);
-
-            if (nestedCsvDirectory is not null)
-            {
-                return nestedCsvDirectory;
-            }
-        }
-
-        throw new DirectoryNotFoundException($"Could not find a CSV directory at '{csvPath}'.");
+        return @"C:\Users\koapo\OneDrive\Desktop\JuniorCore\INTEX 2\seed_data";
     }
 
     private static CsvFile ReadCsv(string filePath)
@@ -136,7 +124,7 @@ public sealed class CsvDatabaseSeeder(AppDbContext db)
 
         if (nonEmptyValues.Length == 0)
         {
-            return "nvarchar(max)";
+            return "TEXT";
         }
 
         if (nonEmptyValues.All(value => bool.TryParse(value, out _)))
@@ -151,15 +139,15 @@ public sealed class CsvDatabaseSeeder(AppDbContext db)
 
         if (TryInferDecimal(nonEmptyValues))
         {
-            return "decimal(18,6)";
+            return "DECIMAL";
         }
 
         if (TryInferDateTime(nonEmptyValues, out var sqlType))
         {
-            return sqlType;
+            return "DATETIME";
         }
 
-        return "nvarchar(max)";
+        return "TEXT";
     }
 
     private static bool TryInferInteger(IEnumerable<string> values)
@@ -225,7 +213,7 @@ public sealed class CsvDatabaseSeeder(AppDbContext db)
     {
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
-        command.CommandText = $"DROP TABLE IF EXISTS dbo.{QuoteIdentifier(tableName)};";
+        command.CommandText = $"DROP TABLE IF EXISTS {QuoteIdentifier(tableName)};";
         await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
@@ -235,23 +223,18 @@ public sealed class CsvDatabaseSeeder(AppDbContext db)
 
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
-        command.CommandText = $"CREATE TABLE dbo.{QuoteIdentifier(tableName)} ({columnSql});";
+        command.CommandText = $"CREATE TABLE {QuoteIdentifier(tableName)} ({columnSql});";
         await command.ExecuteNonQueryAsync(cancellationToken);
     }
 
     private static async Task InsertRowsAsync(DbConnection connection, DbTransaction transaction, string tableName, IReadOnlyList<ColumnDefinition> columns, IReadOnlyList<string?[]> rows, CancellationToken cancellationToken)
     {
-        if (rows.Count == 0)
-        {
-            return;
-        }
-
         var columnList = string.Join(", ", columns.Select(column => QuoteIdentifier(column.Name)));
         var parameterList = string.Join(", ", columns.Select((_, index) => $"@p{index}"));
 
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
-        command.CommandText = $"INSERT INTO dbo.{QuoteIdentifier(tableName)} ({columnList}) VALUES ({parameterList});";
+        command.CommandText = $"INSERT INTO {QuoteIdentifier(tableName)} ({columnList}) VALUES ({parameterList});";
 
         foreach (var row in rows)
         {
