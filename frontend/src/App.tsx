@@ -14,6 +14,7 @@ import Donors from './pages/admin/Donors';
 import Analytics from './pages/admin/Analytics';
 import Privacy from './pages/Privacy';
 import DonorDashboard from './pages/DonorDashboard';
+import SignUp from './pages/SignUp';
 import AdminLayout from './components/AdminLayout';
 import DonorLayout from './components/DonorLayout';
 import PublicLayout from './components/PublicLayout';
@@ -62,6 +63,7 @@ const AuthenticatedApp = () => {
       
       {/* Login Page */}
       <Route path="/login" element={<Login />} />
+      <Route path="/signup" element={<SignUp />} />
 
       {/* Donor Protected Routes */}
       <Route path="/donor" element={

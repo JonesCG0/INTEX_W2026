@@ -1,6 +1,9 @@
 using System.Security.Claims;
+using backend.Data;
+using backend.Models.AdminPortal;
 using backend.Models;
 using backend.Models.Auth;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -11,7 +14,8 @@ namespace backend.Controllers;
 [Route("api/auth")]
 public class AuthController(
     UserManager<AppUser> userManager,
-    SignInManager<AppUser> signInManager) : ControllerBase
+    SignInManager<AppUser> signInManager,
+    AppDbContext db) : ControllerBase
 {
     // Returns the highest-privilege role when a user has multiple roles.
     private static string ResolvePrimaryRole(IList<string> roles)
@@ -108,6 +112,23 @@ public class AuthController(
         }
 
         await userManager.AddToRoleAsync(user, "Donor");
+
+        var donorProfile = await db.PortalDonors.FirstOrDefaultAsync(d => d.LinkedEmail == user.Email);
+        if (donorProfile is null)
+        {
+            db.PortalDonors.Add(new PortalDonor
+            {
+                DisplayName = user.DisplayName,
+                LinkedEmail = user.Email,
+                DonorType = "Individual",
+                Status = "Active",
+                TotalGivenPhp = 0m,
+                LastDonationAt = null,
+                PreferredChannel = "Website",
+                StewardshipLead = "Unassigned"
+            });
+            await db.SaveChangesAsync();
+        }
 
         var additionalClaims = new List<Claim>
         {

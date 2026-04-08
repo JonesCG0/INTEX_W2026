@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { IconBrandGoogle, IconBrandGithub } from "@tabler/icons-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { API_BASE } from "@/lib/api-base";
 
@@ -102,6 +102,13 @@ export default function Login() {
             {isLoading ? "Signing in..." : "Login →"}
             <BottomGradient />
           </button>
+
+          <p className="mt-4 text-center text-sm text-neutral-600 dark:text-neutral-300 font-body">
+            Donor looking for an account?{" "}
+            <Link to="/signup" className="font-semibold text-primary hover:underline">
+              Create one here
+            </Link>
+          </p>
 
           <div className="bg-gradient-to-r from-transparent via-neutral-300 dark:via-neutral-700 to-transparent my-8 h-[1px] w-full" />
 

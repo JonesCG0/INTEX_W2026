@@ -56,7 +56,7 @@ export default function PublicNav() {
               </Button>
             </>
           ) : (
-            <Link to="/admin">
+            <Link to="/login">
               <Button size="sm" variant="outline" className="font-body gap-2">
                 <IconLogin className="h-4 w-4" />
                 <span className="hidden sm:inline">Login</span>
