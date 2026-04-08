@@ -5,6 +5,8 @@ import {
   IconUsers, 
   IconHeart, 
   IconChartBar, 
+  IconUserPlus,
+  IconCalendar,
   IconChevronLeft, 
   IconChevronRight, 
   IconLogout 
@@ -19,6 +21,8 @@ const navItems = [
   { to: "/admin", icon: IconLayoutDashboard, label: "Dashboard", exact: true },
   { to: "/admin/residents", icon: IconUsers, label: "Residents" },
   { to: "/admin/donors", icon: IconHeart, label: "Supporters" },
+  { to: "/admin/users", icon: IconUserPlus, label: "Users" },
+  { to: "/admin/visitations", icon: IconCalendar, label: "Visitations" },
   { to: "/admin/analytics", icon: IconChartBar, label: "Analytics" },
 ];
 

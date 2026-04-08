@@ -38,6 +38,7 @@ public sealed record AdminPortalActivityDto(
 public sealed record AdminPortalDonorDto(
     int Id,
     string DisplayName,
+    string? LinkedEmail,
     string DonorType,
     string Status,
     decimal TotalGivenPhp,
@@ -126,6 +127,16 @@ public sealed record AdminPortalProgramOutcomeDto(
 
 public sealed record UpdateDonorRequestDto(
     string DisplayName,
+    string? LinkedEmail,
+    string DonorType,
+    string Status,
+    string PreferredChannel,
+    string StewardshipLead
+);
+
+public sealed record CreateDonorRequestDto(
+    string DisplayName,
+    string? LinkedEmail,
     string DonorType,
     string Status,
     string PreferredChannel,
@@ -133,6 +144,16 @@ public sealed record UpdateDonorRequestDto(
 );
 
 public sealed record CreateContributionRequestDto(
+    string ContributionType,
+    decimal? AmountPhp,
+    decimal? EstimatedValuePhp,
+    string ProgramArea,
+    string Description,
+    DateTime ContributionAt
+);
+
+public sealed record UpdateContributionRequestDto(
+    int DonorId,
     string ContributionType,
     decimal? AmountPhp,
     decimal? EstimatedValuePhp,
@@ -174,7 +195,28 @@ public sealed record CreateRecordingRequestDto(
     string FollowUp
 );
 
+public sealed record UpdateRecordingRequestDto(
+    int ResidentId,
+    DateTime SessionAt,
+    string StaffName,
+    string SessionType,
+    string EmotionalState,
+    string Summary,
+    string Interventions,
+    string FollowUp
+);
+
 public sealed record CreateVisitationRequestDto(
+    int ResidentId,
+    DateTime VisitAt,
+    string VisitType,
+    string Observations,
+    string FamilyCooperation,
+    string SafetyConcerns,
+    string FollowUp
+);
+
+public sealed record UpdateVisitationRequestDto(
     int ResidentId,
     DateTime VisitAt,
     string VisitType,

@@ -343,6 +343,7 @@ public sealed class AdminPortalStore(AppDbContext db)
             .Select(d => new AdminPortalDonorDto(
                 d.Id,
                 d.DisplayName,
+                d.LinkedEmail,
                 d.DonorType,
                 d.Status,
                 d.TotalGivenPhp,
@@ -431,15 +432,63 @@ public sealed class AdminPortalStore(AppDbContext db)
     public async Task<AdminPortalDonorDto> UpdateDonorAsync(int id, UpdateDonorRequestDto request)
     {
         var donor = await db.PortalDonors.FindAsync(id) ?? throw new KeyNotFoundException("Donor not found.");
+        var linkedEmail = string.IsNullOrWhiteSpace(request.LinkedEmail) ? null : request.LinkedEmail.Trim();
+        if (linkedEmail is not null && await db.PortalDonors.AnyAsync(d => d.LinkedEmail == linkedEmail && d.Id != id))
+        {
+            throw new InvalidOperationException("A donor profile already exists for that email address.");
+        }
 
         donor.DisplayName = request.DisplayName.Trim();
+        donor.LinkedEmail = linkedEmail;
         donor.DonorType = request.DonorType.Trim();
         donor.Status = request.Status.Trim();
         donor.PreferredChannel = request.PreferredChannel.Trim();
         donor.StewardshipLead = request.StewardshipLead.Trim();
 
         await db.SaveChangesAsync();
-        return new AdminPortalDonorDto(donor.Id, donor.DisplayName, donor.DonorType, donor.Status, donor.TotalGivenPhp, donor.LastDonationAt, donor.PreferredChannel, donor.StewardshipLead);
+        return new AdminPortalDonorDto(donor.Id, donor.DisplayName, donor.LinkedEmail, donor.DonorType, donor.Status, donor.TotalGivenPhp, donor.LastDonationAt, donor.PreferredChannel, donor.StewardshipLead);
+    }
+
+    public async Task<AdminPortalDonorDto> AddDonorAsync(CreateDonorRequestDto request)
+    {
+        var linkedEmail = string.IsNullOrWhiteSpace(request.LinkedEmail) ? null : request.LinkedEmail.Trim();
+        if (linkedEmail is not null && await db.PortalDonors.AnyAsync(d => d.LinkedEmail == linkedEmail))
+        {
+            throw new InvalidOperationException("A donor profile already exists for that email address.");
+        }
+
+        var donor = new PortalDonor
+        {
+            DisplayName = request.DisplayName.Trim(),
+            LinkedEmail = linkedEmail,
+            DonorType = request.DonorType.Trim(),
+            Status = request.Status.Trim(),
+            PreferredChannel = request.PreferredChannel.Trim(),
+            StewardshipLead = request.StewardshipLead.Trim(),
+            TotalGivenPhp = 0m,
+            LastDonationAt = null
+        };
+
+        db.PortalDonors.Add(donor);
+        await db.SaveChangesAsync();
+
+        return new AdminPortalDonorDto(
+            donor.Id,
+            donor.DisplayName,
+            donor.LinkedEmail,
+            donor.DonorType,
+            donor.Status,
+            donor.TotalGivenPhp,
+            donor.LastDonationAt,
+            donor.PreferredChannel,
+            donor.StewardshipLead);
+    }
+
+    public async Task DeleteDonorAsync(int id)
+    {
+        var donor = await db.PortalDonors.FindAsync(id) ?? throw new KeyNotFoundException("Donor not found.");
+        db.PortalDonors.Remove(donor);
+        await db.SaveChangesAsync();
     }
 
     public async Task<AdminPortalContributionDto> AddContributionAsync(int donorId, CreateContributionRequestDto request)
@@ -458,11 +507,59 @@ public sealed class AdminPortalStore(AppDbContext db)
         };
 
         db.PortalContributions.Add(contribution);
-        donor.TotalGivenPhp += request.AmountPhp ?? request.EstimatedValuePhp ?? 0m;
-        donor.LastDonationAt = request.ContributionAt;
         await db.SaveChangesAsync();
+        await RecalculateDonorTotalsAsync(donorId);
 
         return new AdminPortalContributionDto(contribution.Id, donor.Id, donor.DisplayName, contribution.ContributionType, contribution.AmountPhp, contribution.EstimatedValuePhp, contribution.ProgramArea, contribution.Description, contribution.ContributionAt);
+    }
+
+    public async Task<AdminPortalContributionDto> UpdateContributionAsync(int id, UpdateContributionRequestDto request)
+    {
+        var contribution = await db.PortalContributions
+            .Include(c => c.Donor)
+            .FirstOrDefaultAsync(c => c.Id == id)
+            ?? throw new KeyNotFoundException("Contribution not found.");
+
+        var originalDonorId = contribution.DonorId;
+        var donor = await db.PortalDonors.FindAsync(request.DonorId) ?? throw new KeyNotFoundException("Donor not found.");
+
+        contribution.DonorId = request.DonorId;
+        contribution.ContributionType = request.ContributionType.Trim();
+        contribution.AmountPhp = request.AmountPhp;
+        contribution.EstimatedValuePhp = request.EstimatedValuePhp;
+        contribution.ProgramArea = request.ProgramArea.Trim();
+        contribution.Description = request.Description.Trim();
+        contribution.ContributionAt = request.ContributionAt;
+
+        await db.SaveChangesAsync();
+        await RecalculateDonorTotalsAsync(originalDonorId);
+        if (originalDonorId != request.DonorId)
+        {
+            await RecalculateDonorTotalsAsync(request.DonorId);
+        }
+
+        return new AdminPortalContributionDto(
+            contribution.Id,
+            donor.Id,
+            donor.DisplayName,
+            contribution.ContributionType,
+            contribution.AmountPhp,
+            contribution.EstimatedValuePhp,
+            contribution.ProgramArea,
+            contribution.Description,
+            contribution.ContributionAt);
+    }
+
+    public async Task DeleteContributionAsync(int id)
+    {
+        var contribution = await db.PortalContributions
+            .FirstOrDefaultAsync(c => c.Id == id)
+            ?? throw new KeyNotFoundException("Contribution not found.");
+
+        var donorId = contribution.DonorId;
+        db.PortalContributions.Remove(contribution);
+        await db.SaveChangesAsync();
+        await RecalculateDonorTotalsAsync(donorId);
     }
 
     public async Task<AdminPortalResidentDto> AddResidentAsync(CreateResidentRequestDto request)
@@ -521,11 +618,62 @@ public sealed class AdminPortalStore(AppDbContext db)
             FollowUp = request.FollowUp.Trim()
         };
 
-        resident.LastSessionAt = request.SessionAt;
         db.PortalRecordings.Add(recording);
         await db.SaveChangesAsync();
+        await RecalculateResidentLastSessionAsync(resident.Id);
 
         return new AdminPortalRecordingDto(recording.Id, resident.Id, resident.CodeName, recording.SessionAt, recording.StaffName, recording.SessionType, recording.EmotionalState, recording.Summary, recording.Interventions, recording.FollowUp);
+    }
+
+    public async Task<AdminPortalRecordingDto> UpdateRecordingAsync(int id, UpdateRecordingRequestDto request)
+    {
+        var recording = await db.PortalRecordings
+            .Include(r => r.Resident)
+            .FirstOrDefaultAsync(r => r.Id == id)
+            ?? throw new KeyNotFoundException("Recording not found.");
+
+        var originalResidentId = recording.ResidentId;
+        var resident = await db.PortalResidents.FindAsync(request.ResidentId) ?? throw new KeyNotFoundException("Resident not found.");
+
+        recording.ResidentId = request.ResidentId;
+        recording.SessionAt = request.SessionAt;
+        recording.StaffName = request.StaffName.Trim();
+        recording.SessionType = request.SessionType.Trim();
+        recording.EmotionalState = request.EmotionalState.Trim();
+        recording.Summary = request.Summary.Trim();
+        recording.Interventions = request.Interventions.Trim();
+        recording.FollowUp = request.FollowUp.Trim();
+
+        await db.SaveChangesAsync();
+        await RecalculateResidentLastSessionAsync(originalResidentId);
+        if (originalResidentId != request.ResidentId)
+        {
+            await RecalculateResidentLastSessionAsync(request.ResidentId);
+        }
+
+        return new AdminPortalRecordingDto(
+            recording.Id,
+            resident.Id,
+            resident.CodeName,
+            recording.SessionAt,
+            recording.StaffName,
+            recording.SessionType,
+            recording.EmotionalState,
+            recording.Summary,
+            recording.Interventions,
+            recording.FollowUp);
+    }
+
+    public async Task DeleteRecordingAsync(int id)
+    {
+        var recording = await db.PortalRecordings
+            .FirstOrDefaultAsync(r => r.Id == id)
+            ?? throw new KeyNotFoundException("Recording not found.");
+
+        var residentId = recording.ResidentId;
+        db.PortalRecordings.Remove(recording);
+        await db.SaveChangesAsync();
+        await RecalculateResidentLastSessionAsync(residentId);
     }
 
     public async Task<AdminPortalVisitationDto> AddVisitationAsync(CreateVisitationRequestDto request)
@@ -546,6 +694,35 @@ public sealed class AdminPortalStore(AppDbContext db)
         await db.SaveChangesAsync();
 
         return new AdminPortalVisitationDto(visitation.Id, resident.Id, resident.CodeName, visitation.VisitAt, visitation.VisitType, visitation.Observations, visitation.FamilyCooperation, visitation.SafetyConcerns, visitation.FollowUp);
+    }
+
+    public async Task<AdminPortalVisitationDto> UpdateVisitationAsync(int id, UpdateVisitationRequestDto request)
+    {
+        var visitation = await db.PortalVisitations
+            .Include(v => v.Resident)
+            .FirstOrDefaultAsync(v => v.Id == id)
+            ?? throw new KeyNotFoundException("Visitation not found.");
+
+        var resident = await db.PortalResidents.FindAsync(request.ResidentId) ?? throw new KeyNotFoundException("Resident not found.");
+
+        visitation.ResidentId = request.ResidentId;
+        visitation.VisitAt = request.VisitAt;
+        visitation.VisitType = request.VisitType.Trim();
+        visitation.Observations = request.Observations.Trim();
+        visitation.FamilyCooperation = request.FamilyCooperation.Trim();
+        visitation.SafetyConcerns = request.SafetyConcerns.Trim();
+        visitation.FollowUp = request.FollowUp.Trim();
+
+        await db.SaveChangesAsync();
+
+        return new AdminPortalVisitationDto(visitation.Id, resident.Id, resident.CodeName, visitation.VisitAt, visitation.VisitType, visitation.Observations, visitation.FamilyCooperation, visitation.SafetyConcerns, visitation.FollowUp);
+    }
+
+    public async Task DeleteVisitationAsync(int id)
+    {
+        var visitation = await db.PortalVisitations.FirstOrDefaultAsync(v => v.Id == id) ?? throw new KeyNotFoundException("Visitation not found.");
+        db.PortalVisitations.Remove(visitation);
+        await db.SaveChangesAsync();
     }
 
     private static AdminPortalDashboardDto BuildDashboard(
@@ -657,6 +834,35 @@ public sealed class AdminPortalStore(AppDbContext db)
             new AdminPortalProgramOutcomeDto("Reintegration", "Residents on track for case conference review", residents.Count(resident => resident.NextReviewAt is not null && resident.NextReviewAt <= DateTime.UtcNow.AddDays(21)).ToString()),
             new AdminPortalProgramOutcomeDto("Donor retention", "Repeat donors in the last 90 days", $"{repeatDonors * 100 / Math.Max(donors.Count, 1)}%")
         ];
+    }
+
+    private async Task RecalculateDonorTotalsAsync(int donorId)
+    {
+        var donor = await db.PortalDonors
+            .Include(d => d.Contributions)
+            .FirstOrDefaultAsync(d => d.Id == donorId)
+            ?? throw new KeyNotFoundException("Donor not found.");
+
+        donor.TotalGivenPhp = donor.Contributions.Sum(contribution => contribution.AmountPhp ?? contribution.EstimatedValuePhp ?? 0m);
+        donor.LastDonationAt = donor.Contributions.Count == 0
+            ? null
+            : donor.Contributions.Max(contribution => contribution.ContributionAt);
+
+        await db.SaveChangesAsync();
+    }
+
+    private async Task RecalculateResidentLastSessionAsync(int residentId)
+    {
+        var resident = await db.PortalResidents
+            .Include(r => r.Recordings)
+            .FirstOrDefaultAsync(r => r.Id == residentId)
+            ?? throw new KeyNotFoundException("Resident not found.");
+
+        resident.LastSessionAt = resident.Recordings.Count == 0
+            ? null
+            : resident.Recordings.Max(recording => recording.SessionAt);
+
+        await db.SaveChangesAsync();
     }
 
     private static AdminPortalResidentDto MapResident(PortalResident resident)

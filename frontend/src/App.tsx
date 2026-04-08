@@ -10,7 +10,9 @@ import Impact from './pages/Impact';
 import AdminDashboard from './pages/admin/Dashboard';
 import Residents from './pages/admin/Residents';
 import Recordings from './pages/admin/Recordings';
+import Visitations from './pages/admin/Visitations';
 import Donors from './pages/admin/Donors';
+import Users from './pages/admin/Users';
 import Analytics from './pages/admin/Analytics';
 import Privacy from './pages/Privacy';
 import DonorDashboard from './pages/DonorDashboard';
@@ -83,7 +85,10 @@ const AuthenticatedApp = () => {
         <Route index element={<AdminDashboard />} />
         <Route path="residents" element={<Residents />} />
         <Route path="residents/:id/recordings" element={<Recordings />} />
+        <Route path="visitations" element={<Visitations />} />
+        <Route path="residents/:id/visitations" element={<Visitations />} />
         <Route path="donors" element={<Donors />} />
+        <Route path="users" element={<Users />} />
         <Route path="analytics" element={<Analytics />} />
       </Route>
       

@@ -2,6 +2,7 @@ using System.Data.Common;
 using backend.Data;
 using backend.Models;
 using backend.Models.Admin;
+using backend.Models.AdminPortal;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -42,6 +43,78 @@ public class AdminController(
         return Ok(result);
     }
 
+    [HttpPost("users")]
+    public async Task<IActionResult> CreateUser([FromBody] CreateUserRequestDto dto)
+    {
+        var allowed = new[] { "Admin", "Donor" };
+        if (!allowed.Contains(dto.Role))
+        {
+            return BadRequest(new { error = $"Role must be one of: {string.Join(", ", allowed)}." });
+        }
+
+        var existing = await userManager.FindByEmailAsync(dto.Email.Trim());
+        if (existing is not null)
+        {
+            return Conflict(new { error = "A user with that email already exists." });
+        }
+
+        var user = new AppUser
+        {
+            UserName = dto.Email.Trim(),
+            Email = dto.Email.Trim(),
+            DisplayName = dto.DisplayName.Trim(),
+            EmailConfirmed = true
+        };
+
+        var result = await userManager.CreateAsync(user, dto.Password);
+        if (!result.Succeeded)
+        {
+            return StatusCode(500, new { error = result.Errors.FirstOrDefault()?.Description ?? "User creation failed." });
+        }
+
+        await userManager.AddToRoleAsync(user, dto.Role);
+        if (dto.Role == "Donor")
+        {
+            await EnsureDonorProfileAsync(user.Email!, user.DisplayName);
+        }
+
+        return CreatedAtAction(nameof(GetUsers), new { id = user.Id }, new { user.Id, user.Email, user.DisplayName, dto.Role });
+    }
+
+    [HttpPut("users/{id:int}")]
+    public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequestDto dto)
+    {
+        var allowed = new[] { "Admin", "Donor" };
+        if (!allowed.Contains(dto.Role))
+        {
+            return BadRequest(new { error = $"Role must be one of: {string.Join(", ", allowed)}." });
+        }
+
+        var user = await userManager.FindByIdAsync(id.ToString());
+        if (user is null)
+        {
+            return NotFound(new { error = "User not found." });
+        }
+
+        user.DisplayName = dto.DisplayName.Trim();
+        var updateResult = await userManager.UpdateAsync(user);
+        if (!updateResult.Succeeded)
+        {
+            return StatusCode(500, new { error = updateResult.Errors.FirstOrDefault()?.Description ?? "Update failed." });
+        }
+
+        var currentRoles = await userManager.GetRolesAsync(user);
+        await userManager.RemoveFromRolesAsync(user, currentRoles);
+        await userManager.AddToRoleAsync(user, dto.Role);
+
+        if (dto.Role == "Donor")
+        {
+            await EnsureDonorProfileAsync(user.Email!, user.DisplayName);
+        }
+
+        return NoContent();
+    }
+
     [HttpPut("users/{id:int}/role")]
     public async Task<IActionResult> ChangeRole(int id, [FromBody] ChangeRoleDto dto)
     {
@@ -61,6 +134,11 @@ public class AdminController(
         var currentRoles = await userManager.GetRolesAsync(user);
         await userManager.RemoveFromRolesAsync(user, currentRoles);
         await userManager.AddToRoleAsync(user, dto.Role);
+
+        if (dto.Role == "Donor")
+        {
+            await EnsureDonorProfileAsync(user.Email!, user.DisplayName);
+        }
 
         return NoContent();
     }
@@ -162,5 +240,29 @@ public class AdminController(
     {
         var roles = await roleManager.Roles.Select(r => r.Name!).ToListAsync();
         return Ok(roles);
+    }
+
+    private async Task EnsureDonorProfileAsync(string email, string displayName)
+    {
+        var donor = await db.PortalDonors.FirstOrDefaultAsync(d => d.LinkedEmail == email);
+        if (donor is not null)
+        {
+            donor.DisplayName = displayName.Trim();
+            await db.SaveChangesAsync();
+            return;
+        }
+
+        db.PortalDonors.Add(new PortalDonor
+        {
+            DisplayName = displayName.Trim(),
+            LinkedEmail = email,
+            DonorType = "Individual",
+            Status = "Active",
+            TotalGivenPhp = 0m,
+            PreferredChannel = "Website",
+            StewardshipLead = "Unassigned"
+        });
+
+        await db.SaveChangesAsync();
     }
 }

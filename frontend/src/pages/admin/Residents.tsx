@@ -3,7 +3,7 @@ import { API_BASE } from '@/lib/api-base';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { IconPlus, IconSearch, IconPencil, IconTrash, IconArrowRight } from '@tabler/icons-react';
+import { IconPlus, IconSearch, IconPencil, IconTrash, IconArrowRight, IconCalendar } from '@tabler/icons-react';
 import { toast } from "react-hot-toast";
 import ResidentDrawer from '../../components/ResidentDrawer';
 import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
@@ -197,6 +197,11 @@ export default function Residents() {
                       <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
                         <Link to={`/admin/residents/${r.id}/recordings`}>
                           <IconArrowRight className="h-3.5 w-3.5" />
+                        </Link>
+                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" asChild title="Visitations">
+                        <Link to={`/admin/residents/${r.id}/visitations`}>
+                          <IconCalendar className="h-3.5 w-3.5" />
                         </Link>
                       </Button>
                     </div>
