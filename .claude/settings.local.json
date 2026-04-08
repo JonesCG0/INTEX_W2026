@@ -15,7 +15,13 @@
       "Bash(dotnet build:*)",
       "Bash(gh workflow:*)",
       "Bash(npm uninstall:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(rm -rf backend/Data/Migrations)",
+      "Bash(rm -f backend/dev.db backend/dev.db-shm backend/dev.db-wal backend/schema.sql backend/schema2.sql)",
+      "Bash(grep -rn \"fetch\\('/api\\\\|fetch\\(\\\\`/api\" frontend/src --include=\"*.ts\" --include=\"*.tsx\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('\\\\n'.join\\(k for k in d.get\\('dependencies',{}\\)\\)\\)\")",
+      "Bash(rm -f frontend/src/lib/app-params.ts frontend/src/api/base44Client.ts)",
+      "Bash(rm -rf frontend/entities)"
     ]
   }
 }
