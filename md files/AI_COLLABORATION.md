@@ -143,6 +143,7 @@ The repository is no longer just a starter. The current build includes:
 - a dedicated authenticated admin/staff portal with dashboard, donors, residents, process recordings, visitations, and reports
 - a shared admin shell for the staff dashboard, user management, and SQL query pages
 - EF-backed persistence for the portal tables instead of in-memory state
+- backend health endpoints for liveness, readiness, and detailed startup diagnostics
 
 Use this file to keep future AI work small and coordinated around the current codebase instead of re-laying the foundation.
 
@@ -222,6 +223,12 @@ GitHub Actions
 | Backend | Azure App Service (INTEXW2026, France Central) | Auto-deploys on push to `backend/` |
 | Database | Azure SQL Database | EF Core-backed database used for app data and CSV seeding |
 | File Storage | Azure Blob Storage | Planned |
+
+### Build and Health Notes
+
+- Frontend CI should use `npm ci` with the committed `frontend/package-lock.json`.
+- Backend health probes live at `/api/health/live`, `/api/health/ready`, and `/api/health/full?details=true`.
+- The frontend no longer exposes a separate health page.
 
 ### Deployment To-Do List
 

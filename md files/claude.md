@@ -11,6 +11,7 @@ Project Haven is a secure, full-stack case management web application supporting
 ### Current Implementation Snapshot
 
 The current repository uses `frontend/` and `backend/` as the top-level app folders. The public home page, impact dashboard, privacy policy, and cookie-consent flow are implemented, and the public impact dashboard reads from the connected Azure SQL database.
+The backend exposes health probes at `/api/health/live`, `/api/health/ready`, and `/api/health/full?details=true`. The frontend does not expose a separate health page; use the API endpoints directly for probes.
 
 The application supports three user types:
 
@@ -47,6 +48,7 @@ The application supports three user types:
 - **Language (backend):** C# (nullable reference types enabled; use record types for DTOs).
 - **Language (frontend):** TypeScript (strict mode; no `any`).
 - **Package managers:** `npm` (frontend), `dotnet CLI` (backend).
+- **Frontend installs:** use `npm ci` in CI and local reproducible installs when `package-lock.json` is present.
 - **Database:** Azure SQL Database through Entity Framework Core.
   - Use only EF Core migrations for schema changes; never modify the database manually.
 - **ORM:** Entity Framework Core.
@@ -167,6 +169,7 @@ The application supports three user types:
 * **Do** show a shadcn/ui AlertDialog/modal confirmation before any delete API call (IS414 requirement).
 * **Do** use only `async/await` for EF Core DB calls (no synchronous methods).
 * **Do** store all secrets in `.env` (frontend) or Azure App Service env variables (backend)—never hardcode credentials or commit them.
+* **Do** keep `frontend/package-lock.json` committed so Azure Static Web Apps uses `npm ci` and a stable dependency tree.
 * **Do** implement pagination on all list/table views using `page` and `pageSize` query params.
 * **Do** show loading skeletons or spinners for all async states (check `isLoading`).
 * **Do** use shadcn/ui as the base for every form, dialog, button, and table.

@@ -65,6 +65,15 @@ A secure, full-stack case management web application for a nonprofit safehouse s
 |---|---|---|---|
 | GET | `/impact` | Public | Read-only impact dashboard backed by Azure SQL |
 
+### Health (`/api/health`)
+
+| Method | Route | Auth | Description |
+|---|---|---|---|
+| GET | `/` | Public | Readiness check for startup and database connectivity |
+| GET | `/ready` | Public | Alias for readiness check |
+| GET | `/live` | Public | Lightweight liveness check that returns 200 when the process is running |
+| GET | `/full?details=true` | Public | Readiness check with startup checkpoints and diagnostics |
+
 ### Admin Portal (`/api/admin`)
 
 | Method | Route | Auth | Description |
@@ -95,7 +104,7 @@ A secure, full-stack case management web application for a nonprofit safehouse s
 ### Frontend
 ```bash
 cd frontend
-npm install
+npm ci
 npm run dev
 ```
 Runs at `http://localhost:5173`
@@ -154,9 +163,10 @@ Drops and recreates CSV-backed tables. Requires `ConnectionStrings:DefaultConnec
 
 ### Frontend — Azure Static Web Apps
 - Auto-deploys on push to `main` via `.github/workflows/azure-static-web-apps-polite-rock-003bb5b1e.yml`
-- Build: `npm install && npm run build` → `frontend/dist`
+- Build: `npm ci && npm run build` → `frontend/dist`
 - SPA routing handled by `frontend/public/staticwebapp.config.json`
 - `VITE_API_URL` is injected at build time from the GitHub secret
+- `frontend/package-lock.json` is committed so CI uses a stable dependency tree
 
 ### Backend — Azure App Service
 - Auto-deploys on push to `main` (changes to `backend/`) via `.github/workflows/deploy-backend.yml`
@@ -189,6 +199,13 @@ Drops and recreates CSV-backed tables. Requires `ConnectionStrings:DefaultConnec
 | `AllowedOrigins__0` | Frontend URL for CORS (Static Web Apps URL) |
 
 > **Important:** Do NOT set `ASPNETCORE_ENVIRONMENT=Development` in Azure. Development mode sets the auth cookie to `SameSite=Lax`, which breaks cross-origin login between the Static Web App and App Service. Leave it unset (defaults to `Production`).
+
+### Health Checks
+- The frontend health page was removed.
+- Use the backend endpoints directly for probes:
+  - `/api/health/live`
+  - `/api/health/ready`
+  - `/api/health/full?details=true`
 
 ---
 

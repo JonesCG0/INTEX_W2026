@@ -23,6 +23,7 @@ By the end of this setup, we should have:
 - a repeatable Azure SQL seed workflow for the CSV export
 - placeholders for expanded auth, DB migrations, and blob storage
 - a task board and team ownership plan
+- backend health endpoints for liveness, readiness, and detailed diagnostics
 
 ## Current Status
 
@@ -36,6 +37,7 @@ Completed in the current repository:
 - the secure login, sign-up, and admin area
 - the authenticated admin/staff portal dashboard
 - the persisted portal workflows for donors, residents, process recordings, visitations, and reports
+- backend health endpoints for liveness, readiness, and detailed startup diagnostics
 
 ---
 
@@ -81,7 +83,7 @@ Tasks:
 - Remove unnecessary demo code
 - Create a minimal homepage
 - Show app title and environment status
-- Add a button or automatic fetch to call backend health endpoint
+- Add a button or automatic fetch to call the backend readiness endpoint
 - Add clear loading, success, and error UI
 - Keep styling minimal
 
@@ -99,7 +101,7 @@ Suggested prompt for Codex:
 
 Tasks:
 - Create an ASP.NET Core Web API in `backend`
-- Add a `/api/health` endpoint
+- Add `/api/health/live`, `/api/health/ready`, and `/api/health/full` endpoints
 - Add one sample `/api/test` or `/api/message` endpoint returning JSON
 - Enable local CORS for frontend origin
 - Keep `Program.cs` simple
@@ -111,7 +113,7 @@ Minimum result:
 - Frontend can fetch from backend
 
 Suggested prompt for Codex:
-> In the `backend` folder, create a minimal ASP.NET Core Web API with a `/api/health` endpoint and one sample JSON endpoint. Configure simple local CORS for the frontend. Keep the code very clear and avoid extra architecture.
+> In the `backend` folder, create a minimal ASP.NET Core Web API with `/api/health/live`, `/api/health/ready`, and `/api/health/full` endpoints plus one sample JSON endpoint. Configure simple local CORS for the frontend. Keep the code very clear and avoid extra architecture.
 
 ---
 
@@ -121,7 +123,7 @@ Suggested prompt for Codex:
 Tasks:
 - Add frontend env variable for backend base URL
 - Create one small API helper/service file
-- Connect homepage to backend health route
+- Connect the app to the backend readiness route
 - Verify the request succeeds locally
 - Document the local run order
 
@@ -229,6 +231,7 @@ Tasks:
   - how to run backend
   - how to seed Azure SQL
   - how to seed the initial admin user
+  - backend health endpoints and local probe links
   - known TODOs
 - Make sure docs match actual code
 - Remove stale instructions
