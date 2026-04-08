@@ -54,6 +54,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddScoped<CsvDatabaseSeeder>();
 builder.Services.AddScoped<AdminSeeder>();
 builder.Services.AddScoped<AdminPortalStore>();
+builder.Services.AddSingleton<StartupDiagnostics>();
 builder.Services.Configure<AdminSeedOptions>(builder.Configuration.GetSection("AdminSeed"));
 
 builder.Services.AddControllers();
@@ -118,17 +119,27 @@ var app = builder.Build();
 
 if (!string.IsNullOrWhiteSpace(connectionString))
 {
-    using var scope = app.Services.CreateScope();
+    var startupDiagnostics = app.Services.GetRequiredService<StartupDiagnostics>();
 
-    // Auto-apply migrations on startup
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await db.Database.MigrateAsync();
+    try
+    {
+        using var scope = app.Services.CreateScope();
 
-    var portalStore = scope.ServiceProvider.GetRequiredService<AdminPortalStore>();
-    await portalStore.SeedAsync();
+        // Auto-apply migrations on startup
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await db.Database.MigrateAsync();
 
-    var adminSeeder = scope.ServiceProvider.GetRequiredService<AdminSeeder>();
-    await adminSeeder.EnsureAdminAsync();
+        var portalStore = scope.ServiceProvider.GetRequiredService<AdminPortalStore>();
+        await portalStore.SeedAsync();
+
+        var adminSeeder = scope.ServiceProvider.GetRequiredService<AdminSeeder>();
+        await adminSeeder.EnsureAdminAsync();
+    }
+    catch (Exception ex)
+    {
+        startupDiagnostics.Record("database bootstrap", ex);
+        app.Logger.LogError(ex, "Startup bootstrap failed.");
+    }
 }
 else
 {
