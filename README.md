@@ -46,6 +46,7 @@ A secure, full-stack case management web application for a nonprofit safehouse s
 | `/admin/visitations` | Admin only | Visitation records overview |
 | `/admin/users` | Admin only | User management, create/edit/delete/unlock/role changes |
 | `/admin/analytics` | Admin only | Reporting and analytics charts |
+| `/admin/ml-pipelines` | Admin only | Notebook-backed ML pipeline demo, output previews, and Azure ML setup |
 
 ---
 
@@ -198,6 +199,39 @@ Drops and recreates CSV-backed tables. Requires `ConnectionStrings:DefaultConnec
   "AllowedOrigins": ["http://localhost:5173"]
 }
 ```
+
+### ML Pipelines Demo
+
+The repo includes three notebook-backed pipelines under `ml-pipelines/`:
+
+- donor lapse classification
+- reintegration readiness classification
+- social media donation conversion classification
+
+There is also a fourth planned slot in the admin UI for a future case-conference priority pipeline.
+
+The new admin page at `/admin/ml-pipelines` shows:
+
+- the notebook catalog
+- generated CSV snapshots from `ml-pipelines/generated_outputs/` when they are present locally
+- recent run history
+- a setup panel for Azure ML
+
+By default the backend runs in `Demo` mode. To wire Azure ML later, fill the `AzureMl` section in backend configuration:
+
+```json
+{
+  "AzureMl": {
+    "Mode": "AzureMl",
+    "StudioUrl": "https://ml.azure.com/...",
+    "WorkspaceName": "your-workspace",
+    "ResourceGroup": "your-resource-group",
+    "SubscriptionId": "your-subscription-id"
+  }
+}
+```
+
+If you later publish the notebooks as callable Azure ML jobs or endpoints, the backend can be pointed at that workspace and the webapp can keep the same dashboard surface.
 
 ---
 

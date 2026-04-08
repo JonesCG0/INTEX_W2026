@@ -7,6 +7,7 @@ import {
   IconChartBar, 
   IconUserPlus,
   IconCalendar,
+  IconActivity,
   IconChevronLeft, 
   IconChevronRight, 
   IconLogout 
@@ -24,6 +25,7 @@ const navItems = [
   { to: "/admin/users", icon: IconUserPlus, label: "Users" },
   { to: "/admin/visitations", icon: IconCalendar, label: "Visitations" },
   { to: "/admin/analytics", icon: IconChartBar, label: "Analytics" },
+  { to: "/admin/ml-pipelines", icon: IconActivity, label: "ML Pipelines" },
 ];
 
 export default function AdminSidebar() {

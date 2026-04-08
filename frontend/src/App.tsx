@@ -14,6 +14,7 @@ import Visitations from './pages/admin/Visitations';
 import Donors from './pages/admin/Donors';
 import Users from './pages/admin/Users';
 import Analytics from './pages/admin/Analytics';
+import MlPipelines from './pages/admin/MlPipelines';
 import Privacy from './pages/Privacy';
 import DonorDashboard from './pages/DonorDashboard';
 import SignUp from './pages/SignUp';
@@ -90,6 +91,7 @@ const AuthenticatedApp = () => {
         <Route path="donors" element={<Donors />} />
         <Route path="users" element={<Users />} />
         <Route path="analytics" element={<Analytics />} />
+        <Route path="ml-pipelines" element={<MlPipelines />} />
       </Route>
       
       <Route path="*" element={<PageNotFound />} />

@@ -55,9 +55,11 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddScoped<CsvDatabaseSeeder>();
 builder.Services.AddScoped<AdminSeeder>();
 builder.Services.AddScoped<AdminPortalStore>();
+builder.Services.AddSingleton<MlPipelineStore>();
 builder.Services.AddScoped<AuthTokenService>();
 builder.Services.AddSingleton<StartupDiagnostics>();
 builder.Services.Configure<AdminSeedOptions>(builder.Configuration.GetSection("AdminSeed"));
+builder.Services.Configure<AzureMlOptions>(builder.Configuration.GetSection("AzureMl"));
 builder.Services.AddDataProtection();
 
 builder.Services.AddControllers();
