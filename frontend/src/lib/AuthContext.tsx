@@ -1,8 +1,6 @@
-
-
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
-import { appParams } from '@/lib/app-params';
+const API_URL = import.meta.env.VITE_API_URL ?? '';
 
 interface AuthContextType {
   user: any;
@@ -36,7 +34,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setIsLoadingAuth(true);
       
       // Call ASP.NET AuthController to get current user info (via Cookie)
-      const response = await fetch('/api/auth/me');
+      const response = await fetch(`${API_URL}/api/auth/me`, { credentials: 'include' });
       
       if (response.ok) {
         const data = await response.json();
@@ -71,7 +69,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async (shouldRedirect = true) => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await fetch(`${API_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
       setUser(null);
       setIsAuthenticated(false);
       if (shouldRedirect) {

@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { useAuth } from "@/lib/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
+import { API_BASE } from "@/lib/api-base";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -23,11 +24,10 @@ export default function Login() {
     
     try {
       // Direct call to ASP.NET AuthController
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch(`${API_BASE}/api/auth/login`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
       });
 
@@ -39,7 +39,7 @@ export default function Login() {
         await checkAppState();
         
         // Redirect based on role
-        if (data.primaryRole === 'Admin') {
+        if (data.role === 'Admin') {
           navigate("/admin");
         } else {
           navigate("/donor");

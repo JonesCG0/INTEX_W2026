@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE } from '@/lib/api-base';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -50,12 +51,12 @@ export default function Recordings() {
 
   async function load() {
     try {
-      const response = await fetch(`/api/admin/portal/residents/${residentId}/recordings`);
+      const response = await fetch(`${API_BASE}/api/admin/portal/residents/${residentId}/recordings`, { credentials: 'include' });
       if (response.ok) {
         const data = await response.json();
         setRecordings(data.recordings || []);
         // We'll mock the resident header for now or fetch admin portal and find them
-        const portalResp = await fetch('/api/admin/portal');
+        const portalResp = await fetch(`${API_BASE}/api/admin/portal`, { credentials: 'include' });
         if (portalResp.ok) {
           const portalData = await portalResp.json();
           const r = portalData.residents?.find((res: any) => res.id?.toString() === residentId);
@@ -79,7 +80,7 @@ export default function Recordings() {
         ...form,
         RecordedAt: new Date(form.recordedAt).toISOString()
       };
-      const response = await fetch(`/api/admin/portal/residents/${residentId}/recordings`, {
+      const response = await fetch(`${API_BASE}/api/admin/portal/residents/${residentId}/recordings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

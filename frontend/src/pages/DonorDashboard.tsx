@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE } from '@/lib/api-base';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { motion } from 'framer-motion';
@@ -45,7 +46,7 @@ export default function DonorDashboard() {
   useEffect(() => {
     async function load() {
       try {
-        const response = await fetch('/api/DonorPortal/dashboard');
+        const response = await fetch(`${API_BASE}/api/DonorPortal/dashboard`, { credentials: 'include' });
         if (response.ok) {
           const result = await response.json();
           setData(result);

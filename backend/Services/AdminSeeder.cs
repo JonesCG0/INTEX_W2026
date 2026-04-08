@@ -1,3 +1,4 @@
+using backend.Data;
 using backend.Models;
 using backend.Models.Auth;
 using backend.Models.AdminPortal;
@@ -9,7 +10,8 @@ namespace backend.Services;
 public sealed class AdminSeeder(
     UserManager<AppUser> userManager,
     RoleManager<IdentityRole<int>> roleManager,
-    IOptions<AdminSeedOptions> options)
+    IOptions<AdminSeedOptions> options,
+    AppDbContext db)
 {
     private const string AdminRole = "Admin";
 
@@ -83,45 +85,41 @@ public sealed class AdminSeeder(
             await userManager.AddToRoleAsync(donor, "Donor");
 
             // Seed the physical donor record in the portal table
-            using var scope = userManager.GetType().GetProperty("Context")?.GetValue(userManager) as backend.Data.AppDbContext;
-            if (scope != null)
+            var portalDonor = new PortalDonor
             {
-                var portalDonor = new PortalDonor
-                {
-                    DisplayName = "Project Haven Donor",
-                    LinkedEmail = donorEmail,
-                    DonorType = "Individual",
-                    Status = "Active",
-                    PreferredChannel = "Website",
-                    StewardshipLead = "Staff Member",
-                    TotalGivenPhp = 2500000m,
-                    LastDonationAt = DateTime.UtcNow.AddDays(-14)
-                };
-                scope.PortalDonors.Add(portalDonor);
-                await scope.SaveChangesAsync(cancellationToken);
+                DisplayName = "Project Haven Donor",
+                LinkedEmail = donorEmail,
+                DonorType = "Individual",
+                Status = "Active",
+                PreferredChannel = "Website",
+                StewardshipLead = "Staff Member",
+                TotalGivenPhp = 2500000m,
+                LastDonationAt = DateTime.UtcNow.AddDays(-14)
+            };
+            db.PortalDonors.Add(portalDonor);
+            await db.SaveChangesAsync(cancellationToken);
 
-                // Seed some contribution history
-                scope.PortalContributions.AddRange(new List<PortalContribution>
+            db.PortalContributions.AddRange(
+                new PortalContribution
                 {
-                    new() { 
-                        DonorId = portalDonor.Id, 
-                        ContributionType = "Monetary", 
-                        AmountPhp = 1000000m, 
-                        ProgramArea = "Safehouse Ops", 
-                        Description = "Annual major gift", 
-                        ContributionAt = DateTime.UtcNow.AddMonths(-6) 
-                    },
-                    new() { 
-                        DonorId = portalDonor.Id, 
-                        ContributionType = "Monetary", 
-                        AmountPhp = 1500000m, 
-                        ProgramArea = "Education Funds", 
-                        Description = "Scholarship endowment", 
-                        ContributionAt = DateTime.UtcNow.AddDays(-14) 
-                    }
-                });
-                await scope.SaveChangesAsync(cancellationToken);
-            }
+                    DonorId = portalDonor.Id,
+                    ContributionType = "Monetary",
+                    AmountPhp = 1000000m,
+                    ProgramArea = "Safehouse Ops",
+                    Description = "Annual major gift",
+                    ContributionAt = DateTime.UtcNow.AddMonths(-6)
+                },
+                new PortalContribution
+                {
+                    DonorId = portalDonor.Id,
+                    ContributionType = "Monetary",
+                    AmountPhp = 1500000m,
+                    ProgramArea = "Education Funds",
+                    Description = "Scholarship endowment",
+                    ContributionAt = DateTime.UtcNow.AddDays(-14)
+                }
+            );
+            await db.SaveChangesAsync(cancellationToken);
         }
     }
 }

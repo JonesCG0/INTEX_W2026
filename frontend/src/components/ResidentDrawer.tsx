@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "react-hot-toast";
+import { API_BASE } from '@/lib/api-base';
 
 const steps = ["Core Info", "Case Assessment", "Assignment"];
 
@@ -64,9 +65,11 @@ export default function ResidentDrawer({ open, onOpenChange, resident, onSave }:
 
   async function handleSubmit() {
     try {
-      const url = resident ? `/api/admin/portal/residents/${resident.Id}` : '/api/admin/portal/residents';
+      const url = resident
+        ? `${API_BASE}/api/admin/portal/residents/${resident.Id}`
+        : `${API_BASE}/api/admin/portal/residents`;
       const method = resident ? 'PUT' : 'POST';
-      
+
       const payload = {
         ...form,
         NextReviewAt: form.NextReviewAt ? new Date(form.NextReviewAt).toISOString() : null
@@ -75,6 +78,7 @@ export default function ResidentDrawer({ open, onOpenChange, resident, onSave }:
       const response = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify(payload)
       });
 

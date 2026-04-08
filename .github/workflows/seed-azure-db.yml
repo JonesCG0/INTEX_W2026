@@ -22,4 +22,4 @@ jobs:
           AdminSeed__Email: ${{ secrets.ADMIN_SEED_EMAIL }}
           AdminSeed__Password: ${{ secrets.ADMIN_SEED_PASSWORD }}
           AdminSeed__DisplayName: ${{ secrets.ADMIN_SEED_DISPLAY_NAME }}
-        run: dotnet run -- --seed-csv ../lighthouse_csv_v7/lighthouse_csv_v7
+        run: dotnet run -- --seed-csv ../seed_data

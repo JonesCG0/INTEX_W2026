@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE } from '@/lib/api-base';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -49,7 +50,7 @@ export default function Donors() {
 
   async function load() {
     try {
-      const response = await fetch('/api/admin/portal');
+      const response = await fetch(`${API_BASE}/api/admin/portal`, { credentials: 'include' });
       if (response.ok) {
         const data = await response.json();
         setDonors(data.donors || []);
@@ -74,7 +75,7 @@ export default function Donors() {
   async function handleSubmit() {
     if (!selectedDonor) return;
     try {
-      const response = await fetch(`/api/admin/portal/donors/${selectedDonor.id}`, {
+      const response = await fetch(`${API_BASE}/api/admin/portal/donors/${selectedDonor.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form)
@@ -97,7 +98,7 @@ export default function Donors() {
         ...contributionForm,
         ContributionAt: new Date(contributionForm.contributionAt).toISOString()
       };
-      const response = await fetch(`/api/admin/portal/donors/${selectedDonor.id}/contributions`, {
+      const response = await fetch(`${API_BASE}/api/admin/portal/donors/${selectedDonor.id}/contributions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

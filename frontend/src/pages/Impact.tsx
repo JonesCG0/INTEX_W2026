@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE } from '@/lib/api-base';
 import PublicNav from '../components/PublicNav';
 import PublicFooter from '../components/PublicFooter';
 import ImpactStatCard from '../components/ImpactStatCard';
@@ -46,7 +47,7 @@ export default function Impact() {
   useEffect(() => {
     async function fetchImpact() {
       try {
-        const response = await fetch('/api/public/impact');
+        const response = await fetch(`${API_BASE}/api/public/impact`);
         if (response.ok) {
           const result = await response.json();
           setData(result);

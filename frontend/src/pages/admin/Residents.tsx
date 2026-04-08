@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE } from '@/lib/api-base';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -45,7 +46,7 @@ export default function Residents() {
 
   async function loadResidents() {
     try {
-      const response = await fetch('/api/admin/portal');
+      const response = await fetch(`${API_BASE}/api/admin/portal`, { credentials: 'include' });
       if (response.ok) {
         const data = await response.json();
         setResidents(data.residents || []);
@@ -68,7 +69,7 @@ export default function Residents() {
   async function handleDelete() {
     if (!deleteTarget) return;
     try {
-      const response = await fetch(`/api/admin/portal/residents/${deleteTarget.id}`, {
+      const response = await fetch(`${API_BASE}/api/admin/portal/residents/${deleteTarget.id}`, {
         method: 'DELETE'
       });
       if (response.ok) {

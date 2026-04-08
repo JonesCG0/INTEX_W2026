@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { API_BASE } from '@/lib/api-base';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion } from 'framer-motion';
 import { ResponsivePie } from '@nivo/pie';
@@ -22,7 +23,7 @@ export default function Analytics() {
   useEffect(() => {
     async function load() {
       try {
-        const response = await fetch('/api/admin/portal');
+        const response = await fetch(`${API_BASE}/api/admin/portal`, { credentials: 'include' });
         if (response.ok) {
           const result = await response.json();
           setData(result);

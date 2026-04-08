@@ -70,7 +70,25 @@ public sealed class CsvDatabaseSeeder(AppDbContext db)
 
     private static string ResolveCsvDirectory(string csvPath)
     {
-        return @"C:\Users\koapo\OneDrive\Desktop\JuniorCore\INTEX 2\seed_data";
+        var fullPath = Path.GetFullPath(csvPath, Directory.GetCurrentDirectory());
+
+        if (Directory.Exists(fullPath) && Directory.GetFiles(fullPath, "*.csv", System.IO.SearchOption.TopDirectoryOnly).Length > 0)
+        {
+            return fullPath;
+        }
+
+        if (Directory.Exists(fullPath))
+        {
+            var nestedCsvDirectory = Directory.GetDirectories(fullPath)
+                .FirstOrDefault(directory => Directory.GetFiles(directory, "*.csv", System.IO.SearchOption.TopDirectoryOnly).Length > 0);
+
+            if (nestedCsvDirectory is not null)
+            {
+                return nestedCsvDirectory;
+            }
+        }
+
+        throw new DirectoryNotFoundException($"Could not find a CSV directory at '{csvPath}'.");
     }
 
     private static CsvFile ReadCsv(string filePath)

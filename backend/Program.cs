@@ -9,16 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 builder.Services.AddDbContext<AppDbContext>(options =>
-{
-    if (connectionString?.Contains(".db") == true || connectionString?.Contains("DataSource=") == true || connectionString?.Contains("Data Source=") == true)
-    {
-        options.UseSqlite(connectionString);
-    }
-    else
-    {
-        options.UseSqlServer(connectionString);
-    }
-});
+    options.UseSqlServer(connectionString));
 
 builder.Services.AddIdentity<AppUser, IdentityRole<int>>(options =>
 {
