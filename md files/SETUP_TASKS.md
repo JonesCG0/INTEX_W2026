@@ -302,6 +302,10 @@ Use this checklist before the week starts:
 - [x] Admin user management page (/admin/users)
 - [x] Admin database query page (/admin/query)
 - [x] Auth-aware home page nav
+- [x] Admin portal — residents, recordings, donors, analytics pages live and deployed
+- [x] Donor dashboard built and deployed
+- [x] SPA routing fallback configured for Azure Static Web Apps
+- [x] VITE_API_URL injected at build time via GitHub Actions secret
 - [ ] Blob storage placeholder documented
 - [ ] Trello board created
 - [ ] Scrum roles assigned

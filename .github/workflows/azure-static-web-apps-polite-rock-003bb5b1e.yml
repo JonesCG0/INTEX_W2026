@@ -27,7 +27,7 @@ jobs:
         env:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
         run: |
-          npm install
+          npm ci
           chmod +x node_modules/.bin/*
           npm run build
 

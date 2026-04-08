@@ -34,9 +34,9 @@ The application supports three user types:
 ### Project Status
 
 - **Maturity:** MVP with production intentions.
-- **Key technologies:** .NET 10, C#, React 18, TypeScript (strict), Vite, Tailwind CSS, shadcn/ui, React Hook Form, Zod, Recharts, React Router v6, Entity Framework Core, cookie-based auth, Azure SQL Database.
-- **Key technologies:** .NET 10, C#, React 18, TypeScript (strict), Vite, Tailwind CSS, shadcn/ui, React Hook Form, Zod, Recharts, React Router v6, Entity Framework Core, cookie-based auth, Azure SQL Database.
-- **Monorepo:** Yes – `/client` and `/server` as two first-level directories.
+- **Key technologies:** .NET 10, C#, React 19, TypeScript (strict), Vite, Tailwind CSS, shadcn/ui, Framer Motion, Nivo charts, Tabler Icons, Zustand (theme only), React Router v6, Entity Framework Core, cookie-based auth, Azure SQL Database.
+- **Key technologies:** .NET 10, C#, React 19, TypeScript (strict), Vite, Tailwind CSS, shadcn/ui, Framer Motion, Nivo charts, Tabler Icons, Zustand (theme only), React Router v6, Entity Framework Core, cookie-based auth, Azure SQL Database.
+- **Monorepo:** Yes – `/frontend` and `/backend` as two first-level directories.
 
 ---
 
@@ -56,7 +56,7 @@ The application supports three user types:
 - **Hosting:** Microsoft Azure (Azure App Service).
 - **UI:** shadcn/ui (as base for all interactive elements) + Tailwind CSS (utility extension; never use inline styles).
 - **State management:** React Query (TanStack Query) for all server state; React Hook Form for form state. Do not use Redux, Zustand, or other global stores.
-- **Charting:** Recharts for all data visualization.
+- **Charting:** Nivo for all data visualization.
 - **Routing:** React Router v6. All protected/admin/donor routes use wrapper components for auth checks.
 - **Forms:** React Hook Form + Zod for all forms; every form must be validated via a Zod schema.
 
@@ -112,9 +112,9 @@ The application supports three user types:
 ### Component Structure
 
 - All React components must be functional components using hooks only; do not use React class components.
-- Organize feature components under `/client/src/components/[feature]/`.
-- Page components live in `/client/src/pages/`.
-- Shared/reusable components (modal, table, button) go in `/client/src/components/ui/`.
+- Organize feature components under `/frontend/src/components/[feature]/`.
+- Page components live in `/frontend/src/pages/`.
+- Shared/reusable components (modal, table, button) go in `/frontend/src/components/ui/`.
 - For any component with more than 2 props, define a named `Props` interface immediately above the component.
   - _Example:_
 
@@ -131,7 +131,7 @@ The application supports three user types:
 
 * **React Query** is mandatory for all data-fetching and mutations.
 * Never use `useEffect` for data-fetching.
-* All server requests must go through `/client/src/lib/api-client.ts`.
+* All server requests must go through `/frontend/src/lib/api-base.ts`.
 * Handle both loading and error states explicitly in every useQuery/useMutation instance.
 * Do not access data fields before confirming `!isLoading && !isError`.
 
@@ -143,7 +143,7 @@ The application supports three user types:
 
 ### API Routes (Backend)
 
-* Place all controllers in `/server/Controllers/`.
+* Place all controllers in `/backend/Controllers/`.
 * Every controller:
   * `[ApiController]` and `[Route("api/[controller]")]` attributes.
   * All methods must be async, returning `Task<IActionResult>` or `Task<ActionResult<T>>`, with `async/await`.
@@ -181,7 +181,7 @@ The application supports three user types:
 * **Don't** use `any` type ever.
 * **Don't** use `useEffect` for data fetching—use React Query hooks.
 * **Don't** use inline styles—use Tailwind CSS classes.
-* **Don't** place business logic in React components—move to `/client/src/lib/` or backend services.
+* **Don't** place business logic in React components—move to `/frontend/src/lib/` or backend services.
 * **Don't** install new dependencies (npm, NuGet) without explicit approval.
 * **Don't** expose PII (personally identifiable info) in public endpoints/pages; public responses should be anonymized.
 * **Don't** return EF Core entity models in API responses; map to DTOs.

@@ -229,15 +229,14 @@ GitHub Actions
 - [x] Create Azure App Service resource (INTEXW2026)
 - [x] Set up GitHub Actions workflow for frontend
 - [x] Set up GitHub Actions workflow for backend
-- [x] Add GitHub Actions secrets (`AZURE_STATIC_WEB_APPS_API_TOKEN_*`, `AZURE_APP_SERVICE_NAME`, `AZURE_PUBLISH_PROFILE`)
+- [x] Add GitHub Actions secrets (`AZURE_STATIC_WEB_APPS_API_TOKEN_*`, `AZURE_APP_SERVICE_NAME`, `AZURE_PUBLISH_PROFILE`, `VITE_API_URL`)
 - [x] Set CORS on backend to allow Static Web Apps domain
 - [x] Verify frontend can call backend API in deployed environment
-- [ ] Create or confirm Azure SQL Database and App Service connection string
-- [ ] Seed the Azure SQL database with the `lighthouse_csv_v7` export
+- [x] Azure SQL Database connected and App Service connection string configured
+- [x] Seed the Azure SQL database with CSV data via `seed-azure-db.yml` workflow (uses `seed_data/` folder)
 - [x] Add cookie-based login and admin bootstrap support
 - [x] Switch to ASP.NET Identity (IdentityUser, IdentityRole, UserManager, SignInManager)
 - [x] EF Core migrations created and auto-applied on startup
-- [x] Azure SQL seeded with CSV data via `seed-azure-db.yml` workflow
 - [x] Login page built and deployed (frontend + backend)
 - [x] Login working end-to-end in production
 - [x] Sign-up page built (creates Donor accounts)
@@ -245,8 +244,12 @@ GitHub Actions
 - [x] Admin database query page (SELECT only, 500 row cap)
 - [x] Home page auth-aware nav (greets user, shows admin links, logout)
 - [x] ProtectedRoute component for admin-gated routes
-- [x] Fixed full-screen layout (removed Vite boilerplate black sidebars)
+- [x] SPA routing fallback (`staticwebapp.config.json`) so direct URL navigation works on Azure SWA
+- [x] `VITE_API_URL` injected at build time via GitHub Actions secret
+- [x] Admin portal — residents, recordings, donors, analytics pages live
+- [x] Donor dashboard live
 - [ ] Set up Azure Blob Storage for file uploads
+- [ ] CSP headers hardening
 
 ---
 

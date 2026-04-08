@@ -1,6 +1,6 @@
 # Project Haven
 
-A secure, full-stack case management web application for a nonprofit safehouse supporting abuse and trafficking survivors. The current build includes the public home page, public impact dashboard, privacy policy, cookie-consent flow, and a secure authenticated admin area.
+A secure, full-stack case management web application for a nonprofit safehouse supporting abuse and trafficking survivors. The current build includes the public home page, public impact dashboard, privacy policy, cookie-consent flow, and a fully operational authenticated admin portal.
 
 ---
 
@@ -36,8 +36,13 @@ A secure, full-stack case management web application for a nonprofit safehouse s
 | `/privacy` | Public | Privacy policy and cookie-consent information |
 | `/login` | Public | Login form |
 | `/signup` | Public | Registration (creates Donor account) |
-| `/admin` | Admin only | Admin portal entry point — redirects to the authenticated staff dashboard |
-| `/admin/dashboard` | Admin only | Admin / Staff dashboard — operational overview for residents, donors, recordings, visitation, and reports |
+| `/donor` | Donor only | Donor dashboard — contribution history and impact view |
+| `/admin` | Admin only | Admin portal entry point — redirects to dashboard |
+| `/admin/dashboard` | Admin only | Operational overview — residents, donors, recordings, reports |
+| `/admin/residents` | Admin only | Resident care management — enroll, edit, delete, track progress |
+| `/admin/residents/:id/recordings` | Admin only | Clinical session timeline for a specific resident |
+| `/admin/donors` | Admin only | Donor stewardship — profiles, contribution history, record gifts |
+| `/admin/analytics` | Admin only | Reporting and analytics charts |
 | `/admin/users` | Admin only | User management — change roles, delete, unlock |
 | `/admin/query` | Admin only | SQL query interface (SELECT only) |
 
@@ -58,20 +63,20 @@ A secure, full-stack case management web application for a nonprofit safehouse s
 
 | Method | Route | Auth | Description |
 |---|---|---|---|
-| GET | `/impact` | Public | Read-only impact dashboard backed by the connected SQL database |
+| GET | `/impact` | Public | Read-only impact dashboard backed by Azure SQL |
 
-### Admin (`/api/admin`)
+### Admin Portal (`/api/admin`)
 
 | Method | Route | Auth | Description |
 |---|---|---|---|
-| GET | `/portal` | Admin | Load the authenticated staff dashboard overview |
-| PUT | `/portal/donors/{id}` | Admin | Update donor records in the portal |
-| POST | `/portal/contributions` | Admin | Add a contribution record |
-| POST | `/portal/residents` | Admin | Add a resident / caseload record |
-| PUT | `/portal/residents/{id}` | Admin | Update a resident / caseload record |
-| DELETE | `/portal/residents/{id}` | Admin | Delete a resident / caseload record |
-| POST | `/portal/recordings` | Admin | Add a process recording |
-| POST | `/portal/visitations` | Admin | Add a home visitation or case conference record |
+| GET | `/portal` | Admin | Load dashboard overview (residents, donors, metrics, alerts, activity) |
+| PUT | `/portal/donors/{id}` | Admin | Update donor profile |
+| POST | `/portal/donors/{id}/contributions` | Admin | Record a contribution for a donor |
+| POST | `/portal/residents` | Admin | Enroll a new resident |
+| PUT | `/portal/residents/{id}` | Admin | Update a resident record |
+| DELETE | `/portal/residents/{id}` | Admin | Remove a resident record |
+| GET | `/portal/residents/{id}/recordings` | Admin | List clinical session recordings for a resident |
+| POST | `/portal/residents/{id}/recordings` | Admin | Add a clinical session recording |
 | GET | `/users` | Admin | List all users with roles |
 | PUT | `/users/{id}/role` | Admin | Change a user's role |
 | DELETE | `/users/{id}` | Admin | Delete a user |
@@ -95,6 +100,11 @@ npm run dev
 ```
 Runs at `http://localhost:5173`
 
+Create `frontend/.env`:
+```
+VITE_API_URL=http://localhost:5262
+```
+
 ### Backend
 ```bash
 cd backend
@@ -111,6 +121,7 @@ dotnet user-secrets set "ConnectionStrings:DefaultConnection" "YOUR_CONNECTION_S
 On startup the backend will:
 1. Auto-apply EF Core migrations
 2. Seed the admin account if `AdminSeed__*` env vars are set
+3. Seed portal starter data (staff records, donors, residents)
 
 ### Admin Seed Account
 ```bash
@@ -126,18 +137,11 @@ Passwords must be at least **12 characters** and include uppercase, lowercase, d
 ### Seed the database from CSV export
 ```bash
 cd backend
-dotnet run -- --seed-csv ../lighthouse_csv_v7/lighthouse_csv_v7
+dotnet run -- --seed-csv ../seed_data
 ```
 Drops and recreates CSV-backed tables. Requires `ConnectionStrings:DefaultConnection` to be set.
 
-### Environment Variables
-
-**Frontend** — create `frontend/.env`:
-```
-VITE_API_URL=http://localhost:5262
-```
-
-**Backend** — allowed CORS origins in `appsettings.Development.json`:
+### Backend allowed CORS origins (`appsettings.Development.json`):
 ```json
 {
   "AllowedOrigins": ["http://localhost:5173"]
@@ -151,18 +155,18 @@ VITE_API_URL=http://localhost:5262
 ### Frontend — Azure Static Web Apps
 - Auto-deploys on push to `main` via `.github/workflows/azure-static-web-apps-polite-rock-003bb5b1e.yml`
 - Build: `npm install && npm run build` → `frontend/dist`
-- Public routes include `/`, `/impact`, `/privacy`, `/login`, and `/signup`
-- Authenticated admin routes include `/admin`, `/admin/dashboard`, `/admin/users`, and `/admin/query`
+- SPA routing handled by `frontend/public/staticwebapp.config.json`
+- `VITE_API_URL` is injected at build time from the GitHub secret
 
 ### Backend — Azure App Service
 - Auto-deploys on push to `main` (changes to `backend/`) via `.github/workflows/deploy-backend.yml`
 - EF Core migrations run automatically on startup
-- The backend also seeds the admin portal tables and starter staff records after migrations complete
+- Admin portal seed data is applied after migrations
 
 ### Azure SQL Seed Workflow
 - Manual workflow: `.github/workflows/seed-azure-db.yml`
-- Runs EF migrations then loads all CSV files into Azure SQL
-- Drops and recreates CSV-backed tables — use only for a fresh seed
+- Runs EF migrations then loads all CSV files from `seed_data/` into Azure SQL
+- Drops and recreates CSV-backed tables — use only for a full re-seed
 
 ### Required GitHub Secrets
 
@@ -172,6 +176,7 @@ VITE_API_URL=http://localhost:5262
 | `AZURE_APP_SERVICE_NAME` | Backend App Service name (`INTEXW2026`) |
 | `AZURE_PUBLISH_PROFILE` | Backend publish credentials |
 | `AZURE_SQL_CONNECTION_STRING` | Azure SQL connection string for CSV seed workflow |
+| `VITE_API_URL` | Backend API base URL injected into the frontend build |
 
 ### Required Azure App Service Environment Variables
 
@@ -192,29 +197,41 @@ VITE_API_URL=http://localhost:5262
 ```
 /
 ├── frontend/
+│   ├── public/
+│   │   └── staticwebapp.config.json   # SPA routing fallback for Azure SWA
 │   └── src/
-│       ├── components/        # Shared components (ProtectedRoute)
-│       ├── pages/             # Route-level pages
-│       │   ├── HomePage.tsx   # Auth-aware home with nav
-│       │   ├── LoginPage.tsx
-│       │   ├── SignUpPage.tsx
-│       │   ├── AdminPage.tsx  # User management (Admin only)
-│       │   └── QueryPage.tsx  # DB query interface (Admin only)
-│       ├── styles/            # Shared CSS
-│       └── api.ts             # All backend API calls + types
+│       ├── components/                # Shared components (ResidentDrawer, DeleteConfirmDialog, etc.)
+│       │   └── ui/                    # shadcn/ui base components
+│       ├── lib/
+│       │   ├── api-base.ts            # VITE_API_URL export
+│       │   └── AuthContext.tsx        # Auth state and session management
+│       └── pages/
+│           ├── HomePage.tsx
+│           ├── Login.tsx
+│           ├── SignUp.tsx
+│           ├── Impact.tsx             # Public impact dashboard
+│           ├── DonorDashboard.tsx     # Donor-only view
+│           └── admin/
+│               ├── Dashboard.tsx      # Staff operational overview
+│               ├── Residents.tsx      # Resident care management
+│               ├── Recordings.tsx     # Clinical session timeline
+│               ├── Donors.tsx         # Donor stewardship
+│               ├── Analytics.tsx      # Reports and charts
+│               ├── Users.tsx          # User management
+│               └── Query.tsx          # SQL query interface
 ├── backend/
-│   ├── Controllers/           # AuthController, AdminController, HealthController
-│   ├── Data/                  # AppDbContext + EF migrations
+│   ├── Controllers/                   # AuthController, AdminController, AdminPortalController, PublicController
+│   ├── Data/                          # AppDbContext
+│   ├── Migrations/                    # EF Core SQL Server migrations
 │   ├── Models/
-│   │   ├── AppUser.cs         # IdentityUser<int> with DisplayName
-│   │   ├── Auth/              # DTOs: Login, Register, CurrentUser, AuthResponse
-│   │   └── Admin/             # DTOs: UserSummary, ChangeRole, QueryRequest
-│   │   └── AdminPortal/       # Portal entities + DTOs for donors, residents, recordings, visitations
-│   ├── Services/              # AdminSeeder, AdminPortalStore, CsvDatabaseSeeder
-│   ├── Controllers/           # AuthController, AdminController, AdminPortalController, HealthController
-│   └── Program.cs             # Identity, CORS, cookie auth, auto-migrate
-├── md files/                  # Project docs (PRD, collaboration notes, setup tasks, design specs)
-├── .github/workflows/         # CI/CD pipelines
+│   │   ├── AppUser.cs
+│   │   ├── Auth/                      # Login, Register, CurrentUser, AuthResponse DTOs
+│   │   └── AdminPortal/               # Portal entities and DTOs
+│   ├── Services/                      # AdminSeeder, AdminPortalStore, CsvDatabaseSeeder
+│   └── Program.cs                     # Identity, CORS, cookie auth, auto-migrate
+├── seed_data/                         # CSV files for Azure SQL seeding
+├── md files/                          # Project docs (PRD, collaboration notes, design specs)
+├── .github/workflows/                 # CI/CD pipelines
 └── README.md
 ```
 
@@ -222,11 +239,12 @@ VITE_API_URL=http://localhost:5262
 
 ## TODOs
 
-- [x] Admin/staff portal dashboard with persisted donor, resident, recording, visitation, and report workflows
-- [ ] EF Core typed entity models for CSV-seeded business tables
-- [ ] Donor dashboard — donation history, anonymized impact view
+- [x] Admin/staff portal with donors, residents, recordings, visitations, and report workflows
+- [x] Donor dashboard — contribution history and anonymized impact view
 - [x] Privacy policy page
 - [x] GDPR-style cookie consent banner
+- [x] Static image hosting
+- [ ] EF Core typed entity models for CSV-seeded business tables
 - [ ] CSP headers and additional privacy hardening
-- [x] Static image hosting — drop images in `frontend/public/images/`, reference as `/images/filename.jpg`
 - [ ] Lighthouse accessibility audit (target ≥90%)
+- [ ] Azure Blob Storage for file uploads
