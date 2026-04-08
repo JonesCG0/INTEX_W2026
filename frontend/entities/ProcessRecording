@@ -1,0 +1,60 @@
+{
+  "name": "ProcessRecording",
+  "type": "object",
+  "properties": {
+    "resident_id": {
+      "type": "string",
+      "title": "Resident ID"
+    },
+    "session_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Session Date"
+    },
+    "staff_name": {
+      "type": "string",
+      "title": "Staff Name"
+    },
+    "session_type": {
+      "type": "string",
+      "title": "Session Type",
+      "enum": [
+        "Intake",
+        "Individual Counseling",
+        "Group Session",
+        "Family Meeting",
+        "Crisis Intervention",
+        "Discharge Planning"
+      ]
+    },
+    "emotional_state": {
+      "type": "string",
+      "title": "Emotional State",
+      "enum": [
+        "Calm",
+        "Anxious",
+        "Distressed",
+        "Hopeful",
+        "Withdrawn",
+        "Agitated"
+      ]
+    },
+    "summary": {
+      "type": "string",
+      "title": "Summary"
+    },
+    "interventions": {
+      "type": "string",
+      "title": "Interventions"
+    },
+    "follow_up": {
+      "type": "string",
+      "title": "Follow Up"
+    }
+  },
+  "required": [
+    "resident_id",
+    "session_date",
+    "session_type"
+  ]
+}

@@ -1,0 +1,112 @@
+
+
+import React, { createContext, useState, useContext, useEffect } from 'react';
+
+import { appParams } from '@/lib/app-params';
+
+interface AuthContextType {
+  user: any;
+  isAuthenticated: boolean;
+  isLoadingAuth: boolean;
+  isLoadingPublicSettings: boolean;
+  authError: any;
+  appPublicSettings: any;
+  logout: (shouldRedirect?: boolean) => void;
+  navigateToLogin: () => void;
+  checkAppState: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<any>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoadingAuth, setIsLoadingAuth] = useState(true);
+  const [isLoadingPublicSettings, setIsLoadingPublicSettings] = useState(true);
+  const [authError, setAuthError] = useState<any>(null);
+  const [appPublicSettings, setAppPublicSettings] = useState(null);
+
+  useEffect(() => {
+    checkAppState();
+  }, []);
+
+  const checkAppState = async () => {
+    try {
+      setIsLoadingPublicSettings(true);
+      setIsLoadingAuth(true);
+      
+      // Call ASP.NET AuthController to get current user info (via Cookie)
+      const response = await fetch('/api/auth/me');
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.isAuthenticated) {
+          setUser({
+            email: data.email,
+            full_name: data.displayName,
+            role: data.role
+          });
+          setIsAuthenticated(true);
+        } else {
+          setUser(null);
+          setIsAuthenticated(false);
+        }
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+      }
+      
+      setIsLoadingPublicSettings(false);
+      setIsLoadingAuth(false);
+    } catch (error: any) {
+      console.error('App state check failed:', error);
+      setAuthError({
+        type: 'unknown',
+        message: error.message || 'Failed to load session'
+      });
+      setIsLoadingPublicSettings(false);
+      setIsLoadingAuth(false);
+    }
+  };
+
+  const logout = async (shouldRedirect = true) => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      setUser(null);
+      setIsAuthenticated(false);
+      if (shouldRedirect) {
+        window.location.href = '/';
+      }
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
+  const navigateToLogin = () => {
+    window.location.href = '/login';
+  };
+
+  return (
+    <AuthContext.Provider value={{ 
+      user, 
+      isAuthenticated, 
+      isLoadingAuth,
+      isLoadingPublicSettings,
+      authError,
+      appPublicSettings,
+      logout,
+      navigateToLogin,
+      checkAppState
+    }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};

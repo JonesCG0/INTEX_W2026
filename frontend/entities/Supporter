@@ -1,0 +1,57 @@
+{
+  "name": "Supporter",
+  "type": "object",
+  "properties": {
+    "display_name": {
+      "type": "string",
+      "title": "Display Name"
+    },
+    "supporter_type": {
+      "type": "string",
+      "title": "Supporter Type",
+      "enum": [
+        "Individual",
+        "Foundation",
+        "Corporate",
+        "Government",
+        "Tribal Organization"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "title": "Status",
+      "enum": [
+        "Active",
+        "Inactive",
+        "Prospect",
+        "Lapsed"
+      ]
+    },
+    "email": {
+      "type": "string",
+      "title": "Email"
+    },
+    "acquisition_channel": {
+      "type": "string",
+      "title": "Acquisition Channel",
+      "enum": [
+        "Website",
+        "Event",
+        "Referral",
+        "Social Media",
+        "Direct Mail",
+        "Grant Portal"
+      ]
+    },
+    "first_donation_date": {
+      "type": "string",
+      "format": "date",
+      "title": "First Donation Date"
+    }
+  },
+  "required": [
+    "display_name",
+    "supporter_type",
+    "status"
+  ]
+}

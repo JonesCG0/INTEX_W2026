@@ -1,0 +1,36 @@
+{
+  "name": "ImpactSnapshot",
+  "type": "object",
+  "properties": {
+    "snapshot_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Snapshot Date"
+    },
+    "headline": {
+      "type": "string",
+      "title": "Headline"
+    },
+    "active_residents": {
+      "type": "number",
+      "title": "Active Residents"
+    },
+    "total_donations": {
+      "type": "number",
+      "title": "Total Donations ($)"
+    },
+    "reintegration_count": {
+      "type": "number",
+      "title": "Reintegrations"
+    },
+    "safehouse_count": {
+      "type": "number",
+      "title": "Safehouse Count"
+    }
+  },
+  "required": [
+    "snapshot_date",
+    "active_residents",
+    "total_donations"
+  ]
+}

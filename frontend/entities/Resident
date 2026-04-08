@@ -1,0 +1,80 @@
+{
+  "name": "Resident",
+  "type": "object",
+  "properties": {
+    "name_placeholder": {
+      "type": "string",
+      "title": "Name"
+    },
+    "safehouse": {
+      "type": "string",
+      "title": "Safehouse",
+      "enum": [
+        "Hopi Haven",
+        "Desert Bloom",
+        "Eagle Ridge",
+        "Sunrise Center"
+      ]
+    },
+    "tribe": {
+      "type": "string",
+      "title": "Tribe"
+    },
+    "case_category": {
+      "type": "string",
+      "title": "Case Category",
+      "enum": [
+        "Substance Abuse",
+        "Family Crisis",
+        "Homelessness",
+        "Mental Health",
+        "Trafficking",
+        "General Support"
+      ]
+    },
+    "risk_level": {
+      "type": "string",
+      "title": "Risk Level",
+      "enum": [
+        "Low",
+        "Medium",
+        "High",
+        "Critical"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "title": "Status",
+      "enum": [
+        "Active",
+        "Discharged",
+        "Transitioning",
+        "Waitlisted"
+      ]
+    },
+    "assigned_staff": {
+      "type": "string",
+      "title": "Assigned Staff"
+    },
+    "admission_date": {
+      "type": "string",
+      "format": "date",
+      "title": "Admission Date"
+    },
+    "reintegration_status": {
+      "type": "string",
+      "title": "Reintegration Status",
+      "enum": [
+        "Not Started",
+        "In Progress",
+        "Completed",
+        "On Hold"
+      ]
+    }
+  },
+  "required": [
+    "name_placeholder",
+    "safehouse",
+    "status"
+  ]
+}

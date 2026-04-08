@@ -1,48 +1,133 @@
-@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Yeseva+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Yeseva+One&display=swap');
 
-:root {
-  color-scheme: light;
-  --haven-primary: #1d6968;
-  --haven-secondary: #a0422a;
-  --haven-accent: #dcaf6c;
-  --haven-bg: #f7f2e8;
-  --haven-surface: #ffffff;
-  --haven-border: #d7d0c3;
-  --haven-text: #101e1d;
-  --haven-muted: #8fa89f;
-  --haven-display: 'Yeseva One', Georgia, serif;
-  --haven-body: 'Geist', 'Segoe UI', Arial, sans-serif;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-display: 'Yeseva One', serif;
+    --font-display: 'Yeseva One', serif;
+    --font-body: 'Geist Sans', 'Inter', system-ui, -apple-system, sans-serif;
+
+    --background: 34 33% 94%;
+    --foreground: 168 30% 9%;
+    --card: 0 0% 100%;
+    --card-foreground: 168 30% 9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 168 30% 9%;
+    --primary: 179 58% 26%;
+    --primary-foreground: 34 33% 94%;
+    --secondary: 14 59% 39%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 156 14% 61%;
+    --muted-foreground: 156 14% 50%;
+    --accent: 36 60% 64%;
+    --accent-foreground: 168 30% 9%;
+    --destructive: 6 68% 54%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 31 18% 80%;
+    --input: 31 18% 80%;
+    --ring: 179 58% 26%;
+    --chart-1: 179 58% 26%;
+    --chart-2: 14 59% 39%;
+    --chart-3: 36 60% 64%;
+    --chart-4: 161 25% 39%;
+    --chart-5: 30 19% 68%;
+    --radius: 0.5rem;
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 168 30% 9%;
+    --sidebar-primary: 179 58% 26%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 34 33% 94%;
+    --sidebar-accent-foreground: 168 30% 9%;
+    --sidebar-border: 31 18% 80%;
+    --sidebar-ring: 179 58% 26%;
+
+    --haven-teal: #1D6968;
+    --haven-sienna: #A0422A;
+    --haven-gold: #DCAF6C;
+    --haven-parchment: #F7F2E8;
+    --haven-surface: #FFFFFF;
+    --haven-surface-elevated: #FBF8F2;
+    --haven-muted: #8FA89F;
+    --haven-dark: #101E1D;
+  }
+
+  .dark {
+    --background: 165 30% 9%;
+    --foreground: 34 33% 93%;
+    --card: 162 28% 13%;
+    --card-foreground: 34 33% 93%;
+    --popover: 162 28% 13%;
+    --popover-foreground: 34 33% 93%;
+    --primary: 177 56% 31%;
+    --primary-foreground: 34 33% 93%;
+    --secondary: 14 63% 46%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 156 14% 61%;
+    --muted-foreground: 156 17% 76%;
+    --accent: 38 65% 69%;
+    --accent-foreground: 168 30% 9%;
+    --destructive: 5 100% 67%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 160 10% 17%;
+    --input: 160 10% 17%;
+    --ring: 177 56% 31%;
+    --chart-1: 177 56% 31%;
+    --chart-2: 14 63% 46%;
+    --chart-3: 38 65% 69%;
+    --chart-4: 161 25% 45%;
+    --chart-5: 30 19% 60%;
+
+    --sidebar-background: 165 30% 9%;
+    --sidebar-foreground: 34 33% 93%;
+    --sidebar-primary: 177 56% 31%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 162 28% 15%;
+    --sidebar-accent-foreground: 34 33% 93%;
+    --sidebar-border: 160 10% 17%;
+    --sidebar-ring: 177 56% 31%;
+
+    --haven-teal: #227D7B;
+    --haven-sienna: #C2522B;
+    --haven-gold: #E8C87A;
+    --haven-parchment: #101E1D;
+    --haven-surface: #162422;
+    --haven-surface-elevated: #1E2E2C;
+    --haven-muted: #BECFC7;
+    --haven-dark: #F0EBE0;
+  }
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
 
-html {
-  scroll-behavior: smooth;
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted));
+  border-radius: 3px;
 }
 
-body {
-  margin: 0;
-  min-height: 100svh;
-  font-family: var(--haven-body);
-  color: var(--haven-text);
-  background: var(--haven-bg);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-button,
-input,
-textarea,
-select {
-  font: inherit;
-}
-
-#root {
-  min-height: 100svh;
-}
-
-a {
-  color: inherit;
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
