@@ -42,6 +42,7 @@ export default function DonorDashboard() {
   const { user } = useAuth();
   const [data, setData] = useState<DonorDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -51,10 +52,14 @@ export default function DonorDashboard() {
           const result = await response.json();
           setData(result);
         } else {
-          toast.error("Failed to load your personal impact data");
+          const errorData = await response.json().catch(() => null);
+          const message = errorData?.error ?? 'Failed to load your personal impact data';
+          setError(message);
+          toast.error(message);
         }
       } catch (error) {
         console.error("Donor dash error:", error);
+        setError('A network error occurred while loading your donor dashboard.');
       } finally {
         setLoading(false);
       }
@@ -70,7 +75,33 @@ export default function DonorDashboard() {
     );
   }
 
-  if (!data) return null;
+  if (error) {
+    return (
+      <div className="max-w-3xl mx-auto py-16 px-4">
+        <Card className="border-destructive/20 bg-destructive/5">
+          <CardContent className="p-8 space-y-3">
+            <h1 className="font-display text-2xl text-foreground">Donor Dashboard Unavailable</h1>
+            <p className="text-sm text-muted-foreground">{error}</p>
+            <p className="text-sm text-muted-foreground">
+              If this is a new donor account, the linked profile should be created automatically. Try signing out and back in if this persists.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="max-w-3xl mx-auto py-16 px-4">
+        <Card>
+          <CardContent className="p-8">
+            <p className="text-sm text-muted-foreground">No donor data is available yet.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   // Prepare Chart Data
   const typeCounts = data.contributions.reduce((acc: Record<string, number>, c) => {
@@ -87,6 +118,8 @@ export default function DonorDashboard() {
   }, {});
 
   const barData = Object.entries(monthCounts).map(([month, amount]) => ({ month, amount: amount as number }));
+  const hasContributionData = pieData.length > 0;
+  const hasTrendData = barData.length > 0;
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 py-6 px-4 sm:px-6">
@@ -138,52 +171,68 @@ export default function DonorDashboard() {
             <Card className="h-[350px]">
               <CardHeader><CardTitle className="font-body text-xs uppercase tracking-widest text-muted-foreground font-extrabold">Giving Allocation</CardTitle></CardHeader>
               <CardContent className="h-[270px]">
-                <ResponsivePie
-                  data={pieData}
-                  margin={{ top: 20, right: 20, bottom: 60, left: 20 }}
-                  innerRadius={0.6}
-                  padAngle={0.5}
-                  cornerRadius={4}
-                  colors={COLORS}
-                  enableArcLinkLabels={false}
-                  theme={{
-                    tooltip: { container: { background: 'hsl(var(--card))', color: 'hsl(var(--foreground))', border: '1px solid hsl(var(--border))' } }
-                  }}
-                  legends={[
-                    {
-                      anchor: 'bottom',
-                      direction: 'row',
-                      translateY: 50,
-                      itemWidth: 80,
-                      itemHeight: 18,
-                      itemTextColor: '#999',
-                      symbolSize: 10,
-                      symbolShape: 'circle'
-                    }
-                  ]}
-                />
+                {hasContributionData ? (
+                  <ResponsivePie
+                    data={pieData}
+                    margin={{ top: 20, right: 20, bottom: 60, left: 20 }}
+                    innerRadius={0.6}
+                    padAngle={0.5}
+                    cornerRadius={4}
+                    colors={COLORS}
+                    enableArcLinkLabels={false}
+                    theme={{
+                      tooltip: { container: { background: 'hsl(var(--card))', color: 'hsl(var(--foreground))', border: '1px solid hsl(var(--border))' } }
+                    }}
+                    legends={[
+                      {
+                        anchor: 'bottom',
+                        direction: 'row',
+                        translateY: 50,
+                        itemWidth: 80,
+                        itemHeight: 18,
+                        itemTextColor: '#999',
+                        symbolSize: 10,
+                        symbolShape: 'circle'
+                      }
+                    ]}
+                  />
+                ) : (
+                  <div className="h-full flex items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 px-6 text-center">
+                    <p className="text-sm text-muted-foreground">
+                      No donation history has been recorded yet. This chart will populate once contributions exist.
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
             <Card className="h-[350px]">
               <CardHeader><CardTitle className="font-body text-xs uppercase tracking-widest text-muted-foreground font-extrabold">Monthly Trends (PHP)</CardTitle></CardHeader>
               <CardContent className="h-[270px]">
-                <ResponsiveBar
-                  data={barData}
-                  keys={['amount']}
-                  indexBy="month"
-                  margin={{ top: 10, right: 10, bottom: 40, left: 40 }}
-                  padding={0.4}
-                  colors={[COLORS[0]]}
-                  borderRadius={4}
-                  axisLeft={{ tickSize: 0, tickPadding: 10 }}
-                  axisBottom={{ tickSize: 0, tickPadding: 10 }}
-                  theme={{
-                    axis: { ticks: { text: { fontSize: 10 } } },
-                    grid: { line: { stroke: 'hsl(var(--border))' } },
-                    tooltip: { container: { background: 'hsl(var(--card))', color: 'hsl(var(--foreground))', border: '1px solid hsl(var(--border))' } }
-                  }}
-                />
+                {hasTrendData ? (
+                  <ResponsiveBar
+                    data={barData}
+                    keys={['amount']}
+                    indexBy="month"
+                    margin={{ top: 10, right: 10, bottom: 40, left: 40 }}
+                    padding={0.4}
+                    colors={[COLORS[0]]}
+                    borderRadius={4}
+                    axisLeft={{ tickSize: 0, tickPadding: 10 }}
+                    axisBottom={{ tickSize: 0, tickPadding: 10 }}
+                    theme={{
+                      axis: { ticks: { text: { fontSize: 10 } } },
+                      grid: { line: { stroke: 'hsl(var(--border))' } },
+                      tooltip: { container: { background: 'hsl(var(--card))', color: 'hsl(var(--foreground))', border: '1px solid hsl(var(--border))' } }
+                    }}
+                  />
+                ) : (
+                  <div className="h-full flex items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 px-6 text-center">
+                    <p className="text-sm text-muted-foreground">
+                      Monthly contribution trends will appear after the first donation is recorded.
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -231,24 +280,32 @@ export default function DonorDashboard() {
         {/* Safehouse Updates Sidebar */}
         <div className="space-y-6">
           <h3 className="font-display text-xl text-foreground tracking-tight">Project Pulse</h3>
-          {data.safehouseUpdates.map((update, idx) => (
-            <motion.div key={idx} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + (idx * 0.1) }}>
-              <Card className="hover:border-primary/40 transition-colors group cursor-default">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/5 px-2 py-1 rounded">
-                      {update.safehouseName}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground">
-                      {new Date(update.postedAt).toLocaleDateString()}
-                    </span>
-                  </div>
-                  <h4 className="font-display text-base text-foreground mb-2 group-hover:text-primary transition-colors">{update.updateTitle}</h4>
-                  <p className="font-body text-xs text-muted-foreground leading-relaxed">{update.updateDetail}</p>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
+          {data.safehouseUpdates.length === 0 ? (
+            <Card>
+              <CardContent className="p-6">
+                <p className="text-sm text-muted-foreground">No safehouse updates are available yet.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            data.safehouseUpdates.map((update, idx) => (
+              <motion.div key={idx} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + (idx * 0.1) }}>
+                <Card className="hover:border-primary/40 transition-colors group cursor-default">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/5 px-2 py-1 rounded">
+                        {update.safehouseName}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {new Date(update.postedAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <h4 className="font-display text-base text-foreground mb-2 group-hover:text-primary transition-colors">{update.updateTitle}</h4>
+                    <p className="font-body text-xs text-muted-foreground leading-relaxed">{update.updateDetail}</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))
+          )}
           
           <Card className="bg-secondary/5 border-secondary/20">
             <CardContent className="p-6">

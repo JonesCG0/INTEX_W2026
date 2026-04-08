@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using backend.Data;
+using backend.Models.AdminPortal;
 using backend.Models.DonorPortal;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,8 +16,11 @@ public sealed class DonorPortalController(AppDbContext db) : ControllerBase
     [HttpGet("dashboard")]
     public async Task<ActionResult<DonorDashboardDto>> GetDashboard()
     {
-        var email = User.Identity?.Name;
-        if (string.IsNullOrEmpty(email)) return Unauthorized();
+        var email = User.FindFirstValue(ClaimTypes.Email) ?? User.Identity?.Name;
+        if (string.IsNullOrWhiteSpace(email))
+        {
+            return Unauthorized();
+        }
 
         // [IS414] Explicitly deny Admins from viewing the Donor Dashboard to ensure separation of concerns
         if (User.IsInRole("Admin"))
@@ -29,7 +34,19 @@ public sealed class DonorPortalController(AppDbContext db) : ControllerBase
 
         if (donor == null)
         {
-            return NotFound("Donor profile not found. Please contact support to link your account.");
+            donor = new backend.Models.AdminPortal.PortalDonor
+            {
+                DisplayName = User.FindFirstValue("DisplayName") ?? email,
+                LinkedEmail = email,
+                DonorType = "Individual",
+                Status = "Active",
+                TotalGivenPhp = 0m,
+                PreferredChannel = "Website",
+                StewardshipLead = "Unassigned"
+            };
+
+            db.PortalDonors.Add(donor);
+            await db.SaveChangesAsync();
         }
 
         var contributions = donor.Contributions

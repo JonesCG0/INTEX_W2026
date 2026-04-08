@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+Is import { useState, useEffect } from 'react';
 import { API_BASE } from '@/lib/api-base';
 import ImpactStatCard from '../components/ImpactStatCard';
 import CulturalDivider from '../components/CulturalDivider';
