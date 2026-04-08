@@ -10,7 +10,7 @@ Project Haven is a secure, full-stack case management web application supporting
 
 ### Current Implementation Snapshot
 
-The current repository uses `frontend/` and `backend/` as the top-level app folders. The public home page, impact dashboard, privacy policy, and cookie-consent flow are implemented, and the public impact dashboard reads from the connected Azure SQL database.
+The current repository uses `frontend/` and `backend/` as the top-level app folders. The public home page, impact dashboard, privacy policy, cookie-consent flow, donor sign-up flow, and donor dashboard are implemented, and the public impact dashboard reads from the connected Azure SQL database.
 The backend exposes health probes at `/api/health/live`, `/api/health/ready`, and `/api/health/full?details=true`. The frontend does not expose a separate health page; use the API endpoints directly for probes.
 
 The application supports three user types:
@@ -18,6 +18,7 @@ The application supports three user types:
 - **Unauthenticated visitors:** can access general information and impact data.
 - **Authenticated donors:** can view and manage their own contributions and see anonymized dashboard data.
 - **Authenticated admins:** can manage residents, case records, visitation logs, and full reporting.
+- **Seeded donor account:** `donor@example.com` with password `ProjectHaven2026!` is available for dashboard testing and is linked to a donor portal profile.
 
 ### Repository Structure
 
@@ -57,7 +58,7 @@ The application supports three user types:
   - Roles: "Admin," "Donor," and unauthenticated user.
 - **Hosting:** Microsoft Azure (Azure App Service).
 - **UI:** shadcn/ui (as base for all interactive elements) + Tailwind CSS (utility extension; never use inline styles).
-- **State management:** React Query (TanStack Query) for all server state; React Hook Form for form state. Do not use Redux, Zustand, or other global stores.
+- **State management:** Prefer React Query (TanStack Query) for new server-state work and React Hook Form for form state. The current app still contains some legacy local `useState`/`useEffect` fetches, and the only global store in active use is a small Zustand theme store.
 - **Charting:** Nivo for all data visualization.
 - **Routing:** React Router v6. All protected/admin/donor routes use wrapper components for auth checks.
 - **Forms:** React Hook Form + Zod for all forms; every form must be validated via a Zod schema.

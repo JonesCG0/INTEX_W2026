@@ -35,6 +35,7 @@ Completed in the current repository:
 - the cookie-consent banner and browser cookie storage
 - the Azure-connected backend path for public impact data
 - the secure login, sign-up, and admin area
+- the seeded donor account and linked donor portal profile used for dashboard testing
 - the authenticated admin/staff portal dashboard
 - the persisted portal workflows for donors, residents, process recordings, visitations, and reports
 - backend health endpoints for liveness, readiness, and detailed startup diagnostics

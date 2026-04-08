@@ -6,7 +6,7 @@ Project Haven is a secure, role-based web platform designed for a Native America
 
 ## Current Implementation Note
 
-The current repository has implemented the public home page, public impact dashboard, privacy policy page, cookie-consent flow, and the authenticated admin/staff portal against the Azure-connected backend. The remaining items in this document are still the design target for the broader prototype and should be treated as planned direction unless they have already been built.
+The current repository has implemented the public home page, public impact dashboard, privacy policy page, cookie-consent flow, donor sign-up flow, donor dashboard, and the authenticated admin/staff portal against the Azure-connected backend. A seeded donor account is present for testing. The remaining items in this document are still the design target for the broader prototype and should be treated as planned direction unless they have already been built.
 
 ---
 

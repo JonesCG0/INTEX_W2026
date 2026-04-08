@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { IconHeart } from '@tabler/icons-react';
+import { Link } from 'react-router-dom';
 import CulturalDivider from './CulturalDivider';
 
 export default function DonateSection() {
@@ -33,9 +34,11 @@ export default function DonateSection() {
             </Button>
           ))}
         </div>
-        <Button size="lg" className="mt-6 font-body bg-secondary hover:bg-secondary/90 gap-2 text-lg px-8">
-          <IconHeart className="h-5 w-5" />
-          Donate Now
+        <Button asChild size="lg" className="mt-6 font-body bg-secondary hover:bg-secondary/90 gap-2 text-lg px-8">
+          <Link to="/signup">
+            <IconHeart className="h-5 w-5" />
+            Donate Now
+          </Link>
         </Button>
       </motion.div>
     </section>

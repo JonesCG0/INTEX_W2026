@@ -1,6 +1,6 @@
 # Project Haven
 
-A secure, full-stack case management web application for a nonprofit safehouse supporting abuse and trafficking survivors. The current build includes the public home page, public impact dashboard, privacy policy, cookie-consent flow, and a fully operational authenticated admin portal.
+A secure, full-stack case management web application for a nonprofit safehouse supporting abuse and trafficking survivors. The current build includes the public home page, public impact dashboard, privacy policy, cookie-consent flow, donor self-registration, and a fully operational authenticated admin and donor portal.
 
 ---
 
@@ -139,6 +139,16 @@ dotnet user-secrets set "AdminSeed:Password" "YourPassword123!"
 dotnet user-secrets set "AdminSeed:DisplayName" "Project Haven Admin"
 ```
 On Azure, set these as App Service environment variables instead.
+
+### Seeded Donor Account
+The current seed process also creates a donor account for testing the donor portal:
+
+```text
+Email: donor@example.com
+Password: ProjectHaven2026!
+Role: Donor
+```
+That donor seed is linked to a portal profile and sample contributions so the donor dashboard has content immediately after seeding.
 
 ### Password Policy (IS414)
 Passwords must be at least **12 characters** and include uppercase, lowercase, digit, and special character.

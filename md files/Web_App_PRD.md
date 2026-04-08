@@ -6,7 +6,7 @@ Project Haven is a secure, full-stack web application designed for a Philippine 
 
 ### Current Implementation Status
 
-The current build already includes the public home page, donor-facing impact dashboard, privacy policy page, cookie-consent banner, secure login/admin routes, and the authenticated admin/staff portal. The staff portal now includes a dashboard, donor/contribution workflows, resident/caseload management, process recordings, visitations, and reports backed by EF Core persistence. Public impact data is read from the connected Azure SQL database rather than mocked.
+The current build already includes the public home page, donor-facing impact dashboard, privacy policy page, cookie-consent banner, secure login/admin routes, donor self-registration, and the authenticated admin/staff portal. The staff portal now includes a dashboard, donor/contribution workflows, resident/caseload management, process recordings, visitations, and reports backed by EF Core persistence. Public impact data is read from the connected Azure SQL database rather than mocked, and a seeded donor account is available for testing the donor portal.
 
 ---
 

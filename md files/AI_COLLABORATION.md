@@ -139,7 +139,8 @@ The repository is no longer just a starter. The current build includes:
 - a live donor-facing impact dashboard backed by the connected Azure SQL database
 - a privacy policy page
 - a working cookie-consent banner that stores the visitor choice in a browser cookie
-- a secure login, sign-up, and admin area
+- a secure login, donor sign-up, and admin area
+- a seeded donor account and linked donor portal profile for dashboard testing
 - a dedicated authenticated admin/staff portal with dashboard, donors, residents, process recordings, visitations, and reports
 - a shared admin shell for the staff dashboard, user management, and SQL query pages
 - EF-backed persistence for the portal tables instead of in-memory state
@@ -169,7 +170,7 @@ When creating files, follow these conventions:
 ### Frontend
 - Keep components small
 - Use TypeScript types clearly
-- Avoid unnecessary global state
+- Avoid unnecessary global state; the current app uses a small Zustand store for theme persistence only
 - Keep API access in a clear service/helper location
 - Show obvious loading and error states
 

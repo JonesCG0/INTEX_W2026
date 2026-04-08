@@ -18,6 +18,7 @@ export default function PublicFooter() {
             <div className="space-y-2">
               <Link to="/" className="block font-body text-sm text-muted-foreground hover:text-foreground transition-colors">Home</Link>
               <Link to="/impact" className="block font-body text-sm text-muted-foreground hover:text-foreground transition-colors">Impact Dashboard</Link>
+              <Link to="/privacy" className="block font-body text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</Link>
               <a href="#donate" className="block font-body text-sm text-muted-foreground hover:text-foreground transition-colors">Donate</a>
             </div>
           </div>
