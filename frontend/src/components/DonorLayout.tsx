@@ -5,7 +5,7 @@ import DarkModeToggle from './DarkModeToggle';
 import { useAuth } from '@/lib/AuthContext';
 
 export default function DonorLayout() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const location = useLocation();
 
   const isActive = (path: string) => location.pathname === path;
@@ -52,10 +52,7 @@ export default function DonorLayout() {
               variant="ghost"
               size="sm"
               className="text-muted-foreground text-xs gap-1"
-              onClick={() => {
-                const db = (globalThis as any).__B44_DB__;
-                if (db?.auth?.logout) db.auth.logout();
-              }}
+              onClick={() => logout()}
             >
               <IconLogout className="h-3.5 w-3.5" />
               Logout
