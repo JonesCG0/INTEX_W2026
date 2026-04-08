@@ -189,13 +189,22 @@ public class PublicImpactController(AppDbContext db) : ControllerBase
     {
         await using var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT
-                DATEFROMPARTS(YEAR(donation_date), MONTH(donation_date), 1) AS month_start,
-                SUM(COALESCE(amount, estimated_value, 0)) AS donation_amount_php
-            FROM donations
-            GROUP BY DATEFROMPARTS(YEAR(donation_date), MONTH(donation_date), 1)
-            ORDER BY month_start DESC
-            OFFSET 0 ROWS FETCH NEXT 6 ROWS ONLY;
+            SELECT TOP 6
+                month_start,
+                SUM(amount_php) AS donation_amount_php
+            FROM (
+                SELECT
+                    DATEFROMPARTS(YEAR(donation_date), MONTH(donation_date), 1) AS month_start,
+                    COALESCE(amount, estimated_value, 0) AS amount_php
+                FROM donations
+                UNION ALL
+                SELECT
+                    DATEFROMPARTS(YEAR(ContributionAt), MONTH(ContributionAt), 1) AS month_start,
+                    COALESCE(AmountPhp, EstimatedValuePhp, 0) AS amount_php
+                FROM portal_contributions
+            ) AS combined
+            GROUP BY month_start
+            ORDER BY month_start DESC;
             """;
 
         await using var reader = await command.ExecuteReaderAsync();
@@ -356,8 +365,12 @@ public class PublicImpactController(AppDbContext db) : ControllerBase
         var safehouses = await ExecuteScalarIntAsync(connection, "SELECT COUNT(*) FROM safehouses;");
         var supporters = await ExecuteScalarIntAsync(connection, "SELECT COUNT(*) FROM supporters;");
         var activeResidents = await ExecuteScalarIntAsync(connection, "SELECT COUNT(*) FROM residents WHERE case_status = 'Active';");
-        var totalDonations = await ExecuteScalarIntAsync(connection, "SELECT COUNT(*) FROM donations;");
-        var totalDonationValue = await ExecuteScalarDecimalAsync(connection, "SELECT COALESCE(SUM(COALESCE(amount, estimated_value, 0)), 0) FROM donations;");
+        var publicDonations = await ExecuteScalarIntAsync(connection, "SELECT COUNT(*) FROM donations;");
+        var portalDonations = await ExecuteScalarIntAsync(connection, "SELECT COUNT(*) FROM portal_contributions;");
+        var totalDonations = publicDonations + portalDonations;
+        var totalDonationValue =
+            await ExecuteScalarDecimalAsync(connection, "SELECT COALESCE(SUM(COALESCE(amount, estimated_value, 0)), 0) FROM donations;") +
+            await ExecuteScalarDecimalAsync(connection, "SELECT COALESCE(SUM(COALESCE(AmountPhp, EstimatedValuePhp, 0)), 0) FROM portal_contributions;");
 
         return new ImpactTotals(
             Safehouses: safehouses,

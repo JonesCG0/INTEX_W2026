@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace backend.Models.DonorPortal;
 
 public sealed record DonorDashboardDto(
@@ -30,4 +32,19 @@ public sealed record ImpactMetricDto(
     string Label,
     string Value,
     string Icon
+);
+
+public sealed record CreateDonationRequestDto(
+    [Range(typeof(decimal), "1", "79228162514264337593543950335")] decimal AmountPhp,
+    [MaxLength(120)] string? ProgramArea,
+    [MaxLength(1000)] string? Notes,
+    DateTime? ContributionAt
+);
+
+public sealed record CreateDonationResponseDto(
+    int ContributionId,
+    decimal AmountPhp,
+    decimal TotalGivenPhp,
+    int TotalDonations,
+    DateTime ContributionAt
 );
