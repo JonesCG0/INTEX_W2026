@@ -4,5 +4,6 @@ public sealed record AuthResponseDto(
     bool IsAuthenticated,
     string Email,
     string DisplayName,
-    string Role
+    string Role,
+    string SessionToken
 );

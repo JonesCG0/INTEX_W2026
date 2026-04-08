@@ -38,6 +38,9 @@ export default function SignUp() {
 
       if (response.ok) {
         const data = await response.json();
+        if (data.sessionToken) {
+          localStorage.setItem('projectHaven.sessionToken', data.sessionToken);
+        }
         toast.success(`Welcome, ${data.displayName}. Your donor account is ready.`);
         await checkAppState();
         navigate('/donor');

@@ -2,6 +2,7 @@ using backend.Data;
 using backend.Models;
 using backend.Models.Auth;
 using backend.Services;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -54,8 +55,10 @@ builder.Services.ConfigureApplicationCookie(options =>
 builder.Services.AddScoped<CsvDatabaseSeeder>();
 builder.Services.AddScoped<AdminSeeder>();
 builder.Services.AddScoped<AdminPortalStore>();
+builder.Services.AddScoped<AuthTokenService>();
 builder.Services.AddSingleton<StartupDiagnostics>();
 builder.Services.Configure<AdminSeedOptions>(builder.Configuration.GetSection("AdminSeed"));
+builder.Services.AddDataProtection();
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
@@ -166,6 +169,26 @@ if (app.Environment.IsDevelopment())
 app.UseCors("Frontend");
 app.UseHttpsRedirection();
 app.UseAuthentication();
+app.Use(async (context, next) =>
+{
+    if (context.User?.Identity?.IsAuthenticated != true)
+    {
+        var token = context.Request.Headers["X-ProjectHaven-Token"].FirstOrDefault()
+            ?? context.Request.Headers.Authorization.FirstOrDefault()?.Split(' ', 2, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ElementAtOrDefault(1);
+
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            var tokenService = context.RequestServices.GetRequiredService<AuthTokenService>();
+            var principal = tokenService.ValidateToken(token);
+            if (principal is not null)
+            {
+                context.User = principal;
+            }
+        }
+    }
+
+    await next();
+});
 app.UseAuthorization();
 app.MapControllers();
 app.Run();

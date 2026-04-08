@@ -1,6 +1,24 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 
 const API_URL = import.meta.env.VITE_API_URL ?? '';
+const SESSION_TOKEN_KEY = 'projectHaven.sessionToken';
+
+const originalFetch = globalThis.fetch.bind(globalThis);
+if (!(globalThis as typeof globalThis & { __projectHavenFetchPatched?: boolean }).__projectHavenFetchPatched) {
+  (globalThis as typeof globalThis & { __projectHavenFetchPatched?: boolean }).__projectHavenFetchPatched = true;
+  globalThis.fetch = async (input, init) => {
+    const token = localStorage.getItem(SESSION_TOKEN_KEY);
+    if (token) {
+      const headers = new Headers(init?.headers ?? undefined);
+      if (!headers.has('X-ProjectHaven-Token')) {
+        headers.set('X-ProjectHaven-Token', token);
+      }
+      return originalFetch(input, { ...init, headers });
+    }
+
+    return originalFetch(input, init);
+  };
+}
 
 interface AuthContextType {
   user: any;
@@ -70,6 +88,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const logout = async (shouldRedirect = true) => {
     try {
       await fetch(`${API_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
+      localStorage.removeItem(SESSION_TOKEN_KEY);
       setUser(null);
       setIsAuthenticated(false);
       if (shouldRedirect) {

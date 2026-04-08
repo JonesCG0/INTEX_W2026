@@ -3,6 +3,7 @@ using backend.Data;
 using backend.Models.AdminPortal;
 using backend.Models;
 using backend.Models.Auth;
+using backend.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -15,6 +16,7 @@ namespace backend.Controllers;
 public class AuthController(
     UserManager<AppUser> userManager,
     SignInManager<AppUser> signInManager,
+    AuthTokenService authTokenService,
     AppDbContext db) : ControllerBase
 {
     // Returns the highest-privilege role when a user has multiple roles.
@@ -50,7 +52,8 @@ public class AuthController(
         };
         await signInManager.SignInWithClaimsAsync(user, isPersistent: true, additionalClaims);
 
-        return Ok(new AuthResponseDto(true, user.Email ?? string.Empty, user.DisplayName, primaryRole));
+        var sessionToken = authTokenService.CreateToken(user, roles.ToArray());
+        return Ok(new AuthResponseDto(true, user.Email ?? string.Empty, user.DisplayName, primaryRole, sessionToken));
     }
 
     [HttpPost("logout")]
@@ -136,6 +139,7 @@ public class AuthController(
         };
         await signInManager.SignInWithClaimsAsync(user, isPersistent: true, additionalClaims);
 
-        return Ok(new AuthResponseDto(true, user.Email ?? string.Empty, user.DisplayName, "Donor"));
+        var sessionToken = authTokenService.CreateToken(user, ["Donor"]);
+        return Ok(new AuthResponseDto(true, user.Email ?? string.Empty, user.DisplayName, "Donor", sessionToken));
     }
 }

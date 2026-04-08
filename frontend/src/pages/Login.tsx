@@ -33,6 +33,9 @@ export default function Login() {
 
       if (response.ok) {
         const data = await response.json();
+        if (data.sessionToken) {
+          localStorage.setItem('projectHaven.sessionToken', data.sessionToken);
+        }
         toast.success("Welcome back, " + data.displayName);
         
         // Refresh auth state in context
