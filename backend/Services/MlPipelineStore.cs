@@ -7,6 +7,7 @@ public sealed class MlPipelineStore
 {
     private readonly AzureMlOptions _options;
     private readonly string _repoRoot;
+    private readonly string[] _outputRoots;
     private readonly List<PipelineDefinition> _definitions;
     private readonly List<MlPipelineRunRecord> _runs = [];
     private readonly object _gate = new();
@@ -15,6 +16,12 @@ public sealed class MlPipelineStore
     {
         _options = options.Value;
         _repoRoot = Path.GetFullPath(Path.Combine(environment.ContentRootPath, ".."));
+        _outputRoots =
+        [
+            Path.Combine(_repoRoot, "ml-pipelines", "generated_outputs"),
+            Path.Combine(_repoRoot, "generated_outputs"),
+            Path.Combine(environment.ContentRootPath, "generated_outputs"),
+        ];
         _definitions =
         [
             new PipelineDefinition(
@@ -206,7 +213,7 @@ public sealed class MlPipelineStore
             );
         }
 
-        var outputPath = Path.Combine(_repoRoot, "ml-pipelines", "generated_outputs", definition.OutputFileName);
+        var outputPath = ResolveOutputPath(definition.OutputFileName);
         if (!File.Exists(outputPath))
         {
             return new MlPipelineSnapshotData(
@@ -260,7 +267,7 @@ public sealed class MlPipelineStore
             yield break;
         }
 
-        var outputPath = Path.Combine(_repoRoot, "ml-pipelines", "generated_outputs", definition.OutputFileName);
+        var outputPath = ResolveOutputPath(definition.OutputFileName);
         if (!File.Exists(outputPath))
         {
             yield break;
@@ -280,6 +287,20 @@ public sealed class MlPipelineStore
             ResultSummaryOverride: snapshot.ResultSummary,
             ProgressOverride: 100
         );
+    }
+
+    private string ResolveOutputPath(string fileName)
+    {
+        foreach (var outputRoot in _outputRoots)
+        {
+            var candidate = Path.Combine(outputRoot, fileName);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+        }
+
+        return Path.Combine(_outputRoots[0], fileName);
     }
 
     private static MlPipelineRunDto ToDto(MlPipelineRunRecord run, string pipelineName)
