@@ -377,8 +377,8 @@ export default function DonorDashboard() {
               <p className="font-body text-xs text-muted-foreground mb-4">
                 Have questions about your giving history or need a tax certificate? Our stewardship team is here to help.
               </p>
-              <Button size="sm" variant="outline" className="w-full text-xs uppercase tracking-widest border-secondary/30 text-secondary hover:bg-secondary/5">
-                Contact Steward
+              <Button size="sm" variant="outline" className="w-full text-xs uppercase tracking-widest border-secondary/30 text-secondary hover:bg-secondary/5" asChild>
+                <a href="/#contact">Contact Steward</a>
               </Button>
             </CardContent>
           </Card>
