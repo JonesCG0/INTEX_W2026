@@ -18,6 +18,7 @@ Project Haven is no longer a starter app. The current build includes:
 - cookie consent, role-based auth, and seeded admin/donor accounts
 - an admin ML dashboard with eight notebook-backed pipeline slots
 - Azure ML job submission support plus Blob-first and repo-fallback CSV snapshot reading
+- production auth now targets the same-site pairing of `jonescg0.net` + `api.jonescg0.net`
 
 ---
 
@@ -52,6 +53,7 @@ Project Haven is no longer a starter app. The current build includes:
 - If a change affects public impact data, donor dashboard data, and admin portal data, update all three surfaces together.
 - ML pipeline changes usually touch three layers together: notebook output schema, backend snapshot parsing, and the admin ML dashboard UI.
 - Keep the local `ml-pipelines/generated_outputs/` fallback working unless the user explicitly asks to remove it.
+- Do not regress the production auth model by pointing the frontend back to the raw `azurewebsites.net` hostname.
 
 ---
 

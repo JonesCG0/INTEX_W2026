@@ -25,6 +25,7 @@ Completed:
 - admin ML pipelines dashboard
 - Azure Blob-backed ML snapshot reading with local repo fallback
 - Azure ML command-job trigger support in the backend
+- custom API domain target for same-site production auth: `https://api.jonescg0.net`
 
 ---
 
@@ -39,6 +40,9 @@ Completed:
 7. Confirm the app can log in as admin and donor.
 8. If using the ML dashboard in demo mode, confirm CSV outputs exist under `ml-pipelines/generated_outputs/`.
 9. If using live Azure ML mode, configure the `AzureMl` section in backend settings and confirm Blob access.
+10. For production auth, keep the frontend on `jonescg0.net` and the backend API on `api.jonescg0.net`.
+11. In Azure App Service, set `AuthCookie__Domain=.jonescg0.net` and `AuthCookie__SameSite=None`.
+12. In the frontend production build, set `VITE_API_URL=https://api.jonescg0.net`.
 
 ---
 
@@ -64,6 +68,7 @@ Completed:
 - [x] User management routes exist
 - [x] Admin ML dashboard reads local CSV snapshots
 - [x] Backend can submit Azure ML jobs when configured
+- [x] Production config now targets same-site auth via `api.jonescg0.net`
 - [ ] CSP header hardening
 - [ ] Lighthouse audit
 - [ ] End-to-end validation of live Azure ML runs in deployed environment
