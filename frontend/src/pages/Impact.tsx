@@ -190,7 +190,7 @@ export default function Impact() {
               transition={reduceMotion ? { duration: 0.15 } : undefined}
               className="bg-card border border-border rounded-xl p-6 min-h-[420px]"
             >
-              <h3 className="font-body text-lg font-semibold text-foreground mb-4 text-center">Donation Trend (PHP)</h3>
+              <h3 className="font-display text-lg font-semibold text-foreground mb-4 text-center">Donation Trend (PHP)</h3>
               <div className="h-[300px]">
                 {donationLineData[0].data.length > 0 ? (
                   <ResponsiveLine
@@ -270,7 +270,7 @@ export default function Impact() {
               transition={reduceMotion ? { duration: 0.15 } : undefined}
               className="bg-card border border-border rounded-xl p-6 min-h-[420px]"
             >
-              <h3 className="font-body text-lg font-semibold text-foreground mb-4 text-center">Active Residents Trend</h3>
+              <h3 className="font-display text-lg font-semibold text-foreground mb-4 text-center">Active Residents Trend</h3>
               <div className="h-[300px]">
                 {residentLineData[0].data.length > 0 ? (
                   <ResponsiveLine
@@ -350,7 +350,7 @@ export default function Impact() {
               transition={reduceMotion ? { duration: 0.15 } : undefined}
               className="bg-card border border-border rounded-xl p-6 min-h-[420px]"
             >
-              <h3 className="font-body text-lg font-semibold text-foreground mb-4 text-center">Safehouse Occupancy</h3>
+              <h3 className="font-display text-lg font-semibold text-foreground mb-4 text-center">Safehouse Occupancy</h3>
               <div className="h-[300px]">
                 {barData.length > 0 ? (
                   <ResponsiveBar
