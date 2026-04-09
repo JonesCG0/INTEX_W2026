@@ -69,7 +69,7 @@ export default function Outreach() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-body text-2xl text-foreground">Outreach Performance</h1>
+        <h1 className="font-display text-2xl text-foreground">Outreach Performance</h1>
         <p className="font-body text-sm text-muted-foreground">Staff-facing view of canonical `social_media_posts` reach, referrals, and campaign quality.</p>
       </div>
 

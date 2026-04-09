@@ -159,7 +159,7 @@ export default function MlPipelines() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <IconActivity className="h-5 w-5 text-primary" />
-            <h1 className="font-body text-3xl text-foreground tracking-tight">ML Pipelines</h1>
+            <h1 className="font-display text-3xl text-foreground tracking-tight">ML Pipelines</h1>
           </div>
           <p className="font-body text-sm text-muted-foreground">
             Notebook-backed scoring pipelines with demo run control, output previews, and an Azure ML connection path.

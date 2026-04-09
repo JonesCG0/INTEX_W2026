@@ -84,7 +84,7 @@ export default function SignUp() {
           <p className="font-body text-[0.85rem] font-medium uppercase tracking-wider text-muted-foreground">
             Donor registration
           </p>
-          <h1 className="font-body text-2xl font-semibold tracking-tight text-foreground">
+          <h1 className="font-display text-2xl tracking-tight text-foreground">
             Create a donor account
           </h1>
           <p className="font-body max-w-sm text-base leading-relaxed text-muted-foreground">

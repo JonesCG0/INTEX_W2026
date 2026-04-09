@@ -194,7 +194,7 @@ export default function Recordings() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-[10px] uppercase font-bold tracking-widest text-primary px-2 py-0.5 bg-primary/10 rounded">Clinical File</span>
-            <h1 className="font-body text-3xl text-foreground tracking-tight">{resident?.codeName || 'Anonymized Resident'}</h1>
+            <h1 className="font-display text-3xl text-foreground tracking-tight">{resident?.codeName || 'Anonymized Resident'}</h1>
           </div>
           <p className="font-body text-sm text-muted-foreground flex items-center gap-2">
             Status: <span className="font-semibold text-foreground">Verified</span>

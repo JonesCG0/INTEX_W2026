@@ -10,18 +10,18 @@ export default function Privacy() {
             animate={{ opacity: 1, y: 0 }}
             className="prose prose-slate dark:prose-invert max-w-none"
           >
-            <h1 className="font-body text-4xl mb-8">Privacy Policy</h1>
+            <h1 className="font-display text-4xl mb-8">Privacy Policy</h1>
             <p className="font-body text-muted-foreground mb-6">Last Updated: April 8, 2026</p>
 
             <section className="mb-8">
-              <h2 className="font-body text-2xl mb-4">1. Data Protection Commitment</h2>
+              <h2 className="font-display text-2xl mb-4">1. Data Protection Commitment</h2>
               <p className="font-body text-foreground">
                 At Project Haven, we are committed to protecting the privacy and dignity of both our residents and our donors. Given the sensitive nature of our work in safehouses for girls, we adhere to strict data security standards (IS414 Compliance) to ensure that no identifying information is exposed without explicit consent and legal necessity.
               </p>
             </section>
 
             <section className="mb-8">
-              <h2 className="font-body text-2xl mb-4">2. Information We Collect</h2>
+              <h2 className="font-display text-2xl mb-4">2. Information We Collect</h2>
               <h3 className="text-xl mb-2">For Donors:</h3>
               <ul className="list-disc pl-6 mb-4">
                 <li>Contact Information (Name, Email, Phone)</li>
@@ -35,14 +35,14 @@ export default function Privacy() {
             </section>
 
             <section className="mb-8">
-              <h2 className="font-body text-2xl mb-4">3. Data Security</h2>
+              <h2 className="font-display text-2xl mb-4">3. Data Security</h2>
               <p>
                 We implement industry-standard security measures, including multi-factor authentication for staff, encrypted database storage, and regular security audits. Our staff are trained in trauma-informed data handling to ensure that "voices of hope" are shared safely.
               </p>
             </section>
 
             <section className="mb-8">
-              <h2 className="font-body text-2xl mb-4">4. Contact Us</h2>
+              <h2 className="font-display text-2xl mb-4">4. Contact Us</h2>
               <p>
                 If you have questions about your data or wish to request data deletion, please contact our Data Protection Officer at <span className="text-primary font-bold">privacy@projecthaven.local</span>.
               </p>

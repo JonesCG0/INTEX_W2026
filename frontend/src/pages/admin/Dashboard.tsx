@@ -51,7 +51,7 @@ const StatCard = ({ title, value, detail, Icon, colorIndex, delay = 0 }: { title
           </div>
         </div>
         <div className="flex items-baseline gap-2">
-          <h3 className="font-body text-3xl font-bold text-foreground">{value}</h3>
+          <h3 className="font-display text-3xl font-bold text-foreground">{value}</h3>
         </div>
         <p className="font-body text-[10px] text-muted-foreground mt-1 truncate">{detail}</p>
       </CardContent>
@@ -118,7 +118,7 @@ export default function AdminDashboard() {
     <div className="space-y-8">
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="font-body text-2xl text-foreground mb-1">Operational Overview</h1>
+          <h1 className="font-display text-2xl text-foreground mb-1">Operational Overview</h1>
           <p className="font-body text-sm text-muted-foreground">Real-time status of Project Haven safehouses</p>
           <p className="font-body text-xs text-muted-foreground mt-2">
             Data refreshed {new Date(data.generatedAt).toLocaleString()} from {data.sourceTables?.length ?? 0} source tables.

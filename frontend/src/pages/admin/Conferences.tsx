@@ -160,7 +160,7 @@ export default function Conferences() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-body text-2xl text-foreground">Case Conferences</h1>
+          <h1 className="font-display text-2xl text-foreground">Case Conferences</h1>
           <p className="font-body text-sm text-muted-foreground">Manage intervention-plan conference dates, targets, and follow-up scope.</p>
         </div>
         <Button onClick={openCreate} className="font-body gap-2">

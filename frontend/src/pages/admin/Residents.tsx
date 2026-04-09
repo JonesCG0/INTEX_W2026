@@ -101,7 +101,7 @@ export default function Residents() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-body text-2xl text-foreground">Resident Care Management</h1>
+          <h1 className="font-display text-2xl text-foreground">Resident Care Management</h1>
           <p className="font-body text-sm text-muted-foreground">Privacy-first tracking of safehouse residents (IS414 Compliant)</p>
         </div>
         <Button onClick={handleAdd} className="font-body gap-2">

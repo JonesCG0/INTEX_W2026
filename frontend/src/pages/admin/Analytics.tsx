@@ -116,7 +116,7 @@ export default function Analytics() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-body text-3xl text-foreground mb-1 tracking-tight">Executive Intelligence</h1>
+        <h1 className="font-display text-3xl text-foreground mb-1 tracking-tight">Executive Intelligence</h1>
         <p className="font-body text-sm text-muted-foreground">High-fidelity safehouse metrics and operational insights</p>
         <p className="font-body text-xs text-muted-foreground mt-2">
           Data refreshed {new Date(data?.generatedAt ?? Date.now()).toLocaleString()} from {data?.sourceTables?.length ?? 0} source tables.

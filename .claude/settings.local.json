@@ -21,7 +21,17 @@
       "Bash(grep -rn \"fetch\\('/api\\\\|fetch\\(\\\\`/api\" frontend/src --include=\"*.ts\" --include=\"*.tsx\")",
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\('\\\\n'.join\\(k for k in d.get\\('dependencies',{}\\)\\)\\)\")",
       "Bash(rm -f frontend/src/lib/app-params.ts frontend/src/api/base44Client.ts)",
-      "Bash(rm -rf frontend/entities)"
+      "Bash(rm -rf frontend/entities)",
+      "Bash(sed -i 's/className=\"font-body text-3xl text-foreground mb-1 tracking-tight\">Executive Intelligence/className=\"font-display text-3xl text-foreground mb-1 tracking-tight\">Executive Intelligence/' frontend/src/pages/admin/Analytics.tsx)",
+      "Bash(sed -i 's/className=\"font-body text-2xl text-foreground\">Resident Care Management/className=\"font-display text-2xl text-foreground\">Resident Care Management/' frontend/src/pages/admin/Residents.tsx)",
+      "Bash(sed -i 's/className=\"font-body text-2xl text-foreground\">User Management/className=\"font-display text-2xl text-foreground\">User Management/' frontend/src/pages/admin/Users.tsx)",
+      "Bash(sed -i 's/className=\"font-body text-2xl text-foreground\">Donor Stewardship/className=\"font-display text-2xl text-foreground\">Donor Stewardship/' frontend/src/pages/admin/Donors.tsx)",
+      "Bash(sed -i 's/className=\"font-body text-2xl text-foreground\">Visitation Records/className=\"font-display text-2xl text-foreground\">Visitation Records/' frontend/src/pages/admin/Visitations.tsx)",
+      "Bash(sed -i 's/className=\"font-body text-3xl sm:text-4xl text-foreground mb-1 tracking-tight\">Your Stewardship Journey/className=\"font-display text-3xl sm:text-4xl text-foreground mb-1 tracking-tight\">Your Stewardship Journey/' frontend/src/pages/DonorDashboard.tsx)",
+      "Bash(sed -i 's/className=\"font-body text-2xl font-semibold tracking-tight text-foreground\"/className=\"font-display text-2xl tracking-tight text-foreground\"/' frontend/src/pages/Login.tsx)",
+      "Bash(sed -i 's/className=\"font-body text-2xl font-semibold tracking-tight text-foreground\"/className=\"font-display text-2xl tracking-tight text-foreground\"/' frontend/src/pages/SignUp.tsx)",
+      "Bash(sed -i 's/className=\"font-body text-4xl mb-8\"/className=\"font-display text-4xl mb-8\"/' frontend/src/pages/Privacy.tsx)",
+      "Bash(sed -i 's/className=\"font-body text-2xl mb-4\"/className=\"font-display text-2xl mb-4\"/g' frontend/src/pages/Privacy.tsx)"
     ]
   }
 }

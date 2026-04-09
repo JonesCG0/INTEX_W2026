@@ -345,7 +345,7 @@ export default function Donors() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-body text-2xl text-foreground">Donor Stewardship</h1>
+          <h1 className="font-display text-2xl text-foreground">Donor Stewardship</h1>
           <p className="font-body text-sm text-muted-foreground">Create, update, and remove donor and contribution records</p>
         </div>
         <div className="flex gap-2">

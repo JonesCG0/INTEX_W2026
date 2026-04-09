@@ -134,7 +134,7 @@ export default function DonorDashboard() {
     <div className="max-w-6xl mx-auto space-y-8 py-6 px-4 sm:px-6">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="font-body text-3xl sm:text-4xl text-foreground mb-1 tracking-tight">Your Stewardship Journey</h1>
+          <h1 className="font-display text-3xl sm:text-4xl text-foreground mb-1 tracking-tight">Your Stewardship Journey</h1>
           <p className="font-body text-sm text-muted-foreground">Thank you for your partnership, {data.displayName}</p>
           <p className="font-body text-xs text-muted-foreground mt-2">
             Data refreshed {new Date(data.generatedAt).toLocaleString()} from {data.sourceTables?.length ?? 0} source tables.
