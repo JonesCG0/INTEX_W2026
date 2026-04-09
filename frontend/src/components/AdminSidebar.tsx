@@ -67,6 +67,8 @@ export default function AdminSidebar() {
               src={circleLogo}
               alt=""
               aria-hidden="true"
+              width={44}
+              height={44}
               className="h-11 w-11 shrink-0 rounded-full"
             />
             <span className="font-display text-[2.1rem] leading-none text-primary">Project Haven</span>
@@ -126,6 +128,8 @@ export default function AdminSidebar() {
                 src={circleLogo}
                 alt=""
                 aria-hidden="true"
+                width={44}
+                height={44}
                 className="h-11 w-11 shrink-0 rounded-full"
               />
               <span className="font-display text-[2.1rem] leading-none text-primary">Project Haven</span>
