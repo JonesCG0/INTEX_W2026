@@ -345,7 +345,7 @@ export default function Donors() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl text-foreground">Donor Stewardship</h1>
+          <h1 className="font-body text-2xl text-foreground">Donor Stewardship</h1>
           <p className="font-body text-sm text-muted-foreground">Create, update, and remove donor and contribution records</p>
         </div>
         <div className="flex gap-2">
@@ -373,7 +373,7 @@ export default function Donors() {
         className="bg-card border border-border rounded-xl overflow-hidden shadow-sm"
       >
         <div className="p-4 border-b border-border">
-          <h2 className="font-display text-lg text-foreground">Donors</h2>
+          <h2 className="font-body text-lg text-foreground">Donors</h2>
         </div>
         <div className="max-h-[70vh] overflow-auto">
         <Table>
@@ -445,7 +445,7 @@ export default function Donors() {
         className="bg-card border border-border rounded-xl overflow-hidden shadow-sm"
       >
         <div className="p-4 border-b border-border">
-          <h2 className="font-display text-lg text-foreground">Contributions</h2>
+          <h2 className="font-body text-lg text-foreground">Contributions</h2>
         </div>
         <div className="max-h-[70vh] overflow-auto">
         <Table>
@@ -502,7 +502,7 @@ export default function Donors() {
       <Sheet open={donorDrawerOpen} onOpenChange={setDonorDrawerOpen}>
         <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
           <SheetHeader>
-            <SheetTitle className="font-display text-xl tracking-tight">{editingDonor ? 'Edit Donor Profile' : 'Create Donor Profile'}</SheetTitle>
+            <SheetTitle className="font-body text-xl tracking-tight">{editingDonor ? 'Edit Donor Profile' : 'Create Donor Profile'}</SheetTitle>
           </SheetHeader>
           <div className="space-y-4 mt-6">
             <div>
@@ -578,7 +578,7 @@ export default function Donors() {
       <Sheet open={contributionDrawerOpen} onOpenChange={setContributionDrawerOpen}>
         <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
           <SheetHeader>
-            <SheetTitle className="font-display text-xl tracking-tight">{editingContribution ? 'Edit Contribution' : 'Record Contribution'}</SheetTitle>
+            <SheetTitle className="font-body text-xl tracking-tight">{editingContribution ? 'Edit Contribution' : 'Record Contribution'}</SheetTitle>
           </SheetHeader>
           <div className="space-y-4 mt-6">
             <div className="p-4 bg-primary/5 rounded-lg border border-primary/10">

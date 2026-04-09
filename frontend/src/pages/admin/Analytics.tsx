@@ -116,7 +116,7 @@ export default function Analytics() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-display text-3xl text-foreground mb-1 tracking-tight">Executive Intelligence</h1>
+        <h1 className="font-body text-3xl text-foreground mb-1 tracking-tight">Executive Intelligence</h1>
         <p className="font-body text-sm text-muted-foreground">High-fidelity safehouse metrics and operational insights</p>
         <p className="font-body text-xs text-muted-foreground mt-2">
           Data refreshed {new Date(data?.generatedAt ?? Date.now()).toLocaleString()} from {data?.sourceTables?.length ?? 0} source tables.
@@ -530,7 +530,7 @@ export default function Analytics() {
 
       <div className="flex justify-between items-center bg-primary/5 p-6 rounded-2xl border border-primary/10">
         <div>
-          <h3 className="font-display text-lg text-primary tracking-tight">Compliance & Privacy</h3>
+          <h3 className="font-body text-lg text-primary tracking-tight">Compliance & Privacy</h3>
           <p className="font-body text-xs text-muted-foreground mt-1">All analytics are derived from anonymized data points. Individual identities are protected per IS414 protocols.</p>
         </div>
         <button type="button" disabled className="px-6 h-11 bg-primary/60 text-primary-foreground font-bold rounded-xl text-xs uppercase tracking-widest shadow-lg shadow-primary/10 cursor-not-allowed">

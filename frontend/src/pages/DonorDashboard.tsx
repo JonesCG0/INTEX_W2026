@@ -83,7 +83,7 @@ export default function DonorDashboard() {
       <div className="max-w-3xl mx-auto py-16 px-4">
         <Card className="border-destructive/20 bg-destructive/5">
           <CardContent className="p-8 space-y-3">
-            <h1 className="font-display text-2xl text-foreground">Donor Dashboard Unavailable</h1>
+            <h1 className="font-body text-2xl text-foreground">Donor Dashboard Unavailable</h1>
             <p className="text-sm text-muted-foreground">{error}</p>
             <p className="text-sm text-muted-foreground">
               If this is a new donor account, the linked profile should be created automatically. Try signing out and back in if this persists.
@@ -134,7 +134,7 @@ export default function DonorDashboard() {
     <div className="max-w-6xl mx-auto space-y-8 py-6 px-4 sm:px-6">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl sm:text-4xl text-foreground mb-1 tracking-tight">Your Stewardship Journey</h1>
+          <h1 className="font-body text-3xl sm:text-4xl text-foreground mb-1 tracking-tight">Your Stewardship Journey</h1>
           <p className="font-body text-sm text-muted-foreground">Thank you for your partnership, {data.displayName}</p>
           <p className="font-body text-xs text-muted-foreground mt-2">
             Data refreshed {new Date(data.generatedAt).toLocaleString()} from {data.sourceTables?.length ?? 0} source tables.
@@ -150,7 +150,7 @@ export default function DonorDashboard() {
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
           <Card className="bg-gradient-to-br from-primary/10 to-transparent border-primary/20">
             <CardContent className="min-h-[156px] p-6 sm:p-8 text-center flex flex-col justify-center">
-              <p className="font-display text-3xl sm:text-4xl text-primary font-bold break-words leading-none">{compactLifetimeImpact}</p>
+              <p className="font-body text-3xl sm:text-4xl text-primary font-bold break-words leading-none">{compactLifetimeImpact}</p>
               <p className="font-body text-xs uppercase tracking-widest text-muted-foreground mt-2 font-bold">Lifetime Impact</p>
             </CardContent>
           </Card>
@@ -158,7 +158,7 @@ export default function DonorDashboard() {
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}>
           <Card>
             <CardContent className="min-h-[156px] p-6 sm:p-8 text-center flex flex-col justify-center">
-              <p className="font-display text-3xl sm:text-4xl text-foreground font-bold break-words leading-none">{data.totalDonations.toLocaleString()}</p>
+              <p className="font-body text-3xl sm:text-4xl text-foreground font-bold break-words leading-none">{data.totalDonations.toLocaleString()}</p>
               <p className="font-body text-xs uppercase tracking-widest text-muted-foreground mt-2 font-bold">Gifts Recorded</p>
             </CardContent>
           </Card>
@@ -166,7 +166,7 @@ export default function DonorDashboard() {
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }}>
           <Card>
             <CardContent className="min-h-[156px] p-6 sm:p-8 text-center flex flex-col justify-center">
-              <p className="font-display text-3xl sm:text-4xl text-accent font-bold break-words leading-none">
+              <p className="font-body text-3xl sm:text-4xl text-accent font-bold break-words leading-none">
                 {data.lastGiftingAt ? new Date(data.lastGiftingAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—'}
               </p>
               <p className="font-body text-xs uppercase tracking-widest text-muted-foreground mt-2 font-bold">Latest Gift</p>
@@ -340,7 +340,7 @@ export default function DonorDashboard() {
         </div>
 
         <div className="space-y-6">
-          <h3 className="font-display text-xl text-foreground tracking-tight">Project Pulse</h3>
+          <h3 className="font-body text-xl text-foreground tracking-tight">Project Pulse</h3>
           {data.safehouseUpdates.length === 0 ? (
             <Card>
               <CardContent className="p-6">
@@ -360,7 +360,7 @@ export default function DonorDashboard() {
                         {new Date(update.postedAt).toLocaleDateString()}
                       </span>
                     </div>
-                    <h4 className="font-display text-base text-foreground mb-2 group-hover:text-primary transition-colors">{update.updateTitle}</h4>
+                    <h4 className="font-body text-base text-foreground mb-2 group-hover:text-primary transition-colors">{update.updateTitle}</h4>
                     <p className="font-body text-xs text-muted-foreground leading-relaxed">{update.updateDetail}</p>
                   </CardContent>
                 </Card>
@@ -370,7 +370,7 @@ export default function DonorDashboard() {
 
           <Card className="bg-secondary/5 border-secondary/20">
             <CardContent className="p-6">
-              <h4 className="font-display text-sm text-secondary mb-3 flex items-center gap-2">
+              <h4 className="font-body text-sm text-secondary mb-3 flex items-center gap-2">
                 <IconHeart className="h-4 w-4" />
                 Stewardship Support
               </h4>

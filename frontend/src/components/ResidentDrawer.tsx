@@ -258,7 +258,7 @@ export default function ResidentDrawer({ open, onOpenChange, resident, safehouse
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-3xl overflow-y-auto">
         <SheetHeader>
-          <SheetTitle className="font-display text-xl">
+          <SheetTitle className="font-body text-xl">
             {resident ? 'Edit Resident Record' : 'Enroll New Resident'}
           </SheetTitle>
         </SheetHeader>

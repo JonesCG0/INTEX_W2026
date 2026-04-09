@@ -72,7 +72,7 @@ export default function AdminSidebar() {
               </SheetTrigger>
               <SheetContent side="left" className="w-full sm:max-w-sm">
                 <SheetHeader>
-                  <SheetTitle className="font-display text-xl text-primary">Admin Navigation</SheetTitle>
+                  <SheetTitle className="font-body text-xl text-primary">Admin Navigation</SheetTitle>
                 </SheetHeader>
                 <div className="mt-8 flex h-full flex-col">
                   <nav className="space-y-2">{renderNavItems(false, () => setMobileOpen(false))}</nav>

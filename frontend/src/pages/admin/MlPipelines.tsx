@@ -144,7 +144,7 @@ export default function MlPipelines() {
     return (
       <div className="flex items-center justify-center h-96 border rounded-xl bg-card border-border/50 shadow-sm mt-6">
         <div className="text-center space-y-2">
-          <p className="font-display font-medium text-foreground text-lg">ML Pipelines Unavailable</p>
+          <p className="font-body font-medium text-foreground text-lg">ML Pipelines Unavailable</p>
           <p className="text-muted-foreground text-sm max-w-sm mx-auto">
             {loadError ?? 'We could not load the pipeline catalog. Check the backend API or sign in again as an admin.'}
           </p>
@@ -159,7 +159,7 @@ export default function MlPipelines() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <IconActivity className="h-5 w-5 text-primary" />
-            <h1 className="font-display text-3xl text-foreground tracking-tight">ML Pipelines</h1>
+            <h1 className="font-body text-3xl text-foreground tracking-tight">ML Pipelines</h1>
           </div>
           <p className="font-body text-sm text-muted-foreground">
             Notebook-backed scoring pipelines with demo run control, output previews, and an Azure ML connection path.
@@ -180,28 +180,28 @@ export default function MlPipelines() {
         <Card>
           <CardContent className="p-5">
             <p className="text-xs uppercase tracking-widest text-muted-foreground">Pipelines</p>
-            <p className="mt-2 font-display text-3xl text-foreground">{data.pipelines.length}</p>
+            <p className="mt-2 font-body text-3xl text-foreground">{data.pipelines.length}</p>
             <p className="text-xs text-muted-foreground mt-1">Eight notebooks across donor, case management, and operations domains</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
             <p className="text-xs uppercase tracking-widest text-muted-foreground">Ready</p>
-            <p className="mt-2 font-display text-3xl text-foreground">{readyCount}</p>
+            <p className="mt-2 font-body text-3xl text-foreground">{readyCount}</p>
             <p className="text-xs text-muted-foreground mt-1">All notebooks are runnable in demo mode</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
             <p className="text-xs uppercase tracking-widest text-muted-foreground">With output</p>
-            <p className="mt-2 font-display text-3xl text-foreground">{data.pipelines.filter(p => p.snapshot.rowCount > 0).length}</p>
+            <p className="mt-2 font-body text-3xl text-foreground">{data.pipelines.filter(p => p.snapshot.rowCount > 0).length}</p>
             <p className="text-xs text-muted-foreground mt-1">Notebooks that have produced scored output snapshots</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
             <p className="text-xs uppercase tracking-widest text-muted-foreground">Latest snapshot</p>
-            <p className="mt-2 font-display text-xl text-foreground">{formatDateTime(data.generatedAt)}</p>
+            <p className="mt-2 font-body text-xl text-foreground">{formatDateTime(data.generatedAt)}</p>
             <p className="text-xs text-muted-foreground mt-1">Catalog refreshed from the backend service</p>
           </CardContent>
         </Card>
@@ -217,7 +217,7 @@ export default function MlPipelines() {
                   <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                     <div className="space-y-2">
                       <div className="flex flex-wrap items-center gap-2">
-                        <CardTitle className="font-display text-xl">{pipeline.name}</CardTitle>
+                        <CardTitle className="font-body text-xl">{pipeline.name}</CardTitle>
                         <Badge className={statusStyles[pipeline.status] ?? 'bg-muted text-muted-foreground border-border'}>
                           {pipeline.status}
                         </Badge>

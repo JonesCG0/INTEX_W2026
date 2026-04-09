@@ -161,7 +161,7 @@ export default function Users() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl text-foreground">User Management</h1>
+          <h1 className="font-body text-2xl text-foreground">User Management</h1>
           <p className="font-body text-sm text-muted-foreground">Create, update, unlock, and remove admin or donor accounts</p>
         </div>
         <Button onClick={openCreate} className="font-body gap-2">
@@ -231,7 +231,7 @@ export default function Users() {
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
         <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
           <SheetHeader>
-            <SheetTitle className="font-display text-xl tracking-tight">
+            <SheetTitle className="font-body text-xl tracking-tight">
               {editingUser ? 'Edit User' : 'Create User'}
             </SheetTitle>
           </SheetHeader>

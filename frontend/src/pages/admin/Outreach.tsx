@@ -69,7 +69,7 @@ export default function Outreach() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-display text-2xl text-foreground">Outreach Performance</h1>
+        <h1 className="font-body text-2xl text-foreground">Outreach Performance</h1>
         <p className="font-body text-sm text-muted-foreground">Staff-facing view of canonical `social_media_posts` reach, referrals, and campaign quality.</p>
       </div>
 
@@ -80,7 +80,7 @@ export default function Outreach() {
               <CardTitle className="font-body text-sm uppercase tracking-widest text-muted-foreground">{platform.platform}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
-              <p className="font-display text-3xl text-foreground">{platform.posts}</p>
+              <p className="font-body text-3xl text-foreground">{platform.posts}</p>
               <p className="text-xs text-muted-foreground">Posts • Reach {platform.reach.toLocaleString()}</p>
               <p className="text-xs text-muted-foreground">Donation referrals {platform.donationReferrals.toLocaleString()} • PHP {platform.estimatedDonationValuePhp.toLocaleString()}</p>
             </CardContent>

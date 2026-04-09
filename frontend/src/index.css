@@ -1,11 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Yeseva+One&display=swap');
+
+@font-face {
+  font-family: 'Geist Sans';
+  src: url('../node_modules/geist/dist/fonts/geist-sans/Geist-Variable.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --font-display: system-ui, -apple-system, 'Segoe UI', sans-serif;
-    --font-body: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-display: 'Yeseva One', serif;
+    --font-body: 'Geist Sans', 'Inter', system-ui, -apple-system, sans-serif;
 
     --background: 34 33% 94%;
     --foreground: 168 30% 9%;
@@ -18,7 +28,7 @@
     --secondary: 14 59% 39%;
     --secondary-foreground: 0 0% 100%;
     --muted: 156 14% 61%;
-    --muted-foreground: 156 18% 34%;
+    --muted-foreground: 156 14% 50%;
     --accent: 36 60% 64%;
     --accent-foreground: 168 30% 9%;
     --destructive: 6 68% 54%;
@@ -95,8 +105,8 @@
     --haven-surface-elevated: #1E2E2C;
     --haven-muted: #BECFC7;
     --haven-dark: #F0EBE0;
-    --font-display: system-ui, -apple-system, 'Segoe UI', sans-serif;
-    --font-body: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --font-display: 'Yeseva One', serif;
+    --font-body: 'Geist Sans', 'Inter', system-ui, -apple-system, sans-serif;
   }
 }
 

@@ -35,7 +35,7 @@ export const CookieConsent = ({ onConsentChange }: { onConsentChange?: (state: H
                 <IconCookie className="w-6 h-6 text-[#1D6968]" />
               </div>
               <div className="flex-1">
-                <h3 className="text-lg font-display font-semibold mb-2">Cookie Privacy</h3>
+                <h3 className="text-lg font-body font-semibold mb-2">Cookie Privacy</h3>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">
                   We use essential cookies for authentication, theme preferences, and basic security. Optional features remain disabled unless you explicitly allow them.
                 </p>
