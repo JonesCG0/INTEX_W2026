@@ -70,13 +70,22 @@ builder.Services.AddIdentity<AppUser, IdentityRole<int>>(options =>
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
 
+var authCookieDomain = builder.Configuration["AuthCookie:Domain"];
+var authCookieSameSite = builder.Configuration["AuthCookie:SameSite"];
+
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.Cookie.Name = ".ProjectHaven.Auth";
     options.Cookie.HttpOnly = true;
-    options.Cookie.SameSite = builder.Environment.IsDevelopment()
-        ? SameSiteMode.Lax
-        : SameSiteMode.None;
+    options.Cookie.IsEssential = true;
+    options.Cookie.Path = "/";
+    if (!string.IsNullOrWhiteSpace(authCookieDomain))
+    {
+        options.Cookie.Domain = authCookieDomain;
+    }
+
+    options.Cookie.SameSite = TryParseSameSiteMode(authCookieSameSite)
+        ?? (builder.Environment.IsDevelopment() ? SameSiteMode.Lax : SameSiteMode.None);
     options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
         ? CookieSecurePolicy.SameAsRequest
         : CookieSecurePolicy.Always;
@@ -424,4 +433,21 @@ static async Task EnsureAnalyticalMetricsSchemaAsync(AppDbContext db)
         END
         """;
     await db.Database.ExecuteSqlRawAsync(sql);
+}
+
+static SameSiteMode? TryParseSameSiteMode(string? rawValue)
+{
+    if (string.IsNullOrWhiteSpace(rawValue))
+    {
+        return null;
+    }
+
+    return rawValue.Trim().ToLowerInvariant() switch
+    {
+        "none" => SameSiteMode.None,
+        "lax" => SameSiteMode.Lax,
+        "strict" => SameSiteMode.Strict,
+        "unspecified" => SameSiteMode.Unspecified,
+        _ => null,
+    };
 }

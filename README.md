@@ -11,7 +11,8 @@ A secure, full-stack case management web application for a nonprofit safehouse s
 | Frontend (primary) | https://jonescg0.net |
 | Frontend (www) | https://www.jonescg0.net |
 | Frontend (Azure Static Web Apps) | https://polite-rock-003bb5b1e.1.azurestaticapps.net |
-| Backend API | https://intexw2026-crd9brarcfhyf9b8.francecentral-01.azurewebsites.net |
+| Backend API (target custom domain) | https://api.jonescg0.net |
+| Backend API (current App Service hostname) | https://intexw2026-crd9brarcfhyf9b8.francecentral-01.azurewebsites.net |
 
 ---
 
@@ -138,6 +139,12 @@ Create `frontend/.env`:
 VITE_API_URL=http://localhost:5262
 ```
 
+For production, use the custom API domain:
+
+```env
+VITE_API_URL=https://api.jonescg0.net
+```
+
 ### Backend
 
 ```bash
@@ -201,6 +208,24 @@ Drops and recreates CSV-backed tables. Requires `ConnectionStrings:DefaultConnec
   "AllowedOrigins": ["http://localhost:5173"]
 }
 ```
+
+### Production auth cookie and API domain
+
+For reliable mobile login, the frontend and backend need to stay on the same site boundary:
+
+1. Add `api.jonescg0.net` to the Azure App Service as a custom domain.
+2. Point DNS for `api.jonescg0.net` at that App Service.
+3. Set the frontend production API URL to `https://api.jonescg0.net`.
+4. Configure the ASP.NET Identity auth cookie for the parent domain:
+
+```json
+"AuthCookie": {
+  "Domain": ".jonescg0.net",
+  "SameSite": "None"
+}
+```
+
+This avoids third-party cookie behavior on mobile browsers when the frontend is on `jonescg0.net`.
 
 ### ML Pipelines
 

@@ -127,9 +127,6 @@ export default function HeroScrollSequence() {
           className="absolute inset-0 flex items-center justify-center pointer-events-none"
         >
           <div className="max-w-4xl px-8 text-center">
-            <p className="mb-4 font-body text-xs uppercase tracking-[0.32em] text-white/80">
-              Cinematic hold
-            </p>
             <h2 className="font-display text-4xl text-white drop-shadow-2xl md:text-6xl lg:text-7xl">
               Every child deserves a place to belong.
             </h2>
