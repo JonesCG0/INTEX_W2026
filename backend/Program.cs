@@ -102,6 +102,7 @@ builder.Services.AddScoped<CanonicalAdminPortalStore>();
 builder.Services.AddScoped<MlPredictionSeeder>();
 builder.Services.AddScoped<SupporterProfileService>();
 builder.Services.AddSingleton<StartupDiagnostics>();
+builder.Services.AddSingleton<AzureMlJobClient>();
 builder.Services.AddSingleton<MlPipelineStore>();
 builder.Services.Configure<AdminSeedOptions>(builder.Configuration.GetSection("AdminSeed"));
 builder.Services.Configure<AzureMlOptions>(builder.Configuration.GetSection("AzureMl"));

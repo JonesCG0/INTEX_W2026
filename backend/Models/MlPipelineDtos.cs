@@ -13,6 +13,13 @@ public sealed record MlIntegrationDto(
     string? WorkspaceName,
     string? ResourceGroup,
     string? SubscriptionId,
+    string? ComputeId,
+    string? CodeId,
+    string? EnvironmentId,
+    string? DataInputUri,
+    string? OutputDatastoreUri,
+    string? OutputBlobContainerUrl,
+    bool CanSubmitJobs,
     string StatusMessage
 );
 

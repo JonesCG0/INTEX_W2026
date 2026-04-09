@@ -184,7 +184,7 @@ export default function MlPipelines() {
           <CardContent className="p-5">
             <p className="text-xs uppercase tracking-widest text-muted-foreground">Pipelines</p>
             <p className="mt-2 font-display text-3xl text-foreground">{data.pipelines.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">Seven live notebooks and one planned pipeline slot</p>
+            <p className="text-xs text-muted-foreground mt-1">Eight notebooks across donor, case management, and operations domains</p>
           </CardContent>
         </Card>
         <Card>
@@ -391,6 +391,13 @@ export default function MlPipelines() {
                   <p><span className="text-muted-foreground">Workspace:</span> {data.integration.workspaceName ?? 'Not set'}</p>
                   <p><span className="text-muted-foreground">Resource group:</span> {data.integration.resourceGroup ?? 'Not set'}</p>
                   <p><span className="text-muted-foreground">Subscription:</span> {data.integration.subscriptionId ?? 'Not set'}</p>
+                  <p><span className="text-muted-foreground">Compute:</span> {data.integration.computeId ?? 'Not set'}</p>
+                  <p><span className="text-muted-foreground">Code asset:</span> {data.integration.codeId ?? 'Not set'}</p>
+                  <p><span className="text-muted-foreground">Environment:</span> {data.integration.environmentId ?? 'Not set'}</p>
+                  <p><span className="text-muted-foreground">Data input:</span> {data.integration.dataInputUri ?? 'Not set'}</p>
+                  <p><span className="text-muted-foreground">Output datastore:</span> {data.integration.outputDatastoreUri ?? 'Not set'}</p>
+                  <p><span className="text-muted-foreground">Blob output:</span> {data.integration.outputBlobContainerUrl ?? 'Not set'}</p>
+                  <p><span className="text-muted-foreground">Job trigger ready:</span> {data.integration.canSubmitJobs ? 'Yes' : 'Not yet'}</p>
                   <p><span className="text-muted-foreground">Studio:</span> {data.integration.studioUrl ? <a className="text-primary hover:underline" href={data.integration.studioUrl} target="_blank" rel="noreferrer">Open Azure ML Studio</a> : 'Not set'}</p>
                 </div>
               </div>

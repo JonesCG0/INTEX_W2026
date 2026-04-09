@@ -7,15 +7,17 @@ public sealed class MlPipelineStore
 {
     private static readonly HttpClient HttpClient = new();
     private readonly AzureMlOptions _options;
+    private readonly AzureMlJobClient _azureMlJobClient;
     private readonly string _repoRoot;
     private readonly string[] _outputRoots;
     private readonly List<PipelineDefinition> _definitions;
     private readonly List<MlPipelineRunRecord> _runs = [];
     private readonly object _gate = new();
 
-    public MlPipelineStore(IOptions<AzureMlOptions> options, IWebHostEnvironment environment)
+    public MlPipelineStore(IOptions<AzureMlOptions> options, AzureMlJobClient azureMlJobClient, IWebHostEnvironment environment)
     {
         _options = options.Value;
+        _azureMlJobClient = azureMlJobClient;
         _repoRoot = Path.GetFullPath(Path.Combine(environment.ContentRootPath, ".."));
         _outputRoots =
         [
@@ -32,9 +34,9 @@ public sealed class MlPipelineStore
                 Status: "Ready",
                 Purpose: "Rank safehouse-months by funding pressure and recommend allocation shares for the next cycle.",
                 NotebookPath: "ml-pipelines/donation_allocation_optimization.ipynb",
-                OutputFileName: "donation_allocation_optimization_priority_recommendations.csv",
-                PrimaryMetricLabel: "Top allocation share",
-                PrimaryMetricColumn: "recommended_allocation_share",
+                OutputFileName: string.Empty,
+                PrimaryMetricLabel: "Run status",
+                PrimaryMetricColumn: string.Empty,
                 Inputs: ["safehouses", "residents", "incident_reports", "process_recordings", "intervention_plans"],
                 Outputs: ["priority ranking", "recommended allocation share", "decision table"],
                 ResultSummary: "Surfaces safehouse-months that need the strongest next-cycle funding attention."
@@ -49,7 +51,7 @@ public sealed class MlPipelineStore
                 OutputFileName: "donor_lapse_scores.csv",
                 PrimaryMetricLabel: "Highest lapse risk",
                 PrimaryMetricColumn: "lapse_probability",
-                Inputs: ["donors", "donations", "campaigns", "social_media_posts"],
+                Inputs: ["supporters", "donations", "campaigns", "social_media_posts"],
                 Outputs: ["risk tiers", "follow-up recommendation", "score table"],
                 ResultSummary: "Flags supporters who need immediate re-engagement or routine stewardship."
             ),
@@ -73,7 +75,7 @@ public sealed class MlPipelineStore
                 Domain: "Outreach and communications",
                 Status: "Ready",
                 Purpose: "Estimate which planned posts are most likely to drive donation referrals before they are published.",
-                NotebookPath: "ml-pipelines/social-media-donation-conversion-classifier.ipynb",
+                NotebookPath: "ml-pipelines/social_media_classification_commented.ipynb",
                 OutputFileName: "social_media_planning_scores.csv",
                 PrimaryMetricLabel: "Best conversion",
                 PrimaryMetricColumn: "predicted_high_conversion_probability",
@@ -88,9 +90,9 @@ public sealed class MlPipelineStore
                 Status: "Ready",
                 Purpose: "Forecast next-month milestone progress for residents using education, attendance, and case context.",
                 NotebookPath: "ml-pipelines/education_outcome_prediction.ipynb",
-                OutputFileName: "education_outcome_prediction_scores.csv",
-                PrimaryMetricLabel: "Best milestone probability",
-                PrimaryMetricColumn: "milestone_probability_next_month",
+                OutputFileName: string.Empty,
+                PrimaryMetricLabel: "Run status",
+                PrimaryMetricColumn: string.Empty,
                 Inputs: ["residents", "education_records", "process_recordings", "incident_reports", "health_wellbeing_records"],
                 Outputs: ["scored resident-months", "milestone probability", "action list"],
                 ResultSummary: "Scores resident-months for next-month milestone achievement planning."
@@ -102,9 +104,9 @@ public sealed class MlPipelineStore
                 Status: "Ready",
                 Purpose: "Predict next-month health and wellbeing trajectory for active residents.",
                 NotebookPath: "ml-pipelines/health_wellbeing_trajectory.ipynb",
-                OutputFileName: "health_wellbeing_trajectory_scores.csv",
-                PrimaryMetricLabel: "Best trajectory score",
-                PrimaryMetricColumn: "positive_health_trajectory_next_month_score",
+                OutputFileName: string.Empty,
+                PrimaryMetricLabel: "Run status",
+                PrimaryMetricColumn: string.Empty,
                 Inputs: ["residents", "health_wellbeing_records", "process_recordings", "incident_reports", "intervention_plans"],
                 Outputs: ["resident scores", "trajectory prediction", "risk review table"],
                 ResultSummary: "Scores residents by the likelihood of a positive next-month wellbeing trajectory."
@@ -116,97 +118,96 @@ public sealed class MlPipelineStore
                 Status: "Ready",
                 Purpose: "Rank intervention opportunities by predicted success and expose a staff-facing priority list.",
                 NotebookPath: "ml-pipelines/intervention_effectiveness.ipynb",
-                OutputFileName: "intervention_effectiveness_scores.csv",
-                PrimaryMetricLabel: "Top success probability",
-                PrimaryMetricColumn: "pressure_probability",
+                OutputFileName: string.Empty,
+                PrimaryMetricLabel: "Run status",
+                PrimaryMetricColumn: string.Empty,
                 Inputs: ["residents", "intervention_plans", "process_recordings", "education_records", "health_wellbeing_records"],
                 Outputs: ["priority list", "success probability", "intervention review table"],
                 ResultSummary: "Ranks intervention opportunities so staff can focus on the most promising next steps."
             ),
             new PipelineDefinition(
-                Key: "case-conference-priority-forecast",
-                Name: "Case conference priority forecast",
-                Domain: "Planned pipeline",
-                Status: "Planned",
-                Purpose: "Forecast which residents should be prioritized for the next case conference using recent case activity.",
-                NotebookPath: "ml-pipelines/case_conference_priority_forecast.ipynb",
-                OutputFileName: "case_conference_priority_scores.csv",
-                PrimaryMetricLabel: "Build status",
-                PrimaryMetricColumn: string.Empty,
-                Inputs: ["process_recordings", "home_visitations", "education_records", "health_wellbeing_records", "incident_reports"],
-                Outputs: ["priority score", "conference ordering", "review notes"],
-                ResultSummary: "This is the planned notebook slot. Add it once you are ready to model case conference urgency."
+                Key: "safehouse-performance-monitoring",
+                Name: "Safehouse performance monitoring",
+                Domain: "Operations",
+                Status: "Ready",
+                Purpose: "Flag safehouses that may need additional support by scoring monthly operational and resident-outcome metrics.",
+                NotebookPath: "ml-pipelines/safehouse_performance_monitoring.ipynb",
+                OutputFileName: "safehouse_performance_scores.csv",
+                PrimaryMetricLabel: "Highest attention score",
+                PrimaryMetricColumn: "safehouse_attention_probability",
+                Inputs: ["safehouses", "residents", "process_recordings", "home_visitations", "education_records", "health_wellbeing_records", "incident_reports"],
+                Outputs: ["attention flag", "monthly attention probability", "operational trend table"],
+                ResultSummary: "Surfaces safehouses with deteriorating metrics so leadership can intervene early."
             ),
         ];
     }
 
-    public Task<MlPipelinesOverviewDto> GetOverviewAsync()
+    public async Task<MlPipelinesOverviewDto> GetOverviewAsync()
     {
+        List<MlPipelineRunRecord> snapshotRuns;
         lock (_gate)
         {
-            var snapshotRuns = _definitions
+            snapshotRuns = _definitions
                 .SelectMany(BuildSnapshotRuns)
                 .Concat(_runs)
                 .OrderByDescending(run => run.StartedAt)
-                .ToArray();
+                .ToList();
+        }
 
-            var pipelines = _definitions
-                .Select(definition =>
-                {
-                    var snapshot = BuildSnapshot(definition);
-                    var recentRuns = snapshotRuns
-                        .Where(run => run.PipelineKey.Equals(definition.Key, StringComparison.OrdinalIgnoreCase))
-                        .OrderByDescending(run => run.StartedAt)
-                        .Take(3)
-                        .Select(run => ToDto(run, definition.Name))
-                        .ToArray();
+        var pipelines = new List<MlPipelineDto>(_definitions.Count);
+        foreach (var definition in _definitions)
+        {
+            var snapshot = BuildSnapshot(definition);
+            var recentRuns = await BuildRecentRunsAsync(
+                snapshotRuns.Where(run => run.PipelineKey.Equals(definition.Key, StringComparison.OrdinalIgnoreCase))
+                            .OrderByDescending(run => run.StartedAt)
+                            .Take(3)).ConfigureAwait(false);
 
-                    return new MlPipelineDto(
-                        definition.Key,
-                        definition.Name,
-                        definition.Domain,
-                        definition.Status,
-                        definition.Purpose,
-                        definition.NotebookPath,
-                        definition.OutputFileName,
-                        snapshot.PrimaryMetricLabel,
-                        snapshot.PrimaryMetricValue,
-                        snapshot.ResultSummary,
-                        definition.Inputs,
-                        definition.Outputs,
-                        snapshot.Snapshot,
-                        recentRuns
-                    );
-                })
-                .ToArray();
-
-            var recentRuns = snapshotRuns
-                .OrderByDescending(run => run.StartedAt)
-                .Take(10)
-                .Select(run =>
-                {
-                    var definition = _definitions.First(item => item.Key.Equals(run.PipelineKey, StringComparison.OrdinalIgnoreCase));
-                    return ToDto(run, definition.Name);
-                })
-                .ToArray();
-
-            return Task.FromResult(new MlPipelinesOverviewDto(
-                new MlIntegrationDto(
-                    Mode: string.IsNullOrWhiteSpace(_options.Mode) ? "Demo" : _options.Mode.Trim(),
-                    StudioUrl: string.IsNullOrWhiteSpace(_options.StudioUrl) ? null : _options.StudioUrl.Trim(),
-                    WorkspaceName: string.IsNullOrWhiteSpace(_options.WorkspaceName) ? null : _options.WorkspaceName.Trim(),
-                    ResourceGroup: string.IsNullOrWhiteSpace(_options.ResourceGroup) ? null : _options.ResourceGroup.Trim(),
-                    SubscriptionId: string.IsNullOrWhiteSpace(_options.SubscriptionId) ? null : _options.SubscriptionId.Trim(),
-                    StatusMessage: BuildStatusMessage()
-                ),
-                pipelines,
-                recentRuns,
-                DateTimeOffset.UtcNow
+            pipelines.Add(new MlPipelineDto(
+                definition.Key,
+                definition.Name,
+                definition.Domain,
+                definition.Status,
+                definition.Purpose,
+                definition.NotebookPath,
+                definition.OutputFileName,
+                snapshot.PrimaryMetricLabel,
+                snapshot.PrimaryMetricValue,
+                snapshot.ResultSummary,
+                definition.Inputs,
+                definition.Outputs,
+                snapshot.Snapshot,
+                recentRuns
             ));
         }
+
+        var recentDtos = await BuildRecentRunsAsync(snapshotRuns.OrderByDescending(run => run.StartedAt).Take(10)).ConfigureAwait(false);
+
+        var canSubmitJobs = _azureMlJobClient.CanSubmitJobs(out _);
+
+        return new MlPipelinesOverviewDto(
+            new MlIntegrationDto(
+                Mode: string.IsNullOrWhiteSpace(_options.Mode) ? "Demo" : _options.Mode.Trim(),
+                StudioUrl: string.IsNullOrWhiteSpace(_options.StudioUrl) ? null : _options.StudioUrl.Trim(),
+                WorkspaceName: string.IsNullOrWhiteSpace(_options.WorkspaceName) ? null : _options.WorkspaceName.Trim(),
+                ResourceGroup: string.IsNullOrWhiteSpace(_options.ResourceGroup) ? null : _options.ResourceGroup.Trim(),
+                SubscriptionId: string.IsNullOrWhiteSpace(_options.SubscriptionId) ? null : _options.SubscriptionId.Trim(),
+                ComputeId: string.IsNullOrWhiteSpace(_options.ComputeId) ? null : _options.ComputeId.Trim(),
+                CodeId: string.IsNullOrWhiteSpace(_options.CodeId) ? null : _options.CodeId.Trim(),
+                EnvironmentId: string.IsNullOrWhiteSpace(_options.EnvironmentId) ? null : _options.EnvironmentId.Trim(),
+                DataInputUri: string.IsNullOrWhiteSpace(_options.DataInputUri) ? null : _options.DataInputUri.Trim(),
+                OutputDatastoreUri: string.IsNullOrWhiteSpace(_options.OutputDatastoreUri) ? null : _options.OutputDatastoreUri.Trim(),
+                OutputBlobContainerUrl: string.IsNullOrWhiteSpace(_options.OutputBlobContainerUrl) ? null : _options.OutputBlobContainerUrl.Trim(),
+                CanSubmitJobs: canSubmitJobs,
+                StatusMessage: BuildStatusMessage()
+            ),
+            pipelines.ToArray(),
+            recentDtos,
+            DateTimeOffset.UtcNow
+        );
     }
 
-    public Task<MlPipelineRunDto> StartRunAsync(string key, string? notes)
+    public async Task<MlPipelineRunDto> StartRunAsync(string key, string? notes)
     {
         var definition = GetDefinition(key);
         if (!definition.IsRunnable)
@@ -214,32 +215,108 @@ public sealed class MlPipelineStore
             throw new InvalidOperationException("This pipeline is planned and cannot be run yet.");
         }
 
-        var run = new MlPipelineRunRecord(
-            RunId: Guid.NewGuid().ToString("N")[..12],
-            PipelineKey: definition.Key,
-            StartedAt: DateTimeOffset.UtcNow,
-            Notes: string.IsNullOrWhiteSpace(notes) ? null : notes.Trim()
-        );
+        var run = string.Equals(_options.Mode, "AzureMl", StringComparison.OrdinalIgnoreCase)
+            ? await SubmitAzureMlRunAsync(definition, notes).ConfigureAwait(false)
+            : new MlPipelineRunRecord(
+                RunId: Guid.NewGuid().ToString("N")[..12],
+                PipelineKey: definition.Key,
+                StartedAt: DateTimeOffset.UtcNow,
+                Notes: string.IsNullOrWhiteSpace(notes) ? null : notes.Trim());
 
         lock (_gate)
         {
             _runs.Add(run);
         }
 
-        return Task.FromResult(ToDto(run, definition.Name));
+        return await BuildRunDtoAsync(run, definition.Name).ConfigureAwait(false);
     }
 
-    public Task<MlPipelineRunDto?> GetRunAsync(string key, string runId)
+    public async Task<MlPipelineRunDto?> GetRunAsync(string key, string runId)
     {
         var definition = GetDefinition(key);
+        MlPipelineRunRecord? run;
         lock (_gate)
         {
-            var run = _runs.FirstOrDefault(item =>
+            run = _runs.FirstOrDefault(item =>
                 item.PipelineKey.Equals(definition.Key, StringComparison.OrdinalIgnoreCase) &&
                 item.RunId.Equals(runId, StringComparison.OrdinalIgnoreCase));
-
-            return Task.FromResult(run is null ? null : ToDto(run, definition.Name));
         }
+
+        return run is null ? null : await BuildRunDtoAsync(run, definition.Name).ConfigureAwait(false);
+    }
+
+    private async Task<IReadOnlyList<MlPipelineRunDto>> BuildRecentRunsAsync(IEnumerable<MlPipelineRunRecord> runs)
+    {
+        var tasks = runs.Select(run =>
+        {
+            var definition = _definitions.First(item => item.Key.Equals(run.PipelineKey, StringComparison.OrdinalIgnoreCase));
+            return BuildRunDtoAsync(run, definition.Name);
+        });
+
+        return await Task.WhenAll(tasks).ConfigureAwait(false);
+    }
+
+    private async Task<MlPipelineRunRecord> SubmitAzureMlRunAsync(PipelineDefinition definition, string? notes)
+    {
+        if (!_azureMlJobClient.CanSubmitJobs(out var missingMessage))
+        {
+            throw new InvalidOperationException($"Azure ML job submission is not configured. Missing: {missingMessage}");
+        }
+
+        var submission = await _azureMlJobClient.SubmitNotebookJobAsync(
+            pipelineKey: definition.Key,
+            displayName: definition.Name,
+            notebookPath: definition.NotebookPath,
+            outputFileName: definition.OutputFileName,
+            notes: notes).ConfigureAwait(false);
+
+        return new MlPipelineRunRecord(
+            RunId: submission.JobName,
+            PipelineKey: definition.Key,
+            StartedAt: DateTimeOffset.UtcNow,
+            Notes: string.IsNullOrWhiteSpace(notes) ? null : notes.Trim(),
+            AzureJobName: submission.JobName,
+            AzureJobStatus: submission.Status,
+            AzureJobMessage: submission.Message
+        );
+    }
+
+    private async Task<MlPipelineRunDto> BuildRunDtoAsync(MlPipelineRunRecord run, string pipelineName)
+    {
+        if (!string.IsNullOrWhiteSpace(run.AzureJobName) && string.Equals(_options.Mode, "AzureMl", StringComparison.OrdinalIgnoreCase))
+        {
+            try
+            {
+                var jobState = await _azureMlJobClient.GetJobStateAsync(run.AzureJobName).ConfigureAwait(false);
+                if (jobState is not null)
+                {
+                    var normalizedStatus = NormalizeState(jobState.Status);
+                    var normalizedProgress = NormalizeProgress(jobState.Status);
+                    var isCompleted = IsCompletedState(jobState.Status);
+                    var definition = GetDefinition(run.PipelineKey);
+                    var snapshot = isCompleted ? BuildSnapshot(definition) : null;
+
+                    return new MlPipelineRunDto(
+                        run.RunId,
+                        run.PipelineKey,
+                        pipelineName,
+                        normalizedStatus,
+                        normalizedProgress,
+                        run.StartedAt,
+                        isCompleted ? DateTimeOffset.UtcNow : null,
+                        jobState.Message,
+                        isCompleted ? definition.OutputFileName : null,
+                        isCompleted ? snapshot?.ResultSummary ?? definition.ResultSummary : null
+                    );
+                }
+            }
+            catch
+            {
+                // Fall back to the stored run record if Azure ML status polling fails.
+            }
+        }
+
+        return ToDto(run, pipelineName);
     }
 
     private PipelineDefinition GetDefinition(string key)
@@ -252,10 +329,57 @@ public sealed class MlPipelineStore
     {
         if (string.Equals(_options.Mode, "AzureMl", StringComparison.OrdinalIgnoreCase))
         {
-            return "Azure ML mode is enabled. The webapp can show live pipeline runs once the workspace endpoint is configured.";
+            if (!_azureMlJobClient.CanSubmitJobs(out var missing))
+            {
+                return $"Azure ML mode is enabled, but job submission is not configured yet. Missing: {missing}.";
+            }
+
+            return "Azure ML mode is enabled. The webapp can submit notebook jobs to the workspace and refresh the blob-backed outputs.";
         }
 
         return "Demo mode is enabled. The page shows the notebooks, current output snapshots, and simulated run history until Azure ML is connected.";
+    }
+
+    private static string NormalizeState(string state)
+    {
+        return state.ToLowerInvariant() switch
+        {
+            "notstarted" => "Queued",
+            "queued" => "Queued",
+            "running" => "Running",
+            "preparing" => "Running",
+            "finalizing" => "Running",
+            "completed" => "Succeeded",
+            "succeeded" => "Succeeded",
+            "failed" => "Failed",
+            "canceled" => "Canceled",
+            "cancelrequested" => "Cancel requested",
+            _ => state
+        };
+    }
+
+    private static int NormalizeProgress(string state)
+    {
+        return state.ToLowerInvariant() switch
+        {
+            "notstarted" => 10,
+            "queued" => 15,
+            "running" => 60,
+            "preparing" => 30,
+            "finalizing" => 90,
+            "completed" => 100,
+            "succeeded" => 100,
+            "failed" => 100,
+            "canceled" => 100,
+            "cancelrequested" => 50,
+            _ => 50
+        };
+    }
+
+    private static bool IsCompletedState(string state)
+    {
+        return state.Equals("Completed", StringComparison.OrdinalIgnoreCase) ||
+               state.Equals("Succeeded", StringComparison.OrdinalIgnoreCase);
     }
 
     private MlPipelineSnapshotData BuildSnapshot(PipelineDefinition definition)
@@ -454,6 +578,20 @@ public sealed class MlPipelineStore
 
     private static RunState EvaluateState(MlPipelineRunRecord run)
     {
+        if (!string.IsNullOrWhiteSpace(run.AzureJobStatus))
+        {
+            return new RunState(
+                NormalizeState(run.AzureJobStatus),
+                NormalizeProgress(run.AzureJobStatus),
+                IsCompletedState(run.AzureJobStatus) ? run.StartedAt.AddMinutes(8) : null,
+                string.IsNullOrWhiteSpace(run.AzureJobMessage)
+                    ? $"Azure ML job status: {run.AzureJobStatus}."
+                    : run.AzureJobMessage,
+                null,
+                null
+            );
+        }
+
         if (run.StatusOverride is not null)
         {
             return new RunState(
@@ -585,6 +723,9 @@ public sealed class MlPipelineStore
         string PipelineKey,
         DateTimeOffset StartedAt,
         string? Notes,
+        string? AzureJobName = null,
+        string? AzureJobStatus = null,
+        string? AzureJobMessage = null,
         string? StatusOverride = null,
         DateTimeOffset? CompletedAtOverride = null,
         string? ResultFileNameOverride = null,
