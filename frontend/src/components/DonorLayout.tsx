@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import DarkModeToggle from './DarkModeToggle';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from '@/lib/AuthContext';
+import circleLogo from '@/assets/branding/circle-logo.png';
 
 export default function DonorLayout() {
   const { user, logout } = useAuth();
@@ -40,7 +41,15 @@ export default function DonorLayout() {
     <div className="min-h-screen bg-background">
       <div className="sticky top-0 z-30 border-b border-border/60 bg-background/95 backdrop-blur md:hidden">
         <div className="flex h-16 items-center justify-between px-4">
-          <Link to="/donor" className="font-display text-lg text-primary">Project Haven</Link>
+          <Link to="/donor" className="inline-flex h-14 items-center gap-3 rounded-full border border-border/80 bg-[#f5e8ce] px-3">
+            <img
+              src={circleLogo}
+              alt=""
+              aria-hidden="true"
+              className="h-11 w-11 shrink-0 rounded-full"
+            />
+            <span className="font-display text-[2.1rem] leading-none text-primary">Project Haven</span>
+          </Link>
           <div className="flex items-center gap-2">
             <DarkModeToggle className="h-9 w-9" />
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -85,7 +94,15 @@ export default function DonorLayout() {
 
       <aside className="fixed left-0 top-0 hidden h-screen w-[260px] flex-col border-r border-border bg-card md:flex">
         <div className="flex h-16 items-center border-b border-border px-4">
-          <span className="font-display text-lg text-primary">Project Haven</span>
+          <Link to="/donor" className="inline-flex h-14 items-center gap-3 rounded-full border border-border/80 bg-[#f5e8ce] px-3">
+            <img
+              src={circleLogo}
+              alt=""
+              aria-hidden="true"
+              className="h-11 w-11 shrink-0 rounded-full"
+            />
+            <span className="font-display text-[2.1rem] leading-none text-primary">Project Haven</span>
+          </Link>
         </div>
         <nav className="flex-1 space-y-2 px-3 py-5">{navLinks}</nav>
         <div className="space-y-3 border-t border-border p-4">
