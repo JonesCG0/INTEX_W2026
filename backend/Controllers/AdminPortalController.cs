@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using backend.Models.AdminPortal;
+using backend.Security;
 using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -8,12 +10,18 @@ namespace backend.Controllers;
 [ApiController]
 [Route("api/admin/portal")]
 [Authorize(Roles = "Admin")]
-public class AdminPortalController(AdminPortalStore store) : ControllerBase
+public class AdminPortalController(CanonicalAdminPortalStore store, ILogger<AdminPortalController> logger) : ControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<AdminPortalOverviewDto>> GetOverview()
     {
         return Ok(await store.GetOverviewAsync());
+    }
+
+    [HttpGet("social-posts")]
+    public async Task<ActionResult<IReadOnlyList<AdminPortalSocialPostDto>>> GetSocialPosts([FromQuery] string? platform = null, [FromQuery] string? campaign = null)
+    {
+        return Ok(await store.GetSocialPostsAsync(platform, campaign));
     }
 
     [HttpPost("donors")]
@@ -49,9 +57,16 @@ public class AdminPortalController(AdminPortalStore store) : ControllerBase
     [HttpDelete("donors/{id:int}")]
     public async Task<IActionResult> DeleteDonor(int id)
     {
+        var deleteGuardResult = RequireConfirmedDelete();
+        if (deleteGuardResult is not null)
+        {
+            return deleteGuardResult;
+        }
+
         try
         {
             await store.DeleteDonorAsync(id);
+            logger.LogWarning("Admin user {ActorUserId} deleted donor {DonorId}.", User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.Identity?.Name ?? "unknown", id);
             return NoContent();
         }
         catch (KeyNotFoundException)
@@ -89,9 +104,16 @@ public class AdminPortalController(AdminPortalStore store) : ControllerBase
     [HttpDelete("contributions/{id:int}")]
     public async Task<IActionResult> DeleteContribution(int id)
     {
+        var deleteGuardResult = RequireConfirmedDelete();
+        if (deleteGuardResult is not null)
+        {
+            return deleteGuardResult;
+        }
+
         try
         {
             await store.DeleteContributionAsync(id);
+            logger.LogWarning("Admin user {ActorUserId} deleted contribution {ContributionId}.", User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.Identity?.Name ?? "unknown", id);
             return NoContent();
         }
         catch (KeyNotFoundException)
@@ -122,9 +144,16 @@ public class AdminPortalController(AdminPortalStore store) : ControllerBase
     [HttpDelete("residents/{id:int}")]
     public async Task<IActionResult> DeleteResident(int id)
     {
+        var deleteGuardResult = RequireConfirmedDelete();
+        if (deleteGuardResult is not null)
+        {
+            return deleteGuardResult;
+        }
+
         try
         {
             await store.DeleteResidentAsync(id);
+            logger.LogWarning("Admin user {ActorUserId} deleted resident {ResidentId}.", User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.Identity?.Name ?? "unknown", id);
             return NoContent();
         }
         catch (KeyNotFoundException)
@@ -170,9 +199,16 @@ public class AdminPortalController(AdminPortalStore store) : ControllerBase
     [HttpDelete("recordings/{id:int}")]
     public async Task<IActionResult> DeleteRecording(int id)
     {
+        var deleteGuardResult = RequireConfirmedDelete();
+        if (deleteGuardResult is not null)
+        {
+            return deleteGuardResult;
+        }
+
         try
         {
             await store.DeleteRecordingAsync(id);
+            logger.LogWarning("Admin user {ActorUserId} deleted recording {RecordingId}.", User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.Identity?.Name ?? "unknown", id);
             return NoContent();
         }
         catch (KeyNotFoundException)
@@ -218,14 +254,81 @@ public class AdminPortalController(AdminPortalStore store) : ControllerBase
     [HttpDelete("visitations/{id:int}")]
     public async Task<IActionResult> DeleteVisitation(int id)
     {
+        var deleteGuardResult = RequireConfirmedDelete();
+        if (deleteGuardResult is not null)
+        {
+            return deleteGuardResult;
+        }
+
         try
         {
             await store.DeleteVisitationAsync(id);
+            logger.LogWarning("Admin user {ActorUserId} deleted visitation {VisitationId}.", User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.Identity?.Name ?? "unknown", id);
             return NoContent();
         }
         catch (KeyNotFoundException)
         {
             return NotFound(new { error = "Visitation not found." });
         }
+    }
+
+    [HttpPost("conferences")]
+    public async Task<ActionResult<AdminPortalConferenceDto>> AddConference([FromBody] CreateConferenceRequestDto request)
+    {
+        try
+        {
+            return Ok(await store.AddConferenceAsync(request));
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { error = "Resident not found." });
+        }
+    }
+
+    [HttpPut("conferences/{id:int}")]
+    public async Task<ActionResult<AdminPortalConferenceDto>> UpdateConference(int id, [FromBody] UpdateConferenceRequestDto request)
+    {
+        try
+        {
+            return Ok(await store.UpdateConferenceAsync(id, request));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(new { error = ex.Message });
+        }
+    }
+
+    [HttpDelete("conferences/{id:int}")]
+    public async Task<IActionResult> DeleteConference(int id)
+    {
+        var deleteGuardResult = RequireConfirmedDelete();
+        if (deleteGuardResult is not null)
+        {
+            return deleteGuardResult;
+        }
+
+        try
+        {
+            await store.DeleteConferenceAsync(id);
+            logger.LogWarning("Admin user {ActorUserId} deleted conference plan {PlanId}.", User.FindFirstValue(ClaimTypes.NameIdentifier) ?? User.Identity?.Name ?? "unknown", id);
+            return NoContent();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound(new { error = "Conference plan not found." });
+        }
+    }
+
+    private IActionResult? RequireConfirmedDelete()
+    {
+        if (AdminDeleteProtection.IsConfirmed(Request))
+        {
+            return null;
+        }
+
+        return StatusCode(StatusCodes.Status428PreconditionRequired, new
+        {
+            error = $"Send {AdminDeleteProtection.HeaderName}: {AdminDeleteProtection.RequiredValue} to confirm this delete action."
+        });
     }
 }

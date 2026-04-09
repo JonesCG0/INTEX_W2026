@@ -9,50 +9,144 @@ namespace backend.Controllers;
 
 [ApiController]
 [Route("api/public")]
+[AllowAnonymous]
 public class PublicImpactController(AppDbContext db) : ControllerBase
 {
     [HttpGet("impact")]
-    [AllowAnonymous]
     public async Task<ActionResult<ImpactDashboardDto>> GetImpactDashboard()
     {
-        var connection = db.Database.GetDbConnection();
-        await db.Database.OpenConnectionAsync();
-
         try
         {
-            var latestSnapshot = await ReadLatestSnapshotAsync(connection);
-            var publishedSnapshots = await ReadSnapshotsAsync(connection);
-            var donationTrend = await ReadDonationTrendAsync(connection);
-            var careTrend = await ReadCareTrendAsync(connection);
-            var platformPerformance = await ReadPlatformPerformanceAsync(connection);
-            var safehouses = await ReadSafehousesAsync(connection);
-            var totals = await ReadTotalsAsync(connection);
+            var latestSnapshot = await db.PublicImpactSnapshots
+                .AsNoTracking()
+                .Where(s => s.IsPublished)
+                .OrderByDescending(s => s.SnapshotDate)
+                .ThenByDescending(s => s.PublishedAt)
+                .FirstOrDefaultAsync();
+
+            var publishedSnapshots = await db.PublicImpactSnapshots
+                .AsNoTracking()
+                .Where(s => s.IsPublished)
+                .OrderByDescending(s => s.SnapshotDate)
+                .ThenByDescending(s => s.PublishedAt)
+                .Take(3)
+                .ToListAsync();
+
+            var donationTrendRaw = await db.Donations
+                .AsNoTracking()
+                .GroupBy(d => new { d.DonationDate.Year, d.DonationDate.Month })
+                .Select(g => new { g.Key.Year, g.Key.Month, Total = g.Sum(d => d.Amount ?? d.EstimatedValue ?? 0) })
+                .OrderByDescending(r => r.Year).ThenByDescending(r => r.Month)
+                .Take(6)
+                .ToListAsync();
+
+            var donationTrend = donationTrendRaw.Select(r => new MonthlyDonationRow(
+                new DateTime(r.Year, r.Month, 1),
+                r.Total
+            )).ToList();
+
+            var careTrendRaw = await db.SafehouseMonthlyMetrics
+                .AsNoTracking()
+                .Where(m => m.MonthStart != null)
+                .GroupBy(m => m.MonthStart)
+                .Select(g => new 
+                { 
+                    MonthStart = g.Key!.Value,
+                    Residents = g.Sum(m => m.ActiveResidents ?? 0),
+                    Education = g.Average(m => m.AvgEducationProgress ?? 0),
+                    Health = g.Average(m => m.AvgHealthScore ?? 0)
+                })
+                .OrderByDescending(r => r.MonthStart)
+                .Take(6)
+                .ToListAsync();
+
+            var careTrend = careTrendRaw.Select(r => new MonthlyCareRow(
+                r.MonthStart,
+                r.Residents,
+                r.Education,
+                r.Health
+            )).ToList();
+
+            var platformPerformance = await db.SocialMediaPosts
+                .AsNoTracking()
+                .GroupBy(p => p.Platform)
+                .Select(g => new
+                {
+                    Platform = g.Key,
+                    Reach = g.Sum(p => p.Reach ?? 0),
+                    DonationReferrals = g.Sum(p => p.DonationReferrals ?? 0),
+                    EngagementRate = g.Average(p => p.EngagementRate ?? 0)
+                })
+                .OrderByDescending(r => r.Reach)
+                .ToListAsync();
+
+            var platformPerformanceDtos = platformPerformance
+                .Select(r => new ImpactPlatformDto(
+                    r.Platform ?? "Unknown",
+                    r.Reach,
+                    r.DonationReferrals,
+                    r.EngagementRate))
+                .ToList();
+
+            var safehouseData = await db.Safehouses
+                .AsNoTracking()
+                .OrderBy(s => s.Name)
+                .ToListAsync();
+
+            var latestMetricsRaw = await db.SafehouseMonthlyMetrics
+                .AsNoTracking()
+                .ToListAsync();
+
+            var latestMetrics = latestMetricsRaw
+                .Where(m => m.MonthStart != null)
+                .GroupBy(m => m.SafehouseId)
+                .Select(g => g.OrderByDescending(m => m.MonthStart).First())
+                .ToDictionary(m => m.SafehouseId);
+
+            var safehouses = safehouseData.Select(s => new ImpactSafehouseDto(
+                s.SafehouseId,
+                s.Name,
+                s.Region,
+                s.City,
+                s.CurrentOccupancy ?? 0,
+                s.CapacityGirls ?? 0,
+                s.CapacityStaff ?? 0,
+                latestMetrics.TryGetValue(s.SafehouseId, out var m) ? m.AvgEducationProgress : null,
+                latestMetrics.TryGetValue(s.SafehouseId, out var m2) ? m2.AvgHealthScore : null,
+                latestMetrics.TryGetValue(s.SafehouseId, out var m3) ? m3.MonthStart?.ToString("MMM yyyy") : null
+            )).ToList();
+
+            var totals = new ImpactTotals(
+                Safehouses: await db.Safehouses.CountAsync(),
+                Supporters: await db.Supporters.CountAsync(),
+                ActiveResidents: await db.Residents.CountAsync(r => r.CaseStatus == "Active"),
+                TotalDonations: await db.Donations.CountAsync(),
+                TotalDonationValuePhp: await db.Donations.SumAsync(d => d.Amount ?? d.EstimatedValue ?? 0)
+            );
+
+            donationTrend.Reverse();
+            careTrend.Reverse();
 
             var mergedTrend = MergeTrendData(donationTrend, careTrend);
-            var hero = BuildHero(latestSnapshot, totals);
+            var hero = BuildHero(latestSnapshot != null ? new ImpactSnapshotRow(latestSnapshot.SnapshotDate, latestSnapshot.Headline, latestSnapshot.SummaryText, latestSnapshot.PublishedAt) : null, totals);
             var metrics = BuildMetrics(totals);
 
             return Ok(new ImpactDashboardDto(
                 hero,
                 metrics,
                 mergedTrend,
-                platformPerformance,
+                platformPerformanceDtos,
                 safehouses,
-                publishedSnapshots,
-                DateTimeOffset.UtcNow
+                publishedSnapshots.Select(s => new ImpactSnapshotDto(s.SnapshotDate, s.Headline, s.SummaryText, s.PublishedAt)).ToList(),
+                DateTimeOffset.UtcNow,
+                ["public_impact_snapshots", "donations", "safehouse_monthly_metrics", "social_media_posts", "safehouses", "residents", "supporters"]
             ));
         }
-        catch (DbException)
+        catch (Exception ex)
         {
+            Console.Error.WriteLine("**************** [ERROR] IMPACT DASHBOARD FAILED ****************");
+            Console.Error.WriteLine(ex.ToString());
             return StatusCode(StatusCodes.Status503ServiceUnavailable, new { error = "Impact data is temporarily unavailable." });
-        }
-        catch (InvalidOperationException)
-        {
-            return StatusCode(StatusCodes.Status503ServiceUnavailable, new { error = "Impact data is temporarily unavailable." });
-        }
-        finally
-        {
-            await db.Database.CloseConnectionAsync();
         }
     }
 
@@ -119,283 +213,6 @@ public class PublicImpactController(AppDbContext db) : ControllerBase
 
     private static string FormatPhp(decimal amount) => $"PHP {amount:N0}";
 
-    private static async Task<ImpactSnapshotRow?> ReadLatestSnapshotAsync(DbConnection connection)
-    {
-        await using var command = connection.CreateCommand();
-        command.CommandText = """
-            SELECT
-                TOP 1
-                snapshot_date,
-                headline,
-                summary_text,
-                published_at
-            FROM public_impact_snapshots
-            WHERE is_published = 1
-            ORDER BY snapshot_date DESC, published_at DESC
-            ;
-            """;
-
-        await using var reader = await command.ExecuteReaderAsync();
-        if (!await reader.ReadAsync())
-        {
-            return null;
-        }
-
-        return new ImpactSnapshotRow(
-            reader.GetDateTime(reader.GetOrdinal("snapshot_date")),
-            reader.GetString(reader.GetOrdinal("headline")),
-            reader.GetString(reader.GetOrdinal("summary_text")),
-            reader.IsDBNull(reader.GetOrdinal("published_at"))
-                ? null
-                : reader.GetDateTime(reader.GetOrdinal("published_at"))
-        );
-    }
-
-    private static async Task<IReadOnlyList<ImpactSnapshotDto>> ReadSnapshotsAsync(DbConnection connection)
-    {
-        await using var command = connection.CreateCommand();
-        command.CommandText = """
-            SELECT
-                TOP 3
-                snapshot_date,
-                headline,
-                summary_text,
-                published_at
-            FROM public_impact_snapshots
-            WHERE is_published = 1
-            ORDER BY snapshot_date DESC, published_at DESC
-            ;
-            """;
-
-        await using var reader = await command.ExecuteReaderAsync();
-        var snapshots = new List<ImpactSnapshotDto>();
-
-        while (await reader.ReadAsync())
-        {
-            snapshots.Add(new ImpactSnapshotDto(
-                reader.GetDateTime(reader.GetOrdinal("snapshot_date")),
-                reader.GetString(reader.GetOrdinal("headline")),
-                reader.GetString(reader.GetOrdinal("summary_text")),
-                reader.IsDBNull(reader.GetOrdinal("published_at"))
-                    ? null
-                    : reader.GetDateTime(reader.GetOrdinal("published_at"))
-            ));
-        }
-
-        return snapshots;
-    }
-
-    private static async Task<IReadOnlyList<MonthlyDonationRow>> ReadDonationTrendAsync(DbConnection connection)
-    {
-        await using var command = connection.CreateCommand();
-        command.CommandText = """
-            SELECT TOP 6
-                month_start,
-                SUM(amount_php) AS donation_amount_php
-            FROM (
-                SELECT
-                    DATEFROMPARTS(YEAR(donation_date), MONTH(donation_date), 1) AS month_start,
-                    COALESCE(amount, estimated_value, 0) AS amount_php
-                FROM donations
-                UNION ALL
-                SELECT
-                    DATEFROMPARTS(YEAR(ContributionAt), MONTH(ContributionAt), 1) AS month_start,
-                    COALESCE(AmountPhp, EstimatedValuePhp, 0) AS amount_php
-                FROM portal_contributions
-            ) AS combined
-            GROUP BY month_start
-            ORDER BY month_start DESC;
-            """;
-
-        await using var reader = await command.ExecuteReaderAsync();
-        var rows = new List<MonthlyDonationRow>();
-
-        while (await reader.ReadAsync())
-        {
-            rows.Add(new MonthlyDonationRow(
-                reader.GetDateTime(reader.GetOrdinal("month_start")),
-                reader.IsDBNull(reader.GetOrdinal("donation_amount_php"))
-                    ? 0
-                    : reader.GetDecimal(reader.GetOrdinal("donation_amount_php"))
-            ));
-        }
-
-        rows.Reverse();
-        return rows;
-    }
-
-    private static async Task<IReadOnlyList<MonthlyCareRow>> ReadCareTrendAsync(DbConnection connection)
-    {
-        await using var command = connection.CreateCommand();
-        command.CommandText = """
-            SELECT
-                month_start,
-                SUM(active_residents) AS active_residents,
-                AVG(avg_education_progress) AS avg_education_progress,
-                AVG(avg_health_score) AS avg_health_score
-            FROM safehouse_monthly_metrics
-            GROUP BY month_start
-            ORDER BY month_start DESC
-            OFFSET 0 ROWS FETCH NEXT 6 ROWS ONLY;
-            """;
-
-        await using var reader = await command.ExecuteReaderAsync();
-        var rows = new List<MonthlyCareRow>();
-
-        while (await reader.ReadAsync())
-        {
-            rows.Add(new MonthlyCareRow(
-                reader.GetDateTime(reader.GetOrdinal("month_start")),
-                reader.IsDBNull(reader.GetOrdinal("active_residents"))
-                    ? 0
-                    : reader.GetInt32(reader.GetOrdinal("active_residents")),
-                reader.IsDBNull(reader.GetOrdinal("avg_education_progress"))
-                    ? 0
-                    : reader.GetDecimal(reader.GetOrdinal("avg_education_progress")),
-                reader.IsDBNull(reader.GetOrdinal("avg_health_score"))
-                    ? 0
-                    : reader.GetDecimal(reader.GetOrdinal("avg_health_score"))
-            ));
-        }
-
-        rows.Reverse();
-        return rows;
-    }
-
-    private static async Task<IReadOnlyList<ImpactPlatformDto>> ReadPlatformPerformanceAsync(DbConnection connection)
-    {
-        await using var command = connection.CreateCommand();
-        command.CommandText = """
-            SELECT
-                platform,
-                SUM(reach) AS reach,
-                SUM(donation_referrals) AS donation_referrals,
-                AVG(engagement_rate) AS engagement_rate
-            FROM social_media_posts
-            GROUP BY platform
-            ORDER BY SUM(reach) DESC;
-            """;
-
-        await using var reader = await command.ExecuteReaderAsync();
-        var rows = new List<ImpactPlatformDto>();
-
-        while (await reader.ReadAsync())
-        {
-            rows.Add(new ImpactPlatformDto(
-                reader.GetString(reader.GetOrdinal("platform")),
-                reader.IsDBNull(reader.GetOrdinal("reach"))
-                    ? 0
-                    : reader.GetInt32(reader.GetOrdinal("reach")),
-                reader.IsDBNull(reader.GetOrdinal("donation_referrals"))
-                    ? 0
-                    : reader.GetInt32(reader.GetOrdinal("donation_referrals")),
-                reader.IsDBNull(reader.GetOrdinal("engagement_rate"))
-                    ? 0
-                    : reader.GetDecimal(reader.GetOrdinal("engagement_rate"))
-            ));
-        }
-
-        return rows;
-    }
-
-    private static async Task<IReadOnlyList<ImpactSafehouseDto>> ReadSafehousesAsync(DbConnection connection)
-    {
-        await using var command = connection.CreateCommand();
-        command.CommandText = """
-            SELECT
-                s.safehouse_id,
-                s.name,
-                s.region,
-                s.city,
-                s.current_occupancy,
-                s.capacity_girls,
-                s.capacity_staff,
-                m.month_start,
-                m.avg_education_progress,
-                m.avg_health_score
-            FROM safehouses AS s
-            LEFT JOIN (
-                SELECT sm.safehouse_id, sm.month_start, sm.avg_education_progress, sm.avg_health_score
-                FROM safehouse_monthly_metrics sm
-                INNER JOIN (
-                    SELECT safehouse_id, MAX(month_start) as latest_month
-                    FROM safehouse_monthly_metrics
-                    GROUP BY safehouse_id
-                ) sm_desc ON sm.safehouse_id = sm_desc.safehouse_id AND sm.month_start = sm_desc.latest_month
-            ) AS m ON s.safehouse_id = m.safehouse_id
-            ORDER BY s.name;
-            """;
-
-        await using var reader = await command.ExecuteReaderAsync();
-        var rows = new List<ImpactSafehouseDto>();
-
-        while (await reader.ReadAsync())
-        {
-            rows.Add(new ImpactSafehouseDto(
-                reader.GetInt32(reader.GetOrdinal("safehouse_id")),
-                reader.GetString(reader.GetOrdinal("name")),
-                reader.GetString(reader.GetOrdinal("region")),
-                reader.GetString(reader.GetOrdinal("city")),
-                reader.IsDBNull(reader.GetOrdinal("current_occupancy"))
-                    ? 0
-                    : reader.GetInt32(reader.GetOrdinal("current_occupancy")),
-                reader.IsDBNull(reader.GetOrdinal("capacity_girls"))
-                    ? 0
-                    : reader.GetInt32(reader.GetOrdinal("capacity_girls")),
-                reader.IsDBNull(reader.GetOrdinal("capacity_staff"))
-                    ? 0
-                    : reader.GetInt32(reader.GetOrdinal("capacity_staff")),
-                reader.IsDBNull(reader.GetOrdinal("avg_education_progress"))
-                    ? null
-                    : reader.GetDecimal(reader.GetOrdinal("avg_education_progress")),
-                reader.IsDBNull(reader.GetOrdinal("avg_health_score"))
-                    ? null
-                    : reader.GetDecimal(reader.GetOrdinal("avg_health_score")),
-                reader.IsDBNull(reader.GetOrdinal("month_start"))
-                    ? null
-                    : reader.GetDateTime(reader.GetOrdinal("month_start")).ToString("MMM yyyy", System.Globalization.CultureInfo.InvariantCulture)
-            ));
-        }
-
-        return rows;
-    }
-
-    private static async Task<ImpactTotals> ReadTotalsAsync(DbConnection connection)
-    {
-        var safehouses = await ExecuteScalarIntAsync(connection, "SELECT COUNT(*) FROM safehouses;");
-        var supporters = await ExecuteScalarIntAsync(connection, "SELECT COUNT(*) FROM supporters;");
-        var activeResidents = await ExecuteScalarIntAsync(connection, "SELECT COUNT(*) FROM residents WHERE case_status = 'Active';");
-        var publicDonations = await ExecuteScalarIntAsync(connection, "SELECT COUNT(*) FROM donations;");
-        var portalDonations = await ExecuteScalarIntAsync(connection, "SELECT COUNT(*) FROM portal_contributions;");
-        var totalDonations = publicDonations + portalDonations;
-        var totalDonationValue =
-            await ExecuteScalarDecimalAsync(connection, "SELECT COALESCE(SUM(COALESCE(amount, estimated_value, 0)), 0) FROM donations;") +
-            await ExecuteScalarDecimalAsync(connection, "SELECT COALESCE(SUM(COALESCE(AmountPhp, EstimatedValuePhp, 0)), 0) FROM portal_contributions;");
-
-        return new ImpactTotals(
-            Safehouses: safehouses,
-            Supporters: supporters,
-            ActiveResidents: activeResidents,
-            TotalDonations: totalDonations,
-            TotalDonationValuePhp: totalDonationValue
-        );
-    }
-
-    private static async Task<int> ExecuteScalarIntAsync(DbConnection connection, string sql)
-    {
-        await using var command = connection.CreateCommand();
-        command.CommandText = sql;
-        var value = await command.ExecuteScalarAsync();
-        return value is null || value is DBNull ? 0 : Convert.ToInt32(value);
-    }
-
-    private static async Task<decimal> ExecuteScalarDecimalAsync(DbConnection connection, string sql)
-    {
-        await using var command = connection.CreateCommand();
-        command.CommandText = sql;
-        var value = await command.ExecuteScalarAsync();
-        return value is null || value is DBNull ? 0 : Convert.ToDecimal(value);
-    }
 
     private sealed record ImpactSnapshotRow(DateTime SnapshotDate, string Headline, string Summary, DateTime? PublishedAt);
 

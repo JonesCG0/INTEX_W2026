@@ -1,23 +1,22 @@
 using System.Security.Claims;
 using backend.Data;
-using backend.Models.AdminPortal;
 using backend.Models;
 using backend.Models.Auth;
 using backend.Services;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace backend.Controllers;
 
 [ApiController]
 [Route("api/auth")]
 public class AuthController(
+    AppDbContext db,
     UserManager<AppUser> userManager,
     SignInManager<AppUser> signInManager,
-    AuthTokenService authTokenService,
-    AppDbContext db) : ControllerBase
+    SupporterProfileService supporterProfiles) : ControllerBase
 {
     // Returns the highest-privilege role when a user has multiple roles.
     private static string ResolvePrimaryRole(IList<string> roles)
@@ -31,7 +30,14 @@ public class AuthController(
     [AllowAnonymous]
     public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginRequestDto request)
     {
-        var user = await userManager.FindByEmailAsync(request.Email.Trim());
+        var normalizedEmail = request.Email.Trim();
+
+        if (!HasConnectionString())
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new { error = "Authentication is temporarily unavailable." });
+        }
+
+        var user = await userManager.FindByEmailAsync(normalizedEmail);
         if (user is null)
         {
             return Unauthorized(new { error = "Invalid email or password." });
@@ -52,11 +58,14 @@ public class AuthController(
         };
         await signInManager.SignInWithClaimsAsync(user, isPersistent: true, additionalClaims);
 
-        var sessionToken = authTokenService.CreateToken(user, roles.ToArray());
-        return Ok(new AuthResponseDto(true, user.Email ?? string.Empty, user.DisplayName, primaryRole, sessionToken));
+        return Ok(new AuthResponseDto(true, user.Email ?? string.Empty, user.DisplayName, primaryRole));
     }
 
+    private bool HasConnectionString() =>
+        !string.IsNullOrWhiteSpace(db.Database.GetDbConnection().ConnectionString);
+
     [HttpPost("logout")]
+    [Authorize]
     public async Task<IActionResult> Logout()
     {
         await signInManager.SignOutAsync();
@@ -70,6 +79,11 @@ public class AuthController(
         if (User.Identity?.IsAuthenticated != true)
         {
             return Ok(new CurrentUserDto(false, null, null, null));
+        }
+
+        if (!HasConnectionString())
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new { error = "Authentication is temporarily unavailable." });
         }
 
         var user = await userManager.GetUserAsync(User);
@@ -91,6 +105,11 @@ public class AuthController(
         if (request.Password != request.ConfirmPassword)
         {
             return BadRequest(new { error = "Passwords do not match." });
+        }
+
+        if (!HasConnectionString())
+        {
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new { error = "Authentication is temporarily unavailable." });
         }
 
         var existing = await userManager.FindByEmailAsync(request.Email.Trim());
@@ -115,23 +134,7 @@ public class AuthController(
         }
 
         await userManager.AddToRoleAsync(user, "Donor");
-
-        var donorProfile = await db.PortalDonors.FirstOrDefaultAsync(d => d.LinkedEmail == user.Email);
-        if (donorProfile is null)
-        {
-            db.PortalDonors.Add(new PortalDonor
-            {
-                DisplayName = user.DisplayName,
-                LinkedEmail = user.Email,
-                DonorType = "Individual",
-                Status = "Active",
-                TotalGivenPhp = 0m,
-                LastDonationAt = null,
-                PreferredChannel = "Website",
-                StewardshipLead = "Unassigned"
-            });
-            await db.SaveChangesAsync();
-        }
+        await supporterProfiles.EnsureSupporterProfileAsync(user.Email!, user.DisplayName, acquisitionChannel: "SelfRegistration");
 
         var additionalClaims = new List<Claim>
         {
@@ -139,7 +142,6 @@ public class AuthController(
         };
         await signInManager.SignInWithClaimsAsync(user, isPersistent: true, additionalClaims);
 
-        var sessionToken = authTokenService.CreateToken(user, ["Donor"]);
-        return Ok(new AuthResponseDto(true, user.Email ?? string.Empty, user.DisplayName, "Donor", sessionToken));
+        return Ok(new AuthResponseDto(true, user.Email ?? string.Empty, user.DisplayName, "Donor"));
     }
 }

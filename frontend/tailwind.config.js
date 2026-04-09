@@ -15,6 +15,7 @@ module.exports = {
       fontFamily: {
         display: ['var(--font-display)'],
         body: ['var(--font-body)'],
+        sans: ['var(--font-body)'],
       },
       borderRadius: {
         lg: 'var(--radius)',

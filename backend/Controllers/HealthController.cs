@@ -2,6 +2,7 @@ using System.Data.Common;
 using System.Reflection;
 using backend.Data;
 using backend.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +10,7 @@ namespace backend.Controllers;
 
 [ApiController]
 [Route("api/health")]
+[AllowAnonymous]
 public class HealthController(AppDbContext db, StartupDiagnostics startupDiagnostics, IWebHostEnvironment environment) : ControllerBase
 {
     [HttpGet]
@@ -38,6 +40,27 @@ public class HealthController(AppDbContext db, StartupDiagnostics startupDiagnos
 
     [HttpGet("full")]
     public async Task<IActionResult> Full([FromQuery] bool details = false) => await Ready(details);
+
+    [HttpGet("diagnostics")]
+    public async Task<IActionResult> GetDiagnostics()
+    {
+        var donorEmail = "donor@example.com";
+        var supporter = await db.Supporters.Include(s => s.Donations).FirstOrDefaultAsync(s => s.Email == donorEmail);
+        
+        var stats = new
+        {
+            Time = DateTime.UtcNow,
+            Snapshots = await db.PublicImpactSnapshots.CountAsync(),
+            Metrics = await db.SafehouseMonthlyMetrics.CountAsync(),
+            SupporterFound = supporter != null,
+            SupporterId = supporter?.SupporterId,
+            DonationCount = supporter?.Donations?.Count ?? 0,
+            AllDonations = await db.Donations.CountAsync()
+        };
+        
+        return Ok(stats);
+    }
+
 
     private async Task<HealthSnapshot> BuildReadinessSnapshotAsync(bool details)
     {

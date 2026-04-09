@@ -1,21 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import Cookies from 'js-cookie';
 import { motion, AnimatePresence } from 'framer-motion';
 import { IconCookie, IconX } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
+import { getConsentState, setConsentState, type HavenConsentState } from '@/lib/cookie-consent';
 
-export const CookieConsent = () => {
+export const CookieConsent = ({ onConsentChange }: { onConsentChange?: (state: HavenConsentState) => void }) => {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    const consent = Cookies.get('haven_consent');
+    const consent = getConsentState();
     if (!consent) {
       setShow(true);
     }
   }, []);
 
-  const accept = () => {
-    Cookies.set('haven_consent', 'true', { expires: 365, sameSite: 'strict' });
+  const updateConsent = (state: HavenConsentState) => {
+    setConsentState(state);
+    onConsentChange?.(state);
     setShow(false);
   };
 
@@ -36,19 +37,19 @@ export const CookieConsent = () => {
               <div className="flex-1">
                 <h3 className="text-lg font-display font-semibold mb-2">Cookie Privacy</h3>
                 <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">
-                  We use cookies to improve your experience and ensure compliance with IS414 security and GDPR mandates.
+                  We use essential cookies for authentication, theme preferences, and basic security. Optional features remain disabled unless you explicitly allow them.
                 </p>
                 <div className="flex gap-3">
-                  <Button onClick={accept} className="bg-[#1D6968] hover:bg-[#1D6968]/90 text-white">
+                  <Button onClick={() => updateConsent('all')} className="bg-[#1D6968] hover:bg-[#1D6968]/90 text-white">
                     Accept All
                   </Button>
-                  <Button variant="outline" onClick={() => setShow(false)}>
+                  <Button variant="outline" onClick={() => updateConsent('essential')}>
                     Essential Only
                   </Button>
                 </div>
               </div>
               <button 
-                onClick={() => setShow(false)}
+                onClick={() => updateConsent('dismissed')}
                 className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
                 aria-label="Close"
               >

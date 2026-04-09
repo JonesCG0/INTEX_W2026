@@ -1,32 +1,17 @@
-import { useState, useEffect } from 'react';
 import { IconMoon, IconSun } from '@tabler/icons-react';
 import { Button } from "@/components/ui/button";
+import { useThemeStore } from '@/store/useThemeStore';
 
 export default function DarkModeToggle({ className = "" }) {
-  const [dark, setDark] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('haven-theme');
-      if (stored) return stored === 'dark';
-      return window.matchMedia('(prefers-color-scheme: dark)').matches;
-    }
-    return false;
-  });
-
-  useEffect(() => {
-    const root = document.documentElement;
-    if (dark) {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-    localStorage.setItem('haven-theme', dark ? 'dark' : 'light');
-  }, [dark]);
+  const theme = useThemeStore((state) => state.theme);
+  const toggleTheme = useThemeStore((state) => state.toggleTheme);
+  const dark = theme === 'dark';
 
   return (
     <Button
       variant="ghost"
       size="icon"
-      onClick={() => setDark(!dark)}
+      onClick={toggleTheme}
       className={`rounded-full ${className}`}
       aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
     >

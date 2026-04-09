@@ -1,9 +1,10 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 
 import { API_BASE } from '@/lib/api-base';
+import { apiFetch } from '@/lib/api-client';
 import { useAuth } from '@/lib/AuthContext';
 import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/aceternity/Label';
@@ -24,10 +25,10 @@ export default function SignUp() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE}/api/auth/register`, {
+      const response = await apiFetch(`${API_BASE}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        skipAuthHandling: true,
         body: JSON.stringify({
           email,
           displayName,
@@ -38,9 +39,6 @@ export default function SignUp() {
 
       if (response.ok) {
         const data = await response.json();
-        if (data.sessionToken) {
-          localStorage.setItem('projectHaven.sessionToken', data.sessionToken);
-        }
         toast.success(`Welcome, ${data.displayName}. Your donor account is ready.`);
         await checkAppState();
         navigate('/donor');

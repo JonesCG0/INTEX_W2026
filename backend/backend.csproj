@@ -18,11 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\ml-pipelines\generated_outputs\*.csv">
-      <Link>generated_outputs\%(Filename)%(Extension)</Link>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
-    </Content>
+    <None Include="..\ml-pipelines\generated_outputs\resident_reintegration_queue.csv" Link="ml-data\resident_reintegration_queue.csv" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

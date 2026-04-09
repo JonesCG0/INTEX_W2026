@@ -1,4 +1,4 @@
-import { Toaster } from "@/components/ui/toaster"
+import { Toaster } from "@/components/ui/sonner"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
@@ -11,7 +11,9 @@ import AdminDashboard from './pages/admin/Dashboard';
 import Residents from './pages/admin/Residents';
 import Recordings from './pages/admin/Recordings';
 import Visitations from './pages/admin/Visitations';
+import Conferences from './pages/admin/Conferences';
 import Donors from './pages/admin/Donors';
+import Outreach from './pages/admin/Outreach';
 import Users from './pages/admin/Users';
 import Analytics from './pages/admin/Analytics';
 import MlPipelines from './pages/admin/MlPipelines';
@@ -86,9 +88,11 @@ const AuthenticatedApp = () => {
         <Route index element={<AdminDashboard />} />
         <Route path="residents" element={<Residents />} />
         <Route path="residents/:id/recordings" element={<Recordings />} />
+        <Route path="conferences" element={<Conferences />} />
         <Route path="visitations" element={<Visitations />} />
         <Route path="residents/:id/visitations" element={<Visitations />} />
         <Route path="donors" element={<Donors />} />
+        <Route path="outreach" element={<Outreach />} />
         <Route path="users" element={<Users />} />
         <Route path="analytics" element={<Analytics />} />
         <Route path="ml-pipelines" element={<MlPipelines />} />
@@ -101,25 +105,40 @@ const AuthenticatedApp = () => {
 
 import { CookieConsent } from "@/components/common/CookieConsent"
 import { useThemeStore } from "@/store/useThemeStore"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
+import { allowsOptionalFeatures, getConsentState, type HavenConsentState } from "@/lib/cookie-consent"
+
+const OptionalFeaturesBootstrap = ({ enabled }: { enabled: boolean }) => {
+  useEffect(() => {
+    document.documentElement.dataset.optionalFeatures = enabled ? "enabled" : "disabled";
+  }, [enabled]);
+
+  return null;
+}
 
 function App() {
-  const setTheme = useThemeStore((state) => state.setTheme);
-  const theme = useThemeStore((state) => state.theme);
+  const initializeTheme = useThemeStore((state) => state.initializeTheme);
+  const [consentState, setConsentState] = useState<HavenConsentState | null>(null);
 
   useEffect(() => {
-    // Sync theme to document on first mount
-    setTheme(theme);
+    initializeTheme();
+  }, [initializeTheme]);
+
+  useEffect(() => {
+    setConsentState(getConsentState());
   }, []);
+
+  const optionalFeaturesEnabled = allowsOptionalFeatures(consentState);
 
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClientInstance}>
+        <OptionalFeaturesBootstrap enabled={optionalFeaturesEnabled} />
         <Router>
           <AuthenticatedApp />
         </Router>
-        <Toaster />
-        <CookieConsent />
+        <Toaster position="bottom-right" richColors closeButton />
+        <CookieConsent onConsentChange={setConsentState} />
       </QueryClientProvider>
     </AuthProvider>
   )

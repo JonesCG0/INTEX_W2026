@@ -2,7 +2,8 @@ using System.Data.Common;
 using backend.Data;
 using backend.Models;
 using backend.Models.Admin;
-using backend.Models.AdminPortal;
+using backend.Security;
+using backend.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -16,7 +17,9 @@ namespace backend.Controllers;
 public class AdminController(
     UserManager<AppUser> userManager,
     RoleManager<IdentityRole<int>> roleManager,
-    AppDbContext db) : ControllerBase
+    AppDbContext db,
+    SupporterProfileService supporterProfiles,
+    ILogger<AdminController> logger) : ControllerBase
 {
     // ── User Management ────────────────────────────────────────────────────
 
@@ -146,6 +149,12 @@ public class AdminController(
     [HttpDelete("users/{id:int}")]
     public async Task<IActionResult> DeleteUser(int id)
     {
+        var deleteGuardResult = RequireConfirmedDelete();
+        if (deleteGuardResult is not null)
+        {
+            return deleteGuardResult;
+        }
+
         var currentUserId = int.Parse(userManager.GetUserId(User)!);
         if (id == currentUserId)
         {
@@ -158,12 +167,22 @@ public class AdminController(
             return NotFound(new { error = "User not found." });
         }
 
+        if (await userManager.IsInRoleAsync(user, "Admin"))
+        {
+            var adminUsers = await userManager.GetUsersInRoleAsync("Admin");
+            if (adminUsers.Count <= 1)
+            {
+                return BadRequest(new { error = "You cannot delete the last administrator account." });
+            }
+        }
+
         var result = await userManager.DeleteAsync(user);
         if (!result.Succeeded)
         {
             return StatusCode(500, new { error = result.Errors.FirstOrDefault()?.Description ?? "Delete failed." });
         }
 
+        logger.LogWarning("Admin user {ActorUserId} deleted user {TargetUserId}.", userManager.GetUserId(User), id);
         return NoContent();
     }
 
@@ -187,12 +206,9 @@ public class AdminController(
     [HttpPost("query")]
     public async Task<IActionResult> RunQuery([FromBody] QueryRequestDto dto)
     {
-        var sql = dto.Sql.Trim();
-
-        // Only allow SELECT statements
-        if (!sql.StartsWith("SELECT", StringComparison.OrdinalIgnoreCase))
+        if (!AdminSqlGuard.TryValidateReadOnlyQuery(dto.Sql, out var sql, out var validationError))
         {
-            return BadRequest(new { error = "Only SELECT statements are allowed." });
+            return BadRequest(new { error = validationError });
         }
 
         var connection = db.Database.GetDbConnection();
@@ -220,14 +236,18 @@ public class AdminController(
                 }
                 rows.Add(row);
 
-                if (rows.Count >= 500) break; // cap at 500 rows
+                if (rows.Count >= 200) break;
             }
 
+            logger.LogInformation("Admin user {ActorUserId} executed approved read-only query against {TableCount} table(s).",
+                userManager.GetUserId(User),
+                sql.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Length);
             return Ok(new { columns, rows });
         }
         catch (DbException ex)
         {
-            return BadRequest(new { error = ex.Message });
+            logger.LogWarning(ex, "Admin user {ActorUserId} submitted an invalid read-only query.", userManager.GetUserId(User));
+            return BadRequest(new { error = "Query execution failed. Review the syntax and allowed tables." });
         }
         finally
         {
@@ -244,25 +264,19 @@ public class AdminController(
 
     private async Task EnsureDonorProfileAsync(string email, string displayName)
     {
-        var donor = await db.PortalDonors.FirstOrDefaultAsync(d => d.LinkedEmail == email);
-        if (donor is not null)
+        await supporterProfiles.EnsureSupporterProfileAsync(email, displayName, acquisitionChannel: "AdminUserProvisioning");
+    }
+
+    private IActionResult? RequireConfirmedDelete()
+    {
+        if (AdminDeleteProtection.IsConfirmed(Request))
         {
-            donor.DisplayName = displayName.Trim();
-            await db.SaveChangesAsync();
-            return;
+            return null;
         }
 
-        db.PortalDonors.Add(new PortalDonor
+        return StatusCode(StatusCodes.Status428PreconditionRequired, new
         {
-            DisplayName = displayName.Trim(),
-            LinkedEmail = email,
-            DonorType = "Individual",
-            Status = "Active",
-            TotalGivenPhp = 0m,
-            PreferredChannel = "Website",
-            StewardshipLead = "Unassigned"
+            error = $"Send {AdminDeleteProtection.HeaderName}: {AdminDeleteProtection.RequiredValue} to confirm this delete action."
         });
-
-        await db.SaveChangesAsync();
     }
 }

@@ -1,11 +1,32 @@
 import * as React from "react"
 import useEmblaCarousel from "embla-carousel-react";
+import type { EmblaCarouselType, EmblaOptionsType, EmblaPluginType } from "embla-carousel";
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons-react'
 
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 
-const CarouselContext = React.createContext(null)
+type CarouselApi = EmblaCarouselType | undefined;
+
+interface CarouselContextProps {
+  carouselRef: ReturnType<typeof useEmblaCarousel>[0];
+  api: CarouselApi;
+  opts?: EmblaOptionsType;
+  orientation: "horizontal" | "vertical";
+  scrollPrev: () => void;
+  scrollNext: () => void;
+  canScrollPrev: boolean;
+  canScrollNext: boolean;
+}
+
+interface CarouselProps extends React.HTMLAttributes<HTMLDivElement> {
+  opts?: EmblaOptionsType;
+  plugins?: EmblaPluginType[];
+  orientation?: "horizontal" | "vertical";
+  setApi?: (api: CarouselApi) => void;
+}
+
+const CarouselContext = React.createContext<CarouselContextProps | null>(null)
 
 function useCarousel() {
   const context = React.useContext(CarouselContext)
@@ -17,7 +38,7 @@ function useCarousel() {
   return context
 }
 
-const Carousel = React.forwardRef((
+const Carousel = React.forwardRef<HTMLDivElement, CarouselProps>((
   {
     orientation = "horizontal",
     opts,
@@ -36,7 +57,7 @@ const Carousel = React.forwardRef((
   const [canScrollPrev, setCanScrollPrev] = React.useState(false)
   const [canScrollNext, setCanScrollNext] = React.useState(false)
 
-  const onSelect = React.useCallback((api) => {
+  const onSelect = React.useCallback((api: CarouselApi) => {
     if (!api) {
       return
     }
@@ -53,7 +74,7 @@ const Carousel = React.forwardRef((
     api?.scrollNext()
   }, [api])
 
-  const handleKeyDown = React.useCallback((event) => {
+  const handleKeyDown = React.useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.key === "ArrowLeft") {
       event.preventDefault()
       scrollPrev()

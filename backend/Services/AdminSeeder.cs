@@ -1,8 +1,9 @@
 using backend.Data;
 using backend.Models;
 using backend.Models.Auth;
-using backend.Models.AdminPortal;
+using backend.Models.Canonical;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace backend.Services;
@@ -11,9 +12,11 @@ public sealed class AdminSeeder(
     UserManager<AppUser> userManager,
     RoleManager<IdentityRole<int>> roleManager,
     IOptions<AdminSeedOptions> options,
-    AppDbContext db)
+    AppDbContext db,
+    SupporterProfileService supporterProfiles)
 {
     private const string AdminRole = "Admin";
+    private const string DonorRole = "Donor";
 
     public async Task EnsureAdminAsync(CancellationToken cancellationToken = default)
     {
@@ -23,103 +26,138 @@ public sealed class AdminSeeder(
             return;
         }
 
-        // Ensure the Admin role exists
-        if (!await roleManager.RoleExistsAsync(AdminRole))
-        {
-            await roleManager.CreateAsync(new IdentityRole<int>(AdminRole));
-        }
+        Console.WriteLine("**************** [BOOTSTRAP] STARTING ADMIN/DONOR SEEDING ****************");
 
-        // Ensure the Donor role exists
-        if (!await roleManager.RoleExistsAsync("Donor"))
+        try
         {
-            await roleManager.CreateAsync(new IdentityRole<int>("Donor"));
-        }
+            // 1. Roles
+            if (!await roleManager.RoleExistsAsync(AdminRole))
+                await roleManager.CreateAsync(new IdentityRole<int>(AdminRole));
+            
+            if (!await roleManager.RoleExistsAsync(DonorRole))
+                await roleManager.CreateAsync(new IdentityRole<int>(DonorRole));
 
-        var normalizedEmail = seedOptions.Email.Trim();
-        var existingUser = await userManager.FindByEmailAsync(normalizedEmail);
-
-        if (existingUser is not null)
-        {
-            // Promote to admin if not already
-            if (!await userManager.IsInRoleAsync(existingUser, AdminRole))
+            // 2. Admin User
+            var adminEmail = seedOptions.Email.Trim();
+            var adminUser = await userManager.FindByEmailAsync(adminEmail);
+            if (adminUser == null)
             {
-                await userManager.AddToRoleAsync(existingUser, AdminRole);
+                adminUser = new AppUser { UserName = adminEmail, Email = adminEmail, DisplayName = seedOptions.DisplayName ?? "Admin", EmailConfirmed = true };
+                adminUser.PasswordHash = userManager.PasswordHasher.HashPassword(adminUser, seedOptions.Password);
+                await userManager.CreateAsync(adminUser);
             }
-            return;
-        }
+            if (!await userManager.IsInRoleAsync(adminUser, AdminRole))
+                await userManager.AddToRoleAsync(adminUser, AdminRole);
 
-        var user = new AppUser
-        {
-            UserName = normalizedEmail,
-            Email = normalizedEmail,
-            DisplayName = string.IsNullOrWhiteSpace(seedOptions.DisplayName)
-                ? "Project Haven Admin"
-                : seedOptions.DisplayName.Trim(),
-            EmailConfirmed = true
-        };
-
-        // Bypass password policy for the seed account by hashing directly
-        user.PasswordHash = userManager.PasswordHasher.HashPassword(user, seedOptions.Password);
-
-        var result = await userManager.CreateAsync(user);
-        if (!result.Succeeded)
-        {
-            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-            throw new InvalidOperationException($"Failed to create admin seed user: {errors}");
-        }
-
-        await userManager.AddToRoleAsync(user, AdminRole);
-
-        // Ensure a test Donor account
-        var donorEmail = "donor@example.com";
-        if (await userManager.FindByEmailAsync(donorEmail) == null)
-        {
-            var donor = new AppUser
+            // 3. Donor User & Profile
+            var donorEmail = seedOptions.DonorEmail?.Trim();
+            if (!string.IsNullOrWhiteSpace(donorEmail))
             {
-                UserName = donorEmail,
-                Email = donorEmail,
-                DisplayName = "Project Haven Donor",
-                EmailConfirmed = true
-            };
-            await userManager.CreateAsync(donor, "ProjectHaven2026!");
-            await userManager.AddToRoleAsync(donor, "Donor");
-
-            // Seed the physical donor record in the portal table
-            var portalDonor = new PortalDonor
-            {
-                DisplayName = "Project Haven Donor",
-                LinkedEmail = donorEmail,
-                DonorType = "Individual",
-                Status = "Active",
-                PreferredChannel = "Website",
-                StewardshipLead = "Staff Member",
-                TotalGivenPhp = 2500000m,
-                LastDonationAt = DateTime.UtcNow.AddDays(-14)
-            };
-            db.PortalDonors.Add(portalDonor);
-            await db.SaveChangesAsync(cancellationToken);
-
-            db.PortalContributions.AddRange(
-                new PortalContribution
+                var donorUser = await userManager.FindByEmailAsync(donorEmail);
+                if (donorUser == null)
                 {
-                    DonorId = portalDonor.Id,
-                    ContributionType = "Monetary",
-                    AmountPhp = 1000000m,
-                    ProgramArea = "Safehouse Ops",
-                    Description = "Annual major gift",
-                    ContributionAt = DateTime.UtcNow.AddMonths(-6)
-                },
-                new PortalContribution
-                {
-                    DonorId = portalDonor.Id,
-                    ContributionType = "Monetary",
-                    AmountPhp = 1500000m,
-                    ProgramArea = "Education Funds",
-                    Description = "Scholarship endowment",
-                    ContributionAt = DateTime.UtcNow.AddDays(-14)
+                    donorUser = new AppUser { UserName = donorEmail, Email = donorEmail, DisplayName = seedOptions.DonorDisplayName ?? "Donor", EmailConfirmed = true };
+                    donorUser.PasswordHash = userManager.PasswordHasher.HashPassword(donorUser, seedOptions.DonorPassword ?? "ProjectHaven2026!");
+                    await userManager.CreateAsync(donorUser);
+                    await userManager.AddToRoleAsync(donorUser, DonorRole);
                 }
-            );
-            await db.SaveChangesAsync(cancellationToken);
+
+                var supporter = await supporterProfiles.EnsureSupporterProfileAsync(
+                    donorEmail,
+                    donorUser.DisplayName,
+                    acquisitionChannel: "SeededAccount",
+                    cancellationToken: cancellationToken);
+
+                Console.WriteLine($"[BOOTSTRAP] Active Donor Supporter ID: {supporter.SupporterId}");
+
+                // 4. Historical Donations
+                // NOTE: Using IgnoreQueryFilters to see all records
+                var donationCount = await db.Donations
+                    .IgnoreQueryFilters()
+                    .CountAsync(d => d.SupporterId == supporter.SupporterId, cancellationToken);
+                
+                Console.WriteLine($"[BOOTSTRAP] Current donation count for donor: {donationCount}");
+
+                if (donationCount < 6)
+                {
+                    Console.WriteLine("[BOOTSTRAP] Seeding monthly trend records for donor...");
+                    var history = new List<Donation>();
+                    var baseDate = DateTime.Now.Date.AddMonths(-6);
+                    for (int i = 0; i < 6; i++)
+                    {
+                        var dDate = baseDate.AddMonths(i).AddDays(10);
+                        history.Add(new Donation
+                        {
+                            // Assign unique negative IDs to avoid EF tracking collision when ManualAssignment is enabled
+                            DonationId = -(i + 1),
+                            SupporterId = supporter.SupporterId,
+                            Amount = 25000 + (i * 5000),
+                            DonationDate = dDate,
+                            DonationType = "Cash",
+                            CurrencyCode = "PHP",
+                            CampaignName = "Historical Trend",
+                            Notes = "Generated for dashboard trend analysis"
+                        });
+                    }
+                    db.Donations.AddRange(history);
+                    await db.SaveChangesAsync(cancellationToken);
+                    Console.WriteLine("[BOOTSTRAP] Historical donations saved.");
+                }
+            }
+
+            // 5. Public Impact Snapshots
+            var snapshotCount = await db.PublicImpactSnapshots.IgnoreQueryFilters().CountAsync(cancellationToken);
+            if (snapshotCount < 2)
+            {
+                Console.WriteLine("[BOOTSTRAP] Seeding Public Impact Snapshots...");
+                db.PublicImpactSnapshots.AddRange(new[]
+                {
+                    new PublicImpactSnapshot { SnapshotId = -1, SnapshotDate = DateTime.Now.AddMonths(-1), Headline = "2025 Annual Recovery Review", SummaryText = "Project Haven successfully transitioned 45 survivors into independent living this year.", IsPublished = true, PublishedAt = DateTime.Now.AddMonths(-1) },
+                    new PublicImpactSnapshot { SnapshotId = -2, SnapshotDate = DateTime.Now, Headline = "Project Haven: 2026 Impact Overview", SummaryText = "Our safehouse network has seen significant growth in resident care and educational success.", IsPublished = true, PublishedAt = DateTime.Now }
+                });
+                await db.SaveChangesAsync(cancellationToken);
+                Console.WriteLine("[BOOTSTRAP] Impact snapshots saved.");
+            }
+
+            // 6. Safehouse Monthly Metrics
+            var metricsCount = await db.SafehouseMonthlyMetrics.IgnoreQueryFilters().CountAsync(cancellationToken);
+            if (metricsCount < 6)
+            {
+                Console.WriteLine("[BOOTSTRAP] Seeding Safehouse Monthly Metrics...");
+                var safehouses = await db.Safehouses.IgnoreQueryFilters().ToListAsync(cancellationToken);
+                if (safehouses.Any())
+                {
+                    var metrics = new List<SafehouseMonthlyMetric>();
+                    var baseDate = DateTime.Now.Date.AddMonths(-6);
+                    int metricId = -1;
+                    foreach (var sh in safehouses)
+                    {
+                        for (int i = 0; i < 6; i++)
+                        {
+                            metrics.Add(new SafehouseMonthlyMetric
+                            {
+                                MetricId = metricId--,
+                                SafehouseId = sh.SafehouseId,
+                                MonthStart = new DateTime(baseDate.AddMonths(i).Year, baseDate.AddMonths(i).Month, 1),
+                                ActiveResidents = 12 + i,
+                                AvgEducationProgress = 0.60m + (i * 0.05m),
+                                AvgHealthScore = 0.70m + (i * 0.04m)
+                            });
+                        }
+                    }
+                    db.SafehouseMonthlyMetrics.AddRange(metrics);
+                    await db.SaveChangesAsync(cancellationToken);
+                    Console.WriteLine("[BOOTSTRAP] Safehouse metrics saved.");
+                }
+            }
+
+            Console.WriteLine("**************** [BOOTSTRAP] SEEDING COMPLETED SUCCESSFULLY ****************");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine("**************** [BOOTSTRAP] CRITICAL SEEDING ERROR ****************");
+            Console.Error.WriteLine(ex.ToString());
+            throw;
         }
     }
 }

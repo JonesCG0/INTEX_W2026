@@ -1,7 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ChangeEvent } from 'react';
 import { API_BASE } from '@/lib/api-base';
+import { apiFetch } from '@/lib/api-client';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,64 +11,52 @@ import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { IconArrowLeft, IconPlus, IconCalendar, IconUser, IconHeartRateMonitor, IconPencil, IconTrash } from '@tabler/icons-react';
 import { Link, useParams } from 'react-router-dom';
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { motion } from 'framer-motion';
 import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
+import type { AdminPortalOverview, RecordingRecord, ResidentRecord } from '@/types/admin';
 
 const sessionTypes = ["Intake", "Individual Counseling", "Group Session", "Family Meeting", "Crisis Intervention", "Discharge Planning"];
 const emotionalStates = ["Calm", "Anxious", "Distressed", "Hopeful", "Withdrawn", "Agitated"];
 
-interface Recording {
-  id: number;
-  residentId: number;
-  residentName: string;
-  sessionAt: string;
-  staffName: string;
-  sessionType: string;
-  emotionalState: string;
-  summary: string;
-  interventions: string;
-  followUp: string;
-}
-
-interface Resident {
-  id: number;
-  codeName: string;
-  safehouse: string;
-}
-
 export default function Recordings() {
   const { id: residentId } = useParams();
 
-  const [recordings, setRecordings] = useState<Recording[]>([]);
-  const [resident, setResident] = useState<Resident | null>(null);
+  const [recordings, setRecordings] = useState<RecordingRecord[]>([]);
+  const [resident, setResident] = useState<ResidentRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editingRecording, setEditingRecording] = useState<Recording | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<Recording | null>(null);
+  const [editingRecording, setEditingRecording] = useState<RecordingRecord | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<RecordingRecord | null>(null);
 
   const [form, setForm] = useState({
     sessionAt: new Date().toISOString().split('T')[0],
     sessionType: 'Individual Counseling',
+    sessionDurationMinutes: '60',
     emotionalState: 'Calm',
+    emotionalStateEnd: 'Calm',
     staffName: '',
     summary: '',
     interventions: '',
     followUp: '',
+    progressNoted: false,
+    concernsFlagged: false,
+    referralMade: false,
+    notesRestricted: '',
   });
 
   async function load() {
     try {
-      const response = await fetch(`${API_BASE}/api/admin/portal/residents/${residentId}/recordings`, { credentials: 'include' });
+      const response = await apiFetch(`${API_BASE}/api/admin/portal/residents/${residentId}/recordings`);
       if (response.ok) {
-        const data = await response.json();
+        const data: { recordings: RecordingRecord[] } = await response.json();
         setRecordings(data.recordings || []);
       }
 
-      const portalResp = await fetch(`${API_BASE}/api/admin/portal`, { credentials: 'include' });
+      const portalResp = await apiFetch(`${API_BASE}/api/admin/portal`);
       if (portalResp.ok) {
-        const portalData = await portalResp.json();
-        const match = portalData.residents?.find((r: Resident) => r.id?.toString() === residentId);
+        const portalData: AdminPortalOverview = await portalResp.json();
+        const match = portalData.residents?.find((r) => r.id?.toString() === residentId);
         setResident(match || null);
       }
     } catch (error) {
@@ -85,25 +75,37 @@ export default function Recordings() {
     setForm({
       sessionAt: new Date().toISOString().split('T')[0],
       sessionType: 'Individual Counseling',
+      sessionDurationMinutes: '60',
       emotionalState: 'Calm',
+      emotionalStateEnd: 'Calm',
       staffName: '',
       summary: '',
       interventions: '',
       followUp: '',
+      progressNoted: false,
+      concernsFlagged: false,
+      referralMade: false,
+      notesRestricted: '',
     });
     setDrawerOpen(true);
   }
 
-  function openEdit(recording: Recording) {
+  function openEdit(recording: RecordingRecord) {
     setEditingRecording(recording);
     setForm({
       sessionAt: new Date(recording.sessionAt).toISOString().split('T')[0],
       sessionType: recording.sessionType,
+      sessionDurationMinutes: recording.sessionDurationMinutes.toString(),
       emotionalState: recording.emotionalState,
+      emotionalStateEnd: recording.emotionalStateEnd,
       staffName: recording.staffName,
       summary: recording.summary,
       interventions: recording.interventions,
       followUp: recording.followUp,
+      progressNoted: recording.progressNoted,
+      concernsFlagged: recording.concernsFlagged,
+      referralMade: recording.referralMade,
+      notesRestricted: recording.notesRestricted || '',
     });
     setDrawerOpen(true);
   }
@@ -115,19 +117,24 @@ export default function Recordings() {
         : `${API_BASE}/api/admin/portal/recordings`;
       const method = editingRecording ? 'PUT' : 'POST';
 
-      const response = await fetch(url, {
+      const response = await apiFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
-          ResidentId: Number(residentId),
-          SessionAt: new Date(form.sessionAt).toISOString(),
-          StaffName: form.staffName,
-          SessionType: form.sessionType,
-          EmotionalState: form.emotionalState,
-          Summary: form.summary,
-          Interventions: form.interventions,
-          FollowUp: form.followUp,
+          residentId: Number(residentId),
+          sessionAt: new Date(form.sessionAt).toISOString(),
+          staffName: form.staffName,
+          sessionType: form.sessionType,
+          sessionDurationMinutes: Number(form.sessionDurationMinutes || 0),
+          emotionalState: form.emotionalState,
+          emotionalStateEnd: form.emotionalStateEnd,
+          summary: form.summary,
+          interventions: form.interventions,
+          followUp: form.followUp,
+          progressNoted: form.progressNoted,
+          concernsFlagged: form.concernsFlagged,
+          referralMade: form.referralMade,
+          notesRestricted: form.notesRestricted || null,
         })
       });
 
@@ -148,9 +155,9 @@ export default function Recordings() {
   async function handleDelete() {
     if (!deleteTarget) return;
     try {
-      const response = await fetch(`${API_BASE}/api/admin/portal/recordings/${deleteTarget.id}`, {
+      const response = await apiFetch(`${API_BASE}/api/admin/portal/recordings/${deleteTarget.id}`, {
         method: 'DELETE',
-        credentials: 'include'
+        confirmDelete: true,
       });
 
       if (response.ok) {
@@ -266,6 +273,19 @@ export default function Recordings() {
                         </div>
                       )}
                     </div>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-muted/40">
+                        {rec.sessionDurationMinutes} min
+                      </span>
+                      {rec.emotionalStateEnd && (
+                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-muted/40">
+                          End state: {rec.emotionalStateEnd}
+                        </span>
+                      )}
+                      {rec.progressNoted && <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">Progress noted</span>}
+                      {rec.concernsFlagged && <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">Concern flagged</span>}
+                      {rec.referralMade && <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">Referral made</span>}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -286,13 +306,27 @@ export default function Recordings() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Session Date</Label>
-                <Input type="date" value={form.sessionAt} onChange={e => update('sessionAt', e.target.value)} className="mt-1" />
+                <Input type="date" value={form.sessionAt} onChange={(e: ChangeEvent<HTMLInputElement>) => update('sessionAt', e.target.value)} className="mt-1" />
               </div>
               <div>
                 <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Session Modality</Label>
                 <Select value={form.sessionType} onValueChange={v => update('sessionType', v)}>
                   <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>{sessionTypes.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Duration (minutes)</Label>
+                <Input type="number" value={form.sessionDurationMinutes} onChange={(e: ChangeEvent<HTMLInputElement>) => update('sessionDurationMinutes', e.target.value)} className="mt-1" />
+              </div>
+              <div>
+                <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Ending Emotional State</Label>
+                <Select value={form.emotionalStateEnd} onValueChange={v => update('emotionalStateEnd', v)}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>{emotionalStates.map(e => <SelectItem key={e} value={e}>{e}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
             </div>
@@ -307,7 +341,7 @@ export default function Recordings() {
 
             <div>
               <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Staff Name</Label>
-              <Input value={form.staffName} onChange={e => update('staffName', e.target.value)} className="mt-1" />
+              <Input value={form.staffName} onChange={(e: ChangeEvent<HTMLInputElement>) => update('staffName', e.target.value)} className="mt-1" />
             </div>
 
             <div className="space-y-4">
@@ -315,7 +349,7 @@ export default function Recordings() {
                 <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Clinical Narrative / Summary</Label>
                 <Textarea
                   value={form.summary}
-                  onChange={e => update('summary', e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) => update('summary', e.target.value)}
                   className="font-body mt-1 min-h-[120px]"
                   placeholder="Detailed neutral narrative of the interaction..."
                 />
@@ -324,7 +358,7 @@ export default function Recordings() {
                 <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Therapeutic Interventions</Label>
                 <Textarea
                   value={form.interventions}
-                  onChange={e => update('interventions', e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) => update('interventions', e.target.value)}
                   className="font-body mt-1 min-h-[80px]"
                   placeholder="Techniques used (e.g. CBT, active listening, de-escalation)..."
                 />
@@ -333,11 +367,35 @@ export default function Recordings() {
                 <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Follow-up / Action Items</Label>
                 <Textarea
                   value={form.followUp}
-                  onChange={e => update('followUp', e.target.value)}
+                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) => update('followUp', e.target.value)}
                   className="font-body mt-1 min-h-[80px]"
                   placeholder="Plan for the next interaction or internal referral..."
                 />
               </div>
+              <div>
+                <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Restricted Notes</Label>
+                <Textarea
+                  value={form.notesRestricted}
+                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) => update('notesRestricted', e.target.value)}
+                  className="font-body mt-1 min-h-[80px]"
+                  placeholder="Restricted follow-up or safeguarding details..."
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <label className="flex items-center gap-3 rounded-lg border border-border px-3 py-2">
+                <Checkbox checked={form.progressNoted} onCheckedChange={(checked: boolean | 'indeterminate') => update('progressNoted', checked === true)} />
+                <span className="font-body text-sm">Progress noted</span>
+              </label>
+              <label className="flex items-center gap-3 rounded-lg border border-border px-3 py-2">
+                <Checkbox checked={form.concernsFlagged} onCheckedChange={(checked: boolean | 'indeterminate') => update('concernsFlagged', checked === true)} />
+                <span className="font-body text-sm">Concern flagged</span>
+              </label>
+              <label className="flex items-center gap-3 rounded-lg border border-border px-3 py-2">
+                <Checkbox checked={form.referralMade} onCheckedChange={(checked: boolean | 'indeterminate') => update('referralMade', checked === true)} />
+                <span className="font-body text-sm">Referral made</span>
+              </label>
             </div>
 
             <div className="pt-4">

@@ -7,7 +7,8 @@ public sealed record ImpactDashboardDto(
     IReadOnlyList<ImpactPlatformDto> PlatformPerformance,
     IReadOnlyList<ImpactSafehouseDto> Safehouses,
     IReadOnlyList<ImpactSnapshotDto> Snapshots,
-    DateTimeOffset GeneratedAt
+    DateTimeOffset GeneratedAt,
+    IReadOnlyList<string> SourceTables
 );
 
 public sealed record ImpactHeroDto(
