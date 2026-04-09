@@ -1,3 +1,5 @@
+#if false
+using System.Data.Common;
 using backend.Data;
 using backend.Models.AdminPortal;
 using Microsoft.EntityFrameworkCore;
@@ -414,8 +416,24 @@ public sealed class AdminPortalStore(AppDbContext db)
             .ToArrayAsync();
 
         var monthlyTrends = BuildMonthlyTrends(contributions, residents, recordings, visitations);
-        var safehouseComparison = BuildSafehouseComparison(residents);
-        var programOutcomes = BuildProgramOutcomes(residents, donors);
+
+        await db.Database.OpenConnectionAsync();
+
+        IReadOnlyList<AdminPortalSafehouseComparisonDto> safehouseComparison;
+        IReadOnlyList<AdminPortalProgramOutcomeDto> programOutcomes;
+        IReadOnlyList<AdminPortalMlResidentPredictionDto> reintegrationQueue;
+
+        try
+        {
+            var connection = db.Database.GetDbConnection();
+            safehouseComparison = await ReadSafehouseComparisonAsync(connection);
+            programOutcomes = await ReadProgramOutcomesAsync(connection);
+            reintegrationQueue = await ReadReintegrationQueueAsync(connection);
+        }
+        finally
+        {
+            await db.Database.CloseConnectionAsync();
+        }
 
         return new AdminPortalOverviewDto(
             BuildDashboard(donors, contributions, residents, recordings, visitations),
@@ -424,8 +442,9 @@ public sealed class AdminPortalStore(AppDbContext db)
             residents,
             recordings,
             visitations,
-            new AdminPortalReportsDto(monthlyTrends, safehouseComparison, programOutcomes),
-            DateTimeOffset.UtcNow
+            new AdminPortalReportsDto(monthlyTrends, safehouseComparison, programOutcomes, reintegrationQueue),
+            DateTimeOffset.UtcNow,
+            ["portal_donors", "portal_contributions", "portal_residents", "portal_recordings", "portal_visitations", "safehouses", "residents", "education_records", "health_wellbeing_records", "donations", "ml_resident_reintegration_scores"]
         );
     }
 
@@ -805,35 +824,165 @@ public sealed class AdminPortalStore(AppDbContext db)
             .ToArray();
     }
 
-    private static IReadOnlyList<AdminPortalSafehouseComparisonDto> BuildSafehouseComparison(IReadOnlyList<AdminPortalResidentDto> residents)
+    private static async Task<IReadOnlyList<AdminPortalSafehouseComparisonDto>> ReadSafehouseComparisonAsync(DbConnection connection)
     {
-        return residents
-            .GroupBy(resident => resident.Safehouse)
-            .Select(group => new AdminPortalSafehouseComparisonDto(
-                group.Key,
-                group.Count(),
-                group.Key switch
-                {
-                    "San Isidro House" => 14,
-                    "Bayanihan Home" => 12,
-                    "Nueva Vida House" => 10,
-                    _ => group.Count()
-                },
-                group.Count(),
-                group.Count(item => item.RiskLevel.Equals("High", StringComparison.OrdinalIgnoreCase))))
-            .ToArray();
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT
+                s.name,
+                COALESCE(s.current_occupancy, 0) AS occupancy,
+                COALESCE(s.capacity_girls, 0) AS capacity,
+                COALESCE(active_residents.active_count, 0) AS active_residents,
+                COALESCE(high_risk.high_count, 0) AS high_risk_residents
+            FROM safehouses AS s
+            LEFT JOIN (
+                SELECT safehouse_id, COUNT(*) AS active_count
+                FROM residents
+                WHERE case_status = 'Active'
+                GROUP BY safehouse_id
+            ) AS active_residents
+                ON active_residents.safehouse_id = s.safehouse_id
+            LEFT JOIN (
+                SELECT safehouse_id, COUNT(*) AS high_count
+                FROM residents
+                WHERE case_status = 'Active'
+                  AND current_risk_level IN ('High', 'Critical')
+                GROUP BY safehouse_id
+            ) AS high_risk
+                ON high_risk.safehouse_id = s.safehouse_id
+            ORDER BY s.name;
+            """;
+
+        await using var reader = await command.ExecuteReaderAsync();
+        var comparisons = new List<AdminPortalSafehouseComparisonDto>();
+
+        while (await reader.ReadAsync())
+        {
+            comparisons.Add(new AdminPortalSafehouseComparisonDto(
+                reader.GetString(reader.GetOrdinal("name")),
+                reader.GetInt32(reader.GetOrdinal("occupancy")),
+                reader.GetInt32(reader.GetOrdinal("capacity")),
+                reader.GetInt32(reader.GetOrdinal("active_residents")),
+                reader.GetInt32(reader.GetOrdinal("high_risk_residents"))
+            ));
+        }
+
+        return comparisons;
     }
 
-    private static IReadOnlyList<AdminPortalProgramOutcomeDto> BuildProgramOutcomes(IReadOnlyList<AdminPortalResidentDto> residents, IReadOnlyList<AdminPortalDonorDto> donors)
+    private static async Task<IReadOnlyList<AdminPortalProgramOutcomeDto>> ReadProgramOutcomesAsync(DbConnection connection)
     {
-        var repeatDonors = donors.Count(donor => donor.LastDonationAt is not null && donor.LastDonationAt >= DateTime.UtcNow.AddDays(-90));
+        var avgEducationProgress = await ExecuteScalarDecimalAsync(connection, """
+            WITH latest_education AS (
+                SELECT resident_id, MAX(record_date) AS latest_record_date
+                FROM education_records
+                GROUP BY resident_id
+            )
+            SELECT COALESCE(AVG(CAST(e.progress_percent AS decimal(10,2))), 0)
+            FROM education_records e
+            INNER JOIN latest_education latest
+                ON latest.resident_id = e.resident_id
+               AND latest.latest_record_date = e.record_date;
+            """);
+
+        var avgHealthScore = await ExecuteScalarDecimalAsync(connection, """
+            WITH latest_health AS (
+                SELECT resident_id, MAX(record_date) AS latest_record_date
+                FROM health_wellbeing_records
+                GROUP BY resident_id
+            )
+            SELECT COALESCE(AVG(CAST(h.general_health_score AS decimal(10,2))), 0)
+            FROM health_wellbeing_records h
+            INNER JOIN latest_health latest
+                ON latest.resident_id = h.resident_id
+               AND latest.latest_record_date = h.record_date;
+            """);
+
+        var reintegrationInProgress = await ExecuteScalarIntAsync(connection, """
+            SELECT COUNT(*)
+            FROM residents
+            WHERE reintegration_status IN ('In Progress', 'Completed');
+            """);
+
+        var repeatDonorsLast90Days = await ExecuteScalarIntAsync(connection, """
+            WITH recent_donors AS (
+                SELECT supporter_id
+                FROM donations
+                WHERE donation_date >= DATEADD(day, -90, CAST(GETUTCDATE() AS date))
+                GROUP BY supporter_id
+                HAVING COUNT(*) >= 2
+            )
+            SELECT COUNT(*) FROM recent_donors;
+            """);
+
         return
         [
-            new AdminPortalProgramOutcomeDto("Education", "Residents with weekly study plan", "83%"),
-            new AdminPortalProgramOutcomeDto("Health", "Residents with improved health scores", "78%"),
-            new AdminPortalProgramOutcomeDto("Reintegration", "Residents on track for case conference review", residents.Count(resident => resident.NextReviewAt is not null && resident.NextReviewAt <= DateTime.UtcNow.AddDays(21)).ToString()),
-            new AdminPortalProgramOutcomeDto("Donor retention", "Repeat donors in the last 90 days", $"{repeatDonors * 100 / Math.Max(donors.Count, 1)}%")
+            new AdminPortalProgramOutcomeDto("Education", "Average latest resident progress", $"{Math.Round(avgEducationProgress)}%"),
+            new AdminPortalProgramOutcomeDto("Health", "Average latest health score", $"{avgHealthScore:N1}/5"),
+            new AdminPortalProgramOutcomeDto("Reintegration", "Residents with reintegration underway or complete", reintegrationInProgress.ToString("N0")),
+            new AdminPortalProgramOutcomeDto("Donor retention", "Supporters with 2+ donations in the last 90 days", repeatDonorsLast90Days.ToString("N0"))
         ];
+    }
+
+    private static async Task<IReadOnlyList<AdminPortalMlResidentPredictionDto>> ReadReintegrationQueueAsync(DbConnection connection)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT TOP 5
+                score.resident_id,
+                COALESCE(r.internal_code, CONCAT('Resident-', score.resident_id)) AS resident_code,
+                COALESCE(s.name, 'Unassigned') AS safehouse_name,
+                score.case_status,
+                score.reintegration_readiness_probability,
+                score.predicted_ready_within_180d,
+                score.prediction_timestamp,
+                score.model_name
+            FROM ml_resident_reintegration_scores AS score
+            LEFT JOIN residents AS r
+                ON r.resident_id = score.resident_id
+            LEFT JOIN safehouses AS s
+                ON s.safehouse_id = r.safehouse_id
+            ORDER BY score.reintegration_readiness_probability DESC, score.prediction_timestamp DESC;
+            """;
+
+        await using var reader = await command.ExecuteReaderAsync();
+        var queue = new List<AdminPortalMlResidentPredictionDto>();
+
+        while (await reader.ReadAsync())
+        {
+            queue.Add(new AdminPortalMlResidentPredictionDto(
+                reader.GetInt32(reader.GetOrdinal("resident_id")),
+                reader.GetString(reader.GetOrdinal("resident_code")),
+                reader.GetString(reader.GetOrdinal("safehouse_name")),
+                reader.GetString(reader.GetOrdinal("case_status")),
+                reader.GetDecimal(reader.GetOrdinal("reintegration_readiness_probability")),
+                reader.GetBoolean(reader.GetOrdinal("predicted_ready_within_180d")),
+                reader.IsDBNull(reader.GetOrdinal("prediction_timestamp"))
+                    ? null
+                    : reader.GetDateTime(reader.GetOrdinal("prediction_timestamp")),
+                reader.IsDBNull(reader.GetOrdinal("model_name"))
+                    ? "Unknown"
+                    : reader.GetString(reader.GetOrdinal("model_name"))
+            ));
+        }
+
+        return queue;
+    }
+
+    private static async Task<int> ExecuteScalarIntAsync(DbConnection connection, string sql)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = sql;
+        var value = await command.ExecuteScalarAsync();
+        return value is null || value is DBNull ? 0 : Convert.ToInt32(value);
+    }
+
+    private static async Task<decimal> ExecuteScalarDecimalAsync(DbConnection connection, string sql)
+    {
+        await using var command = connection.CreateCommand();
+        command.CommandText = sql;
+        var value = await command.ExecuteScalarAsync();
+        return value is null || value is DBNull ? 0 : Convert.ToDecimal(value);
     }
 
     private async Task RecalculateDonorTotalsAsync(int donorId)
@@ -880,4 +1029,12 @@ public sealed class AdminPortalStore(AppDbContext db)
             resident.NextReviewAt
         );
     }
+}
+#endif
+
+namespace backend.Services;
+
+public sealed class AdminPortalStore(CanonicalAdminPortalStore canonicalStore)
+{
+    public Task SeedAsync() => canonicalStore.SeedAsync();
 }

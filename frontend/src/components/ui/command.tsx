@@ -16,10 +16,12 @@ const Command = React.forwardRef(({ className, ...props }, ref) => (
 ))
 Command.displayName = CommandPrimitive.displayName
 
+type CommandDialogProps = React.ComponentProps<typeof Dialog>;
+
 const CommandDialog = ({
   children,
   ...props
-}) => {
+}: CommandDialogProps) => {
   return (
     (<Dialog {...props}>
       <DialogContent className="overflow-hidden p-0">
@@ -91,10 +93,12 @@ const CommandItem = React.forwardRef(({ className, ...props }, ref) => (
 
 CommandItem.displayName = CommandPrimitive.Item.displayName
 
+type CommandShortcutProps = React.HTMLAttributes<HTMLSpanElement>;
+
 const CommandShortcut = ({
   className,
   ...props
-}) => {
+}: CommandShortcutProps) => {
   return (
     (<span
       className={cn("ml-auto text-xs tracking-widest text-muted-foreground", className)}

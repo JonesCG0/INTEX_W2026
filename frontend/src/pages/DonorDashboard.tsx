@@ -1,16 +1,17 @@
 import { useState, useEffect } from 'react';
 import { API_BASE } from '@/lib/api-base';
+import { apiFetch } from '@/lib/api-client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { motion } from 'framer-motion';
 import { ResponsivePie } from '@nivo/pie';
 import { ResponsiveBar } from '@nivo/bar';
 import { useAuth } from '@/lib/AuthContext';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import { IconHeart } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
-
-const COLORS = ['#1D6968', '#A0422A', '#DCAF6C', '#4A7C70', '#C4B49A'];
+import { HAVEN_NIVO_COLORS, barLegend, havenNivoTheme } from '@/lib/nivo';
+import { formatCurrencyPhp, formatMonthKey } from '@/lib/dashboard-format';
 
 interface DonorDashboardData {
   displayName: string;
@@ -36,6 +37,8 @@ interface DonorDashboardData {
     value: string;
     icon: string;
   }>;
+  generatedAt: string;
+  sourceTables: string[];
 }
 
 export default function DonorDashboard() {
@@ -47,7 +50,7 @@ export default function DonorDashboard() {
   useEffect(() => {
     async function load() {
       try {
-        const response = await fetch(`${API_BASE}/api/DonorPortal/dashboard`, { credentials: 'include' });
+        const response = await apiFetch(`${API_BASE}/api/DonorPortal/dashboard`);
         if (response.ok) {
           const result = await response.json();
           setData(result);
@@ -112,12 +115,17 @@ export default function DonorDashboard() {
   const pieData = Object.entries(typeCounts).map(([id, value]) => ({ id, label: id, value }));
 
   const monthCounts = data.contributions.reduce((acc: Record<string, number>, c) => {
-    const month = new Date(c.date).toLocaleString('default', { month: 'short' });
+    const month = formatMonthKey(c.date);
     acc[month] = (acc[month] || 0) + (c.amountPhp || 0);
     return acc;
   }, {});
 
-  const barData = Object.entries(monthCounts).map(([month, amount]) => ({ month, amount: amount as number }));
+  const barData = Object.entries(monthCounts)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([month, amount]) => ({
+      month: new Date(`${month}-01T00:00:00`).toLocaleString('default', { month: 'short', year: '2-digit' }),
+      amount: amount as number,
+    }));
   const hasContributionData = pieData.length > 0;
   const hasTrendData = barData.length > 0;
 
@@ -127,10 +135,13 @@ export default function DonorDashboard() {
         <div>
           <h1 className="font-display text-4xl text-foreground mb-1 tracking-tight">Your Stewardship Journey</h1>
           <p className="font-body text-sm text-muted-foreground">Thank you for your partnership, {data.displayName}</p>
+          <p className="font-body text-xs text-muted-foreground mt-2">
+            Data refreshed {new Date(data.generatedAt).toLocaleString()} from {data.sourceTables?.length ?? 0} source tables.
+          </p>
         </div>
         <div className="bg-primary/5 px-4 py-2 rounded-xl border border-primary/10 flex items-center gap-3">
           <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-          <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Verified Donor Partner</span>
+          <span className="text-xs font-bold uppercase tracking-widest text-primary">Verified Donor Partner</span>
         </div>
       </div>
 
@@ -139,7 +150,7 @@ export default function DonorDashboard() {
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
           <Card className="bg-gradient-to-br from-primary/10 to-transparent border-primary/20">
             <CardContent className="p-8 text-center">
-              <p className="font-display text-4xl text-primary font-bold">₱{data.totalImpactPhp.toLocaleString()}</p>
+              <p className="font-display text-4xl text-primary font-bold">{formatCurrencyPhp(data.totalImpactPhp).replace('PHP ', '₱')}</p>
               <p className="font-body text-xs uppercase tracking-widest text-muted-foreground mt-2 font-bold">Lifetime Impact</p>
             </CardContent>
           </Card>
@@ -174,23 +185,23 @@ export default function DonorDashboard() {
                 {hasContributionData ? (
                   <ResponsivePie
                     data={pieData}
-                    margin={{ top: 20, right: 20, bottom: 60, left: 20 }}
+                    margin={{ top: 20, right: 20, bottom: 72, left: 20 }}
                     innerRadius={0.6}
                     padAngle={0.5}
                     cornerRadius={4}
-                    colors={COLORS}
+                    colors={HAVEN_NIVO_COLORS}
                     enableArcLinkLabels={false}
-                    theme={{
-                      tooltip: { container: { background: 'hsl(var(--card))', color: 'hsl(var(--foreground))', border: '1px solid hsl(var(--border))' } }
-                    }}
+                    theme={havenNivoTheme}
+                    role="img"
+                    ariaLabel="Donor giving allocation chart grouped by contribution type"
                     legends={[
                       {
                         anchor: 'bottom',
                         direction: 'row',
-                        translateY: 50,
+                        translateY: 56,
                         itemWidth: 80,
                         itemHeight: 18,
-                        itemTextColor: '#999',
+                        itemTextColor: 'hsl(var(--foreground))',
                         symbolSize: 10,
                         symbolShape: 'circle'
                       }
@@ -204,6 +215,25 @@ export default function DonorDashboard() {
                   </div>
                 )}
               </CardContent>
+              <details className="px-6 pb-4">
+                <summary className="text-xs text-muted-foreground cursor-pointer">View giving allocation table</summary>
+                <table className="w-full mt-2 text-xs">
+                  <thead>
+                    <tr className="text-left text-muted-foreground">
+                      <th>Type</th>
+                      <th>Total (PHP)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pieData.map((row) => (
+                      <tr key={`alloc-${row.id}`}>
+                        <td>{row.label}</td>
+                        <td>{Number(row.value).toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </details>
             </Card>
 
             <Card className="h-[350px]">
@@ -214,17 +244,16 @@ export default function DonorDashboard() {
                     data={barData}
                     keys={['amount']}
                     indexBy="month"
-                    margin={{ top: 10, right: 10, bottom: 40, left: 40 }}
+                    margin={{ top: 10, right: 10, bottom: 72, left: 48 }}
                     padding={0.4}
-                    colors={[COLORS[0]]}
+                    colors={[HAVEN_NIVO_COLORS[0]]}
                     borderRadius={4}
                     axisLeft={{ tickSize: 0, tickPadding: 10 }}
                     axisBottom={{ tickSize: 0, tickPadding: 10 }}
-                    theme={{
-                      axis: { ticks: { text: { fontSize: 10 } } },
-                      grid: { line: { stroke: 'hsl(var(--border))' } },
-                      tooltip: { container: { background: 'hsl(var(--card))', color: 'hsl(var(--foreground))', border: '1px solid hsl(var(--border))' } }
-                    }}
+                    legends={[barLegend]}
+                    theme={havenNivoTheme}
+                    role="img"
+                    ariaLabel="Monthly donor contribution trend chart"
                   />
                 ) : (
                   <div className="h-full flex items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 px-6 text-center">
@@ -234,6 +263,25 @@ export default function DonorDashboard() {
                   </div>
                 )}
               </CardContent>
+              <details className="px-6 pb-4">
+                <summary className="text-xs text-muted-foreground cursor-pointer">View monthly contribution table</summary>
+                <table className="w-full mt-2 text-xs">
+                  <thead>
+                    <tr className="text-left text-muted-foreground">
+                      <th>Month</th>
+                      <th>Amount (PHP)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {barData.map((row) => (
+                      <tr key={`trend-${row.month}`}>
+                        <td>{row.month}</td>
+                        <td>{row.amount.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </details>
             </Card>
           </div>
 
@@ -241,14 +289,14 @@ export default function DonorDashboard() {
           <Card>
             <CardHeader><CardTitle className="font-body text-xs uppercase tracking-widest text-muted-foreground font-extrabold font-bold">Verified Contribution Record</CardTitle></CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto rounded-xl border border-border/60">
                 <Table>
-                  <TableHeader>
+                  <TableHeader className="sticky top-0 z-10 bg-card">
                     <TableRow className="bg-muted/30">
-                      <TableHead className="font-body text-[10px] uppercase tracking-wider font-extrabold">Date</TableHead>
-                      <TableHead className="font-body text-[10px] uppercase tracking-wider font-extrabold">Type</TableHead>
-                      <TableHead className="font-body text-[10px] uppercase tracking-wider font-extrabold">Program Area</TableHead>
-                      <TableHead className="font-body text-[10px] uppercase tracking-wider font-extrabold text-right">Amount (PHP)</TableHead>
+                      <TableHead className="font-body text-xs uppercase tracking-wider font-extrabold">Date</TableHead>
+                      <TableHead className="font-body text-xs uppercase tracking-wider font-extrabold">Type</TableHead>
+                      <TableHead className="font-body text-xs uppercase tracking-wider font-extrabold">Program Area</TableHead>
+                      <TableHead className="font-body text-xs uppercase tracking-wider font-extrabold text-right">Amount (PHP)</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -258,10 +306,10 @@ export default function DonorDashboard() {
                       </TableRow>
                     ) : (
                       data.contributions.map(c => (
-                        <TableRow key={c.id} className="hover:bg-muted/10 transition-colors border-b border-border/40">
+                        <TableRow key={c.id} className="border-b border-border/40 transition-colors odd:bg-card even:bg-muted/10 hover:bg-primary/5">
                           <TableCell className="font-body text-xs">{new Date(c.date).toLocaleDateString()}</TableCell>
                           <TableCell className="font-body text-xs pb-1">
-                            <span className="inline-block px-2 py-0.5 rounded-full bg-primary/5 text-primary text-[10px] font-bold">
+                            <span className="inline-block px-2 py-0.5 rounded-full bg-primary/5 text-primary text-xs font-bold">
                               {c.type}
                             </span>
                           </TableCell>
@@ -292,10 +340,10 @@ export default function DonorDashboard() {
                 <Card className="hover:border-primary/40 transition-colors group cursor-default">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-[10px] font-bold uppercase tracking-widest text-primary bg-primary/5 px-2 py-1 rounded">
+                      <span className="text-xs font-bold uppercase tracking-widest text-primary bg-primary/5 px-2 py-1 rounded">
                         {update.safehouseName}
                       </span>
-                      <span className="text-[10px] text-muted-foreground">
+                      <span className="text-xs text-muted-foreground">
                         {new Date(update.postedAt).toLocaleDateString()}
                       </span>
                     </div>
@@ -313,10 +361,10 @@ export default function DonorDashboard() {
                 <IconHeart className="h-4 w-4" />
                 Stewardship Support
               </h4>
-              <p className="font-body text-[11px] text-muted-foreground mb-4">
+              <p className="font-body text-xs text-muted-foreground mb-4">
                 Have questions about your giving history or need a tax certificate? Our stewardship team is here to help.
               </p>
-              <Button size="sm" variant="outline" className="w-full text-[10px] uppercase tracking-widest border-secondary/30 text-secondary hover:bg-secondary/5">
+              <Button size="sm" variant="outline" className="w-full text-xs uppercase tracking-widest border-secondary/30 text-secondary hover:bg-secondary/5">
                 Contact Steward
               </Button>
             </CardContent>

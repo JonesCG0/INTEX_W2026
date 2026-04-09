@@ -1,24 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
+import { AUTH_ERROR_EVENT, apiFetch } from '@/lib/api-client';
 
 const API_URL = import.meta.env.VITE_API_URL ?? '';
-const SESSION_TOKEN_KEY = 'projectHaven.sessionToken';
-
-const originalFetch = globalThis.fetch.bind(globalThis);
-if (!(globalThis as typeof globalThis & { __projectHavenFetchPatched?: boolean }).__projectHavenFetchPatched) {
-  (globalThis as typeof globalThis & { __projectHavenFetchPatched?: boolean }).__projectHavenFetchPatched = true;
-  globalThis.fetch = async (input, init) => {
-    const token = localStorage.getItem(SESSION_TOKEN_KEY);
-    if (token) {
-      const headers = new Headers(init?.headers ?? undefined);
-      if (!headers.has('X-ProjectHaven-Token')) {
-        headers.set('X-ProjectHaven-Token', token);
-      }
-      return originalFetch(input, { ...init, headers });
-    }
-
-    return originalFetch(input, init);
-  };
-}
 
 interface AuthContextType {
   user: any;
@@ -46,13 +29,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     checkAppState();
   }, []);
 
+  useEffect(() => {
+    const handleAuthFailure = (event: Event) => {
+      const detail = (event as CustomEvent<{ status: number }>).detail;
+      setUser(null);
+      setIsAuthenticated(false);
+
+      if (detail?.status === 401) {
+        if (window.location.pathname !== '/login' && window.location.pathname !== '/signup') {
+          window.location.href = '/login';
+        }
+        return;
+      }
+
+      if (detail?.status === 403 && (window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/donor'))) {
+        window.location.href = '/';
+      }
+    };
+
+    window.addEventListener(AUTH_ERROR_EVENT, handleAuthFailure as EventListener);
+    return () => window.removeEventListener(AUTH_ERROR_EVENT, handleAuthFailure as EventListener);
+  }, []);
+
   const checkAppState = async () => {
     try {
       setIsLoadingPublicSettings(true);
       setIsLoadingAuth(true);
       
-      // Call ASP.NET AuthController to get current user info (via Cookie)
-      const response = await fetch(`${API_URL}/api/auth/me`, { credentials: 'include' });
+      const response = await apiFetch(`${API_URL}/api/auth/me`, { skipAuthHandling: true });
       
       if (response.ok) {
         const data = await response.json();
@@ -87,8 +91,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async (shouldRedirect = true) => {
     try {
-      await fetch(`${API_URL}/api/auth/logout`, { method: 'POST', credentials: 'include' });
-      localStorage.removeItem(SESSION_TOKEN_KEY);
+      await apiFetch(`${API_URL}/api/auth/logout`, { method: 'POST', skipAuthHandling: true });
       setUser(null);
       setIsAuthenticated(false);
       if (shouldRedirect) {

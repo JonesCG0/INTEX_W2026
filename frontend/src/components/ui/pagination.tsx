@@ -4,10 +4,12 @@ import { IconChevronLeft, IconChevronRight, IconDots } from '@tabler/icons-react
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button";
 
+type PaginationProps = React.ComponentPropsWithoutRef<"nav">;
+
 const Pagination = ({
   className,
   ...props
-}) => (
+}: PaginationProps) => (
   <nav
     role="navigation"
     aria-label="pagination"
@@ -29,12 +31,17 @@ const PaginationItem = React.forwardRef(({ className, ...props }, ref) => (
 ))
 PaginationItem.displayName = "PaginationItem"
 
+type PaginationLinkProps = React.ComponentPropsWithoutRef<"a"> & {
+  isActive?: boolean;
+  size?: "default" | "sm" | "lg" | "icon";
+};
+
 const PaginationLink = ({
   className,
   isActive,
   size = "icon",
   ...props
-}) => (
+}: PaginationLinkProps) => (
   <a
     aria-current={isActive ? "page" : undefined}
     className={cn(buttonVariants({
@@ -45,10 +52,12 @@ const PaginationLink = ({
 )
 PaginationLink.displayName = "PaginationLink"
 
+type PaginationPreviousProps = Omit<PaginationLinkProps, "children">;
+
 const PaginationPrevious = ({
   className,
   ...props
-}) => (
+}: PaginationPreviousProps) => (
   <PaginationLink
     aria-label="Go to previous page"
     size="default"
@@ -60,10 +69,12 @@ const PaginationPrevious = ({
 )
 PaginationPrevious.displayName = "PaginationPrevious"
 
+type PaginationNextProps = Omit<PaginationLinkProps, "children">;
+
 const PaginationNext = ({
   className,
   ...props
-}) => (
+}: PaginationNextProps) => (
   <PaginationLink
     aria-label="Go to next page"
     size="default"
@@ -75,10 +86,12 @@ const PaginationNext = ({
 )
 PaginationNext.displayName = "PaginationNext"
 
+type PaginationEllipsisProps = React.ComponentPropsWithoutRef<"span">;
+
 const PaginationEllipsis = ({
   className,
   ...props
-}) => (
+}: PaginationEllipsisProps) => (
   <span
     aria-hidden
     className={cn("flex h-9 w-9 items-center justify-center", className)}

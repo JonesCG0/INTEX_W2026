@@ -1,68 +1,149 @@
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import DarkModeToggle from './DarkModeToggle';
-import { IconLogin, IconHeart, IconLogout } from '@tabler/icons-react';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { IconHeart, IconLogin, IconLogout, IconMenu2 } from '@tabler/icons-react';
 import { useAuth } from '@/lib/AuthContext';
 
 export default function PublicNav() {
   const location = useLocation();
   const { user, logout } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const links = [
     { to: "/", label: "Home" },
     { to: "/impact", label: "Impact" },
   ];
 
+  const donateHref = location.pathname === "/" ? "#donate" : "/#donate";
+  const dashboardHref = user?.role === 'Admin' ? '/admin' : '/donor';
+
+  const navLinkClass = (isActive: boolean) =>
+    `font-body text-sm transition-colors ${isActive ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`;
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-lg border-b border-border/50">
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-2">
-          <span className="font-display text-xl text-primary">Project Haven</span>
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-xl">
+      <div className="mx-auto flex h-16 w-full max-w-[1280px] items-center justify-between px-4 sm:px-6">
+        <Link to="/" className="flex min-w-0 items-center gap-3">
+          <div className="flex h-10 items-center rounded-full border border-border/80 bg-card px-4">
+            <span className="font-display text-lg leading-none text-primary">Project Haven</span>
+          </div>
+          <div className="hidden lg:block">
+            <p className="font-body text-xs uppercase tracking-[0.24em] text-muted-foreground">
+              Hopi-first youth safehouse network
+            </p>
+          </div>
         </Link>
 
-        <div className="hidden md:flex items-center gap-1">
+        <div className="hidden md:flex items-center gap-6">
           {links.map(link => (
-            <Link key={link.to} to={link.to}>
-              <Button
-                variant={location.pathname === link.to ? "secondary" : "ghost"}
-                size="sm"
-                className="font-body"
-              >
-                {link.label}
-              </Button>
+            <Link key={link.to} to={link.to} className={navLinkClass(location.pathname === link.to)}>
+              {link.label}
             </Link>
           ))}
-          <Button variant="ghost" size="sm" className="font-body text-secondary" asChild>
-            <a href="#donate">
-              <IconHeart className="h-4 w-4 mr-1" />
-              Donate
-            </a>
-          </Button>
+          <a href={donateHref} className="inline-flex items-center gap-2 font-body text-sm text-secondary transition-colors hover:text-secondary/80">
+            <IconHeart className="h-4 w-4" />
+            Donate
+          </a>
         </div>
 
         <div className="flex items-center gap-2">
           <DarkModeToggle />
           {user ? (
             <>
-              <Link to={user.role === 'Admin' ? '/admin' : '/donor'}>
-                <Button size="sm" variant="outline" className="font-body gap-2">
+              <Link to={dashboardHref}>
+                <Button size="sm" variant="outline" className="hidden font-body gap-2 sm:inline-flex">
                   <IconLogin className="h-4 w-4" />
-                  <span className="hidden sm:inline">Dashboard</span>
+                  Dashboard
                 </Button>
               </Link>
-              <Button size="sm" variant="ghost" className="font-body gap-2 text-muted-foreground" onClick={() => logout()}>
+              <Button size="sm" variant="ghost" className="hidden font-body gap-2 text-muted-foreground sm:inline-flex" onClick={() => logout()}>
                 <IconLogout className="h-4 w-4" />
-                <span className="hidden sm:inline">Logout</span>
+                Logout
               </Button>
             </>
           ) : (
-            <Link to="/login">
+            <Link to="/login" className="hidden sm:block">
               <Button size="sm" variant="outline" className="font-body gap-2">
                 <IconLogin className="h-4 w-4" />
-                <span className="hidden sm:inline">Login</span>
+                Login
               </Button>
             </Link>
           )}
+
+          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="md:hidden" aria-label="Open site navigation">
+                <IconMenu2 className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-full sm:max-w-sm">
+              <SheetHeader>
+                <SheetTitle className="font-display text-xl text-primary">Project Haven</SheetTitle>
+              </SheetHeader>
+              <div className="mt-8 space-y-6">
+                <div className="space-y-4">
+                  {links.map(link => (
+                    <Link
+                      key={link.to}
+                      to={link.to}
+                      className={navLinkClass(location.pathname === link.to)}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                  <a
+                    href={donateHref}
+                    className="flex items-center gap-2 font-body text-sm text-secondary"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <IconHeart className="h-4 w-4" />
+                    Donate
+                  </a>
+                </div>
+
+                <div className="rounded-2xl border border-border bg-card p-4">
+                  <p className="font-body text-xs uppercase tracking-[0.24em] text-muted-foreground">
+                    Built for culturally grounded care and transparent stewardship
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  {user ? (
+                    <>
+                      <Link to={dashboardHref} onClick={() => setMobileMenuOpen(false)}>
+                        <Button size="sm" variant="outline" className="w-full font-body gap-2">
+                          <IconLogin className="h-4 w-4" />
+                          Dashboard
+                        </Button>
+                      </Link>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="w-full font-body gap-2 text-muted-foreground"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          logout();
+                        }}
+                      >
+                        <IconLogout className="h-4 w-4" />
+                        Logout
+                      </Button>
+                    </>
+                  ) : (
+                    <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                      <Button size="sm" variant="outline" className="w-full font-body gap-2">
+                        <IconLogin className="h-4 w-4" />
+                        Login
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </nav>

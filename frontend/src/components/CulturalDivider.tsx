@@ -1,5 +1,15 @@
-export default function CulturalDivider({ className = "", variant = "hopi" }) {
-  const patterns = {
+type CulturalDividerVariant = "hopi" | "step" | "wave";
+
+interface CulturalDividerProps {
+  className?: string;
+  variant?: CulturalDividerVariant;
+}
+
+export default function CulturalDivider({
+  className = "",
+  variant = "hopi",
+}: CulturalDividerProps) {
+  const patterns: Record<CulturalDividerVariant, JSX.Element> = {
     hopi: (
       <svg viewBox="0 0 1200 60" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto" aria-hidden="true">
         <path d="M0 30 L40 10 L80 30 L120 10 L160 30 L200 10 L240 30 L280 10 L320 30 L360 10 L400 30 L440 10 L480 30 L520 10 L560 30 L600 10 L640 30 L680 10 L720 30 L760 10 L800 30 L840 10 L880 30 L920 10 L960 30 L1000 10 L1040 30 L1080 10 L1120 30 L1160 10 L1200 30" stroke="currentColor" strokeWidth="2" strokeOpacity="0.3"/>
@@ -25,7 +35,7 @@ export default function CulturalDivider({ className = "", variant = "hopi" }) {
 
   return (
     <div className={`text-muted ${className}`}>
-      {patterns[variant] || patterns.hopi}
+      {patterns[variant]}
     </div>
   );
 }

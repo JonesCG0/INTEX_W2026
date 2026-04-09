@@ -59,20 +59,24 @@ const SheetContent = React.forwardRef(({ side = "right", className, children, ..
 ))
 SheetContent.displayName = SheetPrimitive.Content.displayName
 
+type SheetHeaderProps = React.HTMLAttributes<HTMLDivElement>;
+
 const SheetHeader = ({
   className,
   ...props
-}) => (
+}: SheetHeaderProps) => (
   <div
     className={cn("flex flex-col space-y-2 text-center sm:text-left", className)}
     {...props} />
 )
 SheetHeader.displayName = "SheetHeader"
 
+type SheetFooterProps = React.HTMLAttributes<HTMLDivElement>;
+
 const SheetFooter = ({
   className,
   ...props
-}) => (
+}: SheetFooterProps) => (
   <div
     className={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", className)}
     {...props} />

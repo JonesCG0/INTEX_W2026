@@ -10,7 +10,33 @@ const THEMES = {
   dark: ".dark"
 }
 
-const ChartContext = React.createContext(null)
+type ChartTheme = keyof typeof THEMES;
+
+export type ChartConfig = Record<
+  string,
+  {
+    label?: React.ReactNode;
+    color?: string;
+    theme?: Partial<Record<ChartTheme, string>>;
+  }
+>;
+
+interface ChartContextValue {
+  config: ChartConfig;
+}
+
+interface ChartContainerProps extends React.HTMLAttributes<HTMLDivElement> {
+  id?: string;
+  config: ChartConfig;
+  children: React.ReactNode;
+}
+
+interface ChartStyleProps {
+  id: string;
+  config: ChartConfig;
+}
+
+const ChartContext = React.createContext<ChartContextValue | null>(null)
 
 function useChart() {
   const context = React.useContext(ChartContext)
@@ -22,7 +48,13 @@ function useChart() {
   return context
 }
 
-const ChartContainer = React.forwardRef(({ id, className, children, config, ...props }, ref) => {
+const ChartContainer = React.forwardRef<HTMLDivElement, ChartContainerProps>(({
+  id,
+  className,
+  children,
+  config,
+  ...props
+}, ref) => {
   const uniqueId = React.useId()
   const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`
 
@@ -49,8 +81,8 @@ ChartContainer.displayName = "Chart"
 const ChartStyle = ({
   id,
   config
-}) => {
-  const colorConfig = Object.entries(config).filter(([, config]: [any, any]) => config.theme || config.color)
+}: ChartStyleProps) => {
+  const colorConfig = Object.entries(config).filter(([, config]) => config.theme || config.color)
 
   if (!colorConfig.length) {
     return null
@@ -63,9 +95,9 @@ const ChartStyle = ({
           .map(([theme, prefix]) => `
 ${prefix} [data-chart=${id}] {
 ${colorConfig
-.map(([key, itemConfig]: [any, any]) => {
+.map(([key, itemConfig]) => {
 const color =
-  itemConfig.theme?.[theme] ||
+  itemConfig.theme?.[theme as ChartTheme] ||
   itemConfig.color
 return color ? `  --color-${key}: ${color};` : null
 })
@@ -114,9 +146,9 @@ ChartLegendContent.displayName = "ChartLegend"
 
 // Helper to extract item config from a payload.
 function getPayloadConfigFromPayload(
-  config,
-  payload,
-  key
+  config: ChartConfig,
+  payload: Record<string, unknown>,
+  key: string
 ) {
   if (typeof payload !== "object" || payload === null) {
     return undefined
@@ -126,7 +158,7 @@ function getPayloadConfigFromPayload(
     "payload" in payload &&
     typeof payload.payload === "object" &&
     payload.payload !== null
-      ? payload.payload
+      ? (payload.payload as Record<string, unknown>)
       : undefined
 
   let configLabelKey = key
@@ -145,7 +177,7 @@ function getPayloadConfigFromPayload(
   }
 
   return configLabelKey in config
-    ? config[configLabelKey]
+    ? config[configLabelKey as keyof ChartConfig]
     : config[key];
 }
 

@@ -1,71 +1,110 @@
 import { useRef } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { IconArrowRight } from '@tabler/icons-react';
+import { IconArrowRight, IconHeartHandshake } from '@tabler/icons-react';
+import HeroSignatureAccent from './HeroSignatureAccent';
 
 const HERO_IMAGE = "https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=1600&q=80";
 
 export default function HeroScrollSequence() {
   const containerRef = useRef(null);
+  const reduceMotion = useReducedMotion();
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end start"],
   });
 
-  // Phase 1: Image expands, text fades
-  const imageWidth = useTransform(scrollYProgress, [0, 0.3], ["60%", "100%"]);
-  const textOpacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
-  const textX = useTransform(scrollYProgress, [0, 0.2], [0, -60]);
-  const imageScale = useTransform(scrollYProgress, [0, 0.5], [1.05, 1]);
-  const overlayOpacity = useTransform(scrollYProgress, [0, 0.3], [0.2, 0.55]);
+  const imageWidth = useTransform(scrollYProgress, [0, 0.25, 0.5], ["60%", "100%", "100%"]);
+  const imageScale = useTransform(scrollYProgress, [0, 0.5, 1], [1.05, 1, 1.03]);
+  const splitTextOpacity = useTransform(scrollYProgress, [0, 0.18], [1, 0]);
+  const splitTextX = useTransform(scrollYProgress, [0, 0.2], [0, -40]);
+  const warmOverlayOpacity = useTransform(scrollYProgress, [0, 0.25], [0.2, 0.35]);
+  const scrimOpacity = useTransform(scrollYProgress, [0.25, 0.5, 0.85], [0, 0.6, 0.25]);
+  const cinematicTextOpacity = useTransform(scrollYProgress, [0.28, 0.45, 0.7, 0.88], [0, 1, 1, 0]);
+  const cinematicTextY = useTransform(scrollYProgress, [0.28, 0.45, 0.88], [24, 0, -30]);
+  const accentOpacity = useTransform(scrollYProgress, [0.5, 0.62], [0, 1]);
+  const heroOpacity = useTransform(scrollYProgress, [0.78, 1], [1, 0]);
+  const nextSectionOpacity = useTransform(scrollYProgress, [0.8, 1], [0, 1]);
+  const nextSectionY = useTransform(scrollYProgress, [0.8, 1], [60, 0]);
 
-  // Phase 2-3: Centered headline fades in
-  const centerTextOpacity = useTransform(scrollYProgress, [0.25, 0.4, 0.7, 0.85], [0, 1, 1, 0]);
-  const centerTextY = useTransform(scrollYProgress, [0.25, 0.4, 0.7, 0.85], [30, 0, 0, -30]);
-
-  // Phase 3: SVG divider
-  const svgOpacity = useTransform(scrollYProgress, [0.45, 0.55], [0, 1]);
-  const svgDash = useTransform(scrollYProgress, [0.45, 0.65], [1, 0]);
-
-  // Phase 4: Fade out
-  const sectionOpacity = useTransform(scrollYProgress, [0.7, 1], [1, 0]);
-  const exitScale = useTransform(scrollYProgress, [0.7, 1], [1, 1.03]);
+  if (reduceMotion) {
+    return (
+      <section className="relative overflow-hidden bg-background">
+        <div className="mx-auto grid min-h-[calc(100vh-4rem)] max-w-[1280px] grid-cols-[1.1fr_0.9fr] items-stretch gap-8 px-6 py-16">
+          <div className="relative overflow-hidden rounded-[2rem] border border-border/60">
+            <img
+              src={HERO_IMAGE}
+              alt="Arizona desert landscape with mesas and golden light"
+              className="h-full min-h-[34rem] w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent" />
+          </div>
+          <div className="flex flex-col justify-center gap-6 py-10">
+            <span className="font-body text-xs uppercase tracking-[0.32em] text-primary">
+              Hopi-first expansion
+            </span>
+            <h1 className="font-display text-5xl leading-[1.05] text-foreground">
+              A safe place to heal, belong, and begin again.
+            </h1>
+            <p className="max-w-xl font-body text-lg leading-8 text-muted-foreground">
+              Project Haven pairs culturally grounded safehouse care with transparent stewardship so supporters, staff, and community members can see how healing grows over time.
+            </p>
+            <div className="flex items-center gap-3">
+              <Link to="/impact">
+                <Button size="lg" className="font-body gap-2">
+                  See Our Impact
+                  <IconArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+              <a href="#donate">
+                <Button size="lg" variant="outline" className="font-body gap-2">
+                  Join the Circle
+                  <IconHeartHandshake className="h-4 w-4" />
+                </Button>
+              </a>
+            </div>
+          </div>
+        </div>
+        <HeroSignatureAccent className="mx-auto -mt-10 w-full max-w-[1280px] px-6" />
+      </section>
+    );
+  }
 
   return (
-    <div ref={containerRef} className="relative h-[300vh]">
+    <section ref={containerRef} className="relative h-[300vh] bg-background">
       <motion.div
-        style={{ opacity: sectionOpacity }}
+        style={{ opacity: heroOpacity }}
         className="sticky top-0 h-screen overflow-hidden"
       >
-        {/* Image layer */}
         <motion.div
-          style={{ width: imageWidth, scale: exitScale }}
+          style={{ width: imageWidth, scale: imageScale }}
           className="absolute top-0 left-0 h-full"
         >
           <motion.img
             src={HERO_IMAGE}
             alt="Arizona desert landscape with mesas and golden light"
-            style={{ scale: imageScale }}
             className="w-full h-full object-cover"
           />
           <motion.div
-            style={{ opacity: overlayOpacity }}
-            className="absolute inset-0 bg-foreground"
+            style={{ opacity: warmOverlayOpacity }}
+            className="absolute inset-0 bg-gradient-to-br from-background/60 via-transparent to-transparent"
           />
+          <motion.div style={{ opacity: scrimOpacity }} className="absolute inset-0 bg-gradient-to-t from-background/85 via-background/35 to-transparent" />
         </motion.div>
 
-        {/* Phase 0: Split text */}
         <motion.div
-          style={{ opacity: textOpacity, x: textX }}
-          className="absolute top-0 right-0 w-[40%] h-full flex flex-col justify-center px-8 md:px-12 lg:px-16"
+          style={{ opacity: splitTextOpacity, x: splitTextX }}
+          className="absolute inset-y-0 right-0 flex w-[40%] min-w-[26rem] flex-col justify-center px-8 md:px-12 lg:px-16"
         >
-          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-foreground leading-tight mb-6">
-            A Safe Place<br />to Heal
+          <span className="mb-4 font-body text-xs uppercase tracking-[0.32em] text-primary">
+            Hopi-first expansion
+          </span>
+          <h1 className="mb-6 font-display text-4xl leading-tight text-foreground md:text-5xl lg:text-6xl">
+            A safe place to heal, belong, and begin again.
           </h1>
-          <p className="font-body text-lg text-muted-foreground mb-8 max-w-md">
-            Empowering Native American youth through culturally grounded safehouse programs, 
-            one community at a time.
+          <p className="mb-8 max-w-md font-body text-lg leading-8 text-muted-foreground">
+            Project Haven begins with Hopi-serving safehouse care in Arizona, then scales outward with the same commitment to cultural identity, collective care, and transparent stewardship.
           </p>
           <div className="flex gap-3">
             <Link to="/impact">
@@ -74,36 +113,49 @@ export default function HeroScrollSequence() {
                 <IconArrowRight className="h-4 w-4" />
               </Button>
             </Link>
+            <a href="#donate">
+              <Button size="lg" variant="outline" className="font-body gap-2">
+                Join the Circle
+                <IconHeartHandshake className="h-4 w-4" />
+              </Button>
+            </a>
           </div>
         </motion.div>
 
-        {/* Phase 2-3: Centered cinematic text */}
         <motion.div
-          style={{ opacity: centerTextOpacity, y: centerTextY }}
+          style={{ opacity: cinematicTextOpacity, y: cinematicTextY }}
           className="absolute inset-0 flex items-center justify-center pointer-events-none"
         >
-          <h2 className="font-display text-4xl md:text-6xl lg:text-7xl text-white text-center px-8 drop-shadow-2xl">
-            Every Child Deserves<br />a Place to Belong
-          </h2>
+          <div className="max-w-4xl px-8 text-center">
+            <p className="mb-4 font-body text-xs uppercase tracking-[0.32em] text-white/80">
+              Cinematic hold
+            </p>
+            <h2 className="font-display text-4xl text-white drop-shadow-2xl md:text-6xl lg:text-7xl">
+              Every child deserves a place to belong.
+            </h2>
+          </div>
         </motion.div>
 
-        {/* Phase 3: SVG Divider */}
         <motion.div
-          style={{ opacity: svgOpacity }}
-          className="absolute bottom-0 left-0 right-0 px-12"
+          style={{ opacity: accentOpacity }}
+          className="absolute bottom-0 left-0 right-0 px-6 pb-6 md:px-12"
         >
-          <svg viewBox="0 0 1200 60" className="w-full" aria-hidden="true">
-            <motion.path
-              d="M0 30 L40 10 L80 30 L120 10 L160 30 L200 10 L240 30 L280 10 L320 30 L360 10 L400 30 L440 10 L480 30 L520 10 L560 30 L600 10 L640 30 L680 10 L720 30 L760 10 L800 30 L840 10 L880 30 L920 10 L960 30 L1000 10 L1040 30 L1080 10 L1120 30 L1160 10 L1200 30"
-              stroke="hsl(var(--accent))"
-              strokeWidth="2"
-              fill="none"
-              strokeDasharray="1"
-              style={{ pathLength: useTransform(scrollYProgress, [0.45, 0.65], [0, 1]) }}
-            />
-          </svg>
+          <HeroSignatureAccent className="w-full" />
         </motion.div>
       </motion.div>
-    </div>
+
+      <motion.div
+        style={{ opacity: nextSectionOpacity, y: nextSectionY }}
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-10 mx-auto w-full max-w-[1280px] px-6 pb-16"
+      >
+        <div className="max-w-xl rounded-[1.5rem] border border-border/60 bg-card/90 p-6 shadow-xl backdrop-blur">
+          <p className="font-body text-xs uppercase tracking-[0.32em] text-primary">Next</p>
+          <h3 className="mt-3 font-display text-2xl text-foreground">Our Story</h3>
+          <p className="mt-2 font-body text-sm leading-7 text-muted-foreground">
+            The next section picks up with the people, values, and partnerships shaping this Hopi-first model for youth safety and long-term belonging.
+          </p>
+        </div>
+      </motion.div>
+    </section>
   );
 }

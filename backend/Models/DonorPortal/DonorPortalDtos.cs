@@ -9,7 +9,9 @@ public sealed record DonorDashboardDto(
     DateTime? LastGiftingAt,
     IReadOnlyList<DonorContributionDto> Contributions,
     IReadOnlyList<SafehouseUpdateDto> SafehouseUpdates,
-    IReadOnlyList<ImpactMetricDto> ImpactStats
+    IReadOnlyList<ImpactMetricDto> ImpactStats,
+    DateTimeOffset GeneratedAt,
+    IReadOnlyList<string> SourceTables
 );
 
 public sealed record DonorContributionDto(

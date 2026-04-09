@@ -6,8 +6,9 @@ import { cn } from "@/lib/utils";
 import { IconBrandGoogle, IconBrandGithub } from "@tabler/icons-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/AuthContext";
+import { apiFetch } from "@/lib/api-client";
 import { Link, useNavigate } from "react-router-dom";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { API_BASE } from "@/lib/api-base";
 
 export default function Login() {
@@ -24,18 +25,15 @@ export default function Login() {
     
     try {
       // Direct call to ASP.NET AuthController
-      const response = await fetch(`${API_BASE}/api/auth/login`, {
+      const response = await apiFetch(`${API_BASE}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        skipAuthHandling: true,
         body: JSON.stringify({ email, password }),
       });
 
       if (response.ok) {
         const data = await response.json();
-        if (data.sessionToken) {
-          localStorage.setItem('projectHaven.sessionToken', data.sessionToken);
-        }
         toast.success("Welcome back, " + data.displayName);
         
         // Refresh auth state in context

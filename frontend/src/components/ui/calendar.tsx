@@ -1,6 +1,6 @@
 import * as React from "react"
 import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react'
-import { DayPicker } from "react-day-picker"
+import { DayPicker, type DayPickerProps } from "react-day-picker"
 
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
@@ -10,7 +10,7 @@ function Calendar({
   classNames,
   showOutsideDays = true,
   ...props
-}) {
+}: DayPickerProps) {
   return (
     (<DayPicker
       showOutsideDays={showOutsideDays}

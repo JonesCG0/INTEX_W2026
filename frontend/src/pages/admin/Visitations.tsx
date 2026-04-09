@@ -1,7 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { API_BASE } from '@/lib/api-base';
+import { apiFetch } from '@/lib/api-client';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -9,27 +11,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { IconPlus, IconCalendar, IconPencil, IconTrash } from '@tabler/icons-react';
 import { Link, useParams } from 'react-router-dom';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import { motion } from 'framer-motion';
 import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
-
-interface Resident {
-  id: number;
-  codeName: string;
-  safehouse: string;
-}
-
-interface Visitation {
-  id: number;
-  residentId: number;
-  residentName: string;
-  visitAt: string;
-  visitType: string;
-  observations: string;
-  familyCooperation: string;
-  safetyConcerns: string;
-  followUp: string;
-}
+import type { AdminPortalOverview, ResidentRecord, VisitationRecord } from '@/types/admin';
 
 const visitTypes = [
   "Routine follow-up",
@@ -43,29 +28,35 @@ const visitTypes = [
 export default function Visitations() {
   const { id: residentIdParam } = useParams();
 
-  const [visitations, setVisitations] = useState<Visitation[]>([]);
-  const [residents, setResidents] = useState<Resident[]>([]);
+  const [visitations, setVisitations] = useState<VisitationRecord[]>([]);
+  const [residents, setResidents] = useState<ResidentRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [editingVisitation, setEditingVisitation] = useState<Visitation | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<Visitation | null>(null);
+  const [editingVisitation, setEditingVisitation] = useState<VisitationRecord | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<VisitationRecord | null>(null);
   const [residentFilter, setResidentFilter] = useState(residentIdParam || 'all');
 
   const [form, setForm] = useState({
     residentId: residentIdParam ? Number(residentIdParam) : 0,
     visitAt: new Date().toISOString().split('T')[0],
     visitType: 'Routine follow-up',
+    socialWorker: '',
+    locationVisited: '',
+    familyMembersPresent: '',
+    purpose: '',
     observations: '',
     familyCooperation: 'Moderate',
-    safetyConcerns: '',
-    followUp: '',
+    safetyConcernsNoted: false,
+    followUpNeeded: false,
+    followUpNotes: '',
+    visitOutcome: '',
   });
 
   async function load() {
     try {
-      const response = await fetch(`${API_BASE}/api/admin/portal`, { credentials: 'include' });
+      const response = await apiFetch(`${API_BASE}/api/admin/portal`);
       if (response.ok) {
-        const data = await response.json();
+        const data: AdminPortalOverview = await response.json();
         setResidents(data.residents || []);
         setVisitations(data.visitations || []);
       }
@@ -98,24 +89,36 @@ export default function Visitations() {
       residentId: residentIdParam ? Number(residentIdParam) : (residents[0]?.id || 0),
       visitAt: new Date().toISOString().split('T')[0],
       visitType: 'Routine follow-up',
+      socialWorker: '',
+      locationVisited: '',
+      familyMembersPresent: '',
+      purpose: '',
       observations: '',
       familyCooperation: 'Moderate',
-      safetyConcerns: '',
-      followUp: '',
+      safetyConcernsNoted: false,
+      followUpNeeded: false,
+      followUpNotes: '',
+      visitOutcome: '',
     });
     setDrawerOpen(true);
   }
 
-  function openEdit(visitation: Visitation) {
+  function openEdit(visitation: VisitationRecord) {
     setEditingVisitation(visitation);
     setForm({
       residentId: visitation.residentId,
       visitAt: new Date(visitation.visitAt).toISOString().split('T')[0],
       visitType: visitation.visitType,
+      socialWorker: visitation.socialWorker,
+      locationVisited: visitation.locationVisited,
+      familyMembersPresent: visitation.familyMembersPresent || '',
+      purpose: visitation.purpose,
       observations: visitation.observations,
       familyCooperation: visitation.familyCooperation,
-      safetyConcerns: visitation.safetyConcerns,
-      followUp: visitation.followUp,
+      safetyConcernsNoted: visitation.safetyConcernsNoted,
+      followUpNeeded: visitation.followUpNeeded,
+      followUpNotes: visitation.followUpNotes || '',
+      visitOutcome: visitation.visitOutcome,
     });
     setDrawerOpen(true);
   }
@@ -127,18 +130,23 @@ export default function Visitations() {
         : `${API_BASE}/api/admin/portal/visitations`;
       const method = editingVisitation ? 'PUT' : 'POST';
 
-      const response = await fetch(url, {
+      const response = await apiFetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
-          ResidentId: form.residentId,
-          VisitAt: new Date(form.visitAt).toISOString(),
-          VisitType: form.visitType,
-          Observations: form.observations,
-          FamilyCooperation: form.familyCooperation,
-          SafetyConcerns: form.safetyConcerns,
-          FollowUp: form.followUp,
+          residentId: form.residentId,
+          visitAt: new Date(form.visitAt).toISOString(),
+          socialWorker: form.socialWorker,
+          visitType: form.visitType,
+          locationVisited: form.locationVisited,
+          familyMembersPresent: form.familyMembersPresent || null,
+          purpose: form.purpose,
+          observations: form.observations,
+          familyCooperation: form.familyCooperation,
+          safetyConcernsNoted: form.safetyConcernsNoted,
+          followUpNeeded: form.followUpNeeded,
+          followUpNotes: form.followUpNotes || null,
+          visitOutcome: form.visitOutcome,
         })
       });
 
@@ -159,9 +167,9 @@ export default function Visitations() {
   async function handleDelete() {
     if (!deleteTarget) return;
     try {
-      const response = await fetch(`${API_BASE}/api/admin/portal/visitations/${deleteTarget.id}`, {
+      const response = await apiFetch(`${API_BASE}/api/admin/portal/visitations/${deleteTarget.id}`, {
         method: 'DELETE',
-        credentials: 'include'
+        confirmDelete: true,
       });
       if (response.ok) {
         toast.success("Visitation deleted");
@@ -264,16 +272,22 @@ export default function Visitations() {
                     </div>
                     <div className="p-4 rounded-lg bg-muted/30">
                       <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-2">Follow-up</p>
-                      <p className="text-sm">{visitation.followUp}</p>
+                      <p className="text-sm">{visitation.followUpNotes || 'None recorded'}</p>
                     </div>
                     <div className="p-4 rounded-lg bg-muted/30">
                       <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-2">Family Cooperation</p>
                       <p className="text-sm">{visitation.familyCooperation}</p>
                     </div>
                     <div className="p-4 rounded-lg bg-muted/30">
-                      <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-2">Safety Concerns</p>
-                      <p className="text-sm">{visitation.safetyConcerns}</p>
+                      <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground mb-2">Outcome</p>
+                      <p className="text-sm">{visitation.visitOutcome}</p>
                     </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2 text-[10px] uppercase font-bold tracking-widest">
+                    <span className="px-2.5 py-1 rounded-full bg-muted/40">{visitation.socialWorker}</span>
+                    <span className="px-2.5 py-1 rounded-full bg-muted/40">{visitation.locationVisited}</span>
+                    {visitation.safetyConcernsNoted && <span className="px-2.5 py-1 rounded-full bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300">Safety concern noted</span>}
+                    {visitation.followUpNeeded && <span className="px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">Follow-up needed</span>}
                   </div>
                 </CardContent>
               </Card>
@@ -310,7 +324,7 @@ export default function Visitations() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Visit Date</Label>
-                <Input type="date" value={form.visitAt} onChange={e => update('visitAt', e.target.value)} className="mt-1" />
+                <Input type="date" value={form.visitAt} onChange={(e: ChangeEvent<HTMLInputElement>) => update('visitAt', e.target.value)} className="mt-1" />
               </div>
               <div>
                 <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Visit Type</Label>
@@ -329,24 +343,56 @@ export default function Visitations() {
               </div>
             </div>
 
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Social Worker</Label>
+                <Input value={form.socialWorker} onChange={(e: ChangeEvent<HTMLInputElement>) => update('socialWorker', e.target.value)} className="mt-1" />
+              </div>
+              <div>
+                <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Location Visited</Label>
+                <Input value={form.locationVisited} onChange={(e: ChangeEvent<HTMLInputElement>) => update('locationVisited', e.target.value)} className="mt-1" />
+              </div>
+            </div>
+
+            <div>
+              <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Family Members Present</Label>
+              <Input value={form.familyMembersPresent} onChange={(e: ChangeEvent<HTMLInputElement>) => update('familyMembersPresent', e.target.value)} className="mt-1" />
+            </div>
+
+            <div>
+              <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Purpose</Label>
+              <Textarea value={form.purpose} onChange={(e: ChangeEvent<HTMLTextAreaElement>) => update('purpose', e.target.value)} className="mt-1 min-h-[80px]" />
+            </div>
+
             <div>
               <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Observations</Label>
-              <Textarea value={form.observations} onChange={e => update('observations', e.target.value)} className="mt-1 min-h-[110px]" />
+              <Textarea value={form.observations} onChange={(e: ChangeEvent<HTMLTextAreaElement>) => update('observations', e.target.value)} className="mt-1 min-h-[110px]" />
             </div>
 
             <div>
               <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Family Cooperation</Label>
-              <Input value={form.familyCooperation} onChange={e => update('familyCooperation', e.target.value)} className="mt-1" />
+              <Input value={form.familyCooperation} onChange={(e: ChangeEvent<HTMLInputElement>) => update('familyCooperation', e.target.value)} className="mt-1" />
             </div>
 
             <div>
-              <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Safety Concerns</Label>
-              <Textarea value={form.safetyConcerns} onChange={e => update('safetyConcerns', e.target.value)} className="mt-1 min-h-[80px]" />
+              <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Visit Outcome</Label>
+              <Textarea value={form.visitOutcome} onChange={(e: ChangeEvent<HTMLTextAreaElement>) => update('visitOutcome', e.target.value)} className="mt-1 min-h-[80px]" />
             </div>
 
             <div>
               <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Follow-up</Label>
-              <Textarea value={form.followUp} onChange={e => update('followUp', e.target.value)} className="mt-1 min-h-[80px]" />
+              <Textarea value={form.followUpNotes} onChange={(e: ChangeEvent<HTMLTextAreaElement>) => update('followUpNotes', e.target.value)} className="mt-1 min-h-[80px]" />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label className="flex items-center gap-3 rounded-lg border border-border px-3 py-2">
+                <Checkbox checked={form.safetyConcernsNoted} onCheckedChange={(checked: boolean | 'indeterminate') => update('safetyConcernsNoted', checked === true)} />
+                <span className="font-body text-sm">Safety concerns noted</span>
+              </label>
+              <label className="flex items-center gap-3 rounded-lg border border-border px-3 py-2">
+                <Checkbox checked={form.followUpNeeded} onCheckedChange={(checked: boolean | 'indeterminate') => update('followUpNeeded', checked === true)} />
+                <span className="font-body text-sm">Follow-up needed</span>
+              </label>
             </div>
 
             <Button onClick={handleSubmit} className="font-body w-full mt-4 bg-primary text-primary-foreground">

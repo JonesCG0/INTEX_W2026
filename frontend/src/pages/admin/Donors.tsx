@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { API_BASE } from '@/lib/api-base';
+import { apiFetch } from '@/lib/api-client';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -7,9 +8,10 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { IconPlus, IconSearch, IconPencil, IconTrash, IconCashBanknote } from '@tabler/icons-react';
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
 import { motion } from 'framer-motion';
+import type { AdminPortalOverview, ContributionRecord, DonorRecord, SafehouseComparisonRecord } from '@/types/admin';
 
 const types = ["Individual", "Foundation", "Corporate", "Government", "Tribal Organization"];
 const statuses = ["Active", "Inactive", "Prospect", "Lapsed"];
@@ -17,70 +19,74 @@ const channels = ["Website", "Event", "Referral", "Social Media", "Direct Mail",
 const contributionTypes = ["Monetary", "In-Kind", "Grant", "Time"];
 const programAreas = ["General Support", "Safehouse Ops", "Education Funds", "Health & Medical", "Emergency Response"];
 
-interface Donor {
-  id: number;
-  displayName: string;
-  linkedEmail: string | null;
-  donorType: string;
-  status: string;
-  totalGivenPhp: number;
-  lastDonationAt: string | null;
-  preferredChannel: string;
-  stewardshipLead: string;
-}
-
-interface Contribution {
-  id: number;
-  donorId: number;
-  donorName: string;
-  contributionType: string;
-  amountPhp: number | null;
-  estimatedValuePhp: number | null;
+interface AllocationDraft {
+  safehouseId: string;
   programArea: string;
-  description: string;
-  contributionAt: string;
+  amountAllocated: string;
+  allocationDate: string;
+  allocationNotes: string;
 }
 
 export default function Donors() {
-  const [donors, setDonors] = useState<Donor[]>([]);
-  const [contributions, setContributions] = useState<Contribution[]>([]);
+  const [donors, setDonors] = useState<DonorRecord[]>([]);
+  const [contributions, setContributions] = useState<ContributionRecord[]>([]);
+  const [safehouses, setSafehouses] = useState<SafehouseComparisonRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
   const [donorDrawerOpen, setDonorDrawerOpen] = useState(false);
   const [contributionDrawerOpen, setContributionDrawerOpen] = useState(false);
-  const [deleteTargetDonor, setDeleteTargetDonor] = useState<Donor | null>(null);
-  const [deleteTargetContribution, setDeleteTargetContribution] = useState<Contribution | null>(null);
+  const [deleteTargetDonor, setDeleteTargetDonor] = useState<DonorRecord | null>(null);
+  const [deleteTargetContribution, setDeleteTargetContribution] = useState<ContributionRecord | null>(null);
 
-  const [editingDonor, setEditingDonor] = useState<Donor | null>(null);
-  const [editingContribution, setEditingContribution] = useState<Contribution | null>(null);
+  const [editingDonor, setEditingDonor] = useState<DonorRecord | null>(null);
+  const [editingContribution, setEditingContribution] = useState<ContributionRecord | null>(null);
 
   const [donorForm, setDonorForm] = useState({
     displayName: '',
     linkedEmail: '',
-    donorType: 'Individual',
+    supporterType: 'Individual',
+    organizationName: '',
+    firstName: '',
+    lastName: '',
+    relationshipType: '',
+    region: '',
+    country: '',
+    phone: '',
     status: 'Active',
-    preferredChannel: 'Website',
-    stewardshipLead: '',
+    acquisitionChannel: 'Website',
   });
 
   const [contributionForm, setContributionForm] = useState({
     donorId: 0,
-    contributionType: 'Monetary',
+    donationType: 'Monetary',
     amountPhp: '',
     estimatedValuePhp: '',
     programArea: 'General Support',
     description: '',
+    channelSource: '',
+    campaignName: '',
     contributionAt: new Date().toISOString().split('T')[0],
+  });
+  const [allocationRows, setAllocationRows] = useState<AllocationDraft[]>([]);
+
+  const createAllocationRow = (overrides?: Partial<AllocationDraft>): AllocationDraft => ({
+    safehouseId: '',
+    programArea: 'General Support',
+    amountAllocated: '',
+    allocationDate: new Date().toISOString().split('T')[0],
+    allocationNotes: '',
+    ...overrides,
   });
 
   async function load() {
     try {
-      const response = await fetch(`${API_BASE}/api/admin/portal`, { credentials: 'include' });
+      const response = await apiFetch(`${API_BASE}/api/admin/portal`);
       if (response.ok) {
-        const data = await response.json();
+        const data: AdminPortalOverview = await response.json();
         setDonors(data.donors || []);
         setContributions(data.contributions || []);
+        setSafehouses(data.reports.safehouseComparison || []);
       }
     } catch (error) {
       console.error("Load donors error:", error);
@@ -93,7 +99,7 @@ export default function Donors() {
 
   const filteredDonors = donors.filter(d =>
     d.displayName?.toLowerCase().includes(search.toLowerCase()) ||
-    d.stewardshipLead?.toLowerCase().includes(search.toLowerCase()) ||
+    d.acquisitionChannel?.toLowerCase().includes(search.toLowerCase()) ||
     d.linkedEmail?.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -111,23 +117,35 @@ export default function Donors() {
     setDonorForm({
       displayName: '',
       linkedEmail: '',
-      donorType: 'Individual',
+      supporterType: 'Individual',
+      organizationName: '',
+      firstName: '',
+      lastName: '',
+      relationshipType: '',
+      region: '',
+      country: '',
+      phone: '',
       status: 'Active',
-      preferredChannel: 'Website',
-      stewardshipLead: '',
+      acquisitionChannel: 'Website',
     });
     setDonorDrawerOpen(true);
   }
 
-  function openEditDonor(donor: Donor) {
+  function openEditDonor(donor: DonorRecord) {
     setEditingDonor(donor);
     setDonorForm({
       displayName: donor.displayName,
       linkedEmail: donor.linkedEmail || '',
-      donorType: donor.donorType,
+      supporterType: donor.supporterType,
+      organizationName: donor.organizationName || '',
+      firstName: donor.firstName || '',
+      lastName: donor.lastName || '',
+      relationshipType: donor.relationshipType || '',
+      region: donor.region || '',
+      country: donor.country || '',
+      phone: donor.phone || '',
       status: donor.status,
-      preferredChannel: donor.preferredChannel,
-      stewardshipLead: donor.stewardshipLead,
+      acquisitionChannel: donor.acquisitionChannel || 'Website',
     });
     setDonorDrawerOpen(true);
   }
@@ -136,45 +154,66 @@ export default function Donors() {
     setEditingContribution(null);
     setContributionForm({
       donorId: donorId || donors[0]?.id || 0,
-      contributionType: 'Monetary',
+      donationType: 'Monetary',
       amountPhp: '',
       estimatedValuePhp: '',
       programArea: 'General Support',
       description: '',
+      channelSource: '',
+      campaignName: '',
       contributionAt: new Date().toISOString().split('T')[0],
     });
+    setAllocationRows([createAllocationRow({ programArea: 'General Support' })]);
     setContributionDrawerOpen(true);
   }
 
-  function openEditContribution(contribution: Contribution) {
+  function openEditContribution(contribution: ContributionRecord) {
     setEditingContribution(contribution);
     setContributionForm({
       donorId: contribution.donorId,
-      contributionType: contribution.contributionType,
+      donationType: contribution.donationType,
       amountPhp: contribution.amountPhp?.toString() || '',
       estimatedValuePhp: contribution.estimatedValuePhp?.toString() || '',
       programArea: contribution.programArea,
       description: contribution.description,
+      channelSource: contribution.channelSource || '',
+      campaignName: contribution.campaignName || '',
       contributionAt: new Date(contribution.contributionAt).toISOString().split('T')[0],
     });
+    setAllocationRows(
+      contribution.allocations.length > 0
+        ? contribution.allocations.map((allocation) => createAllocationRow({
+            safehouseId: allocation.safehouseId?.toString() || '',
+            programArea: allocation.programArea,
+            amountAllocated: allocation.amountAllocated.toString(),
+            allocationDate: new Date(allocation.allocationDate).toISOString().split('T')[0],
+            allocationNotes: allocation.allocationNotes || '',
+          }))
+        : [createAllocationRow({ programArea: contribution.programArea })]
+    );
     setContributionDrawerOpen(true);
   }
 
   async function saveDonor() {
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         editingDonor ? `${API_BASE}/api/admin/portal/donors/${editingDonor.id}` : `${API_BASE}/api/admin/portal/donors`,
         {
           method: editingDonor ? 'PUT' : 'POST',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
           body: JSON.stringify({
-            DisplayName: donorForm.displayName,
-            LinkedEmail: donorForm.linkedEmail || null,
-            DonorType: donorForm.donorType,
-            Status: donorForm.status,
-            PreferredChannel: donorForm.preferredChannel,
-            StewardshipLead: donorForm.stewardshipLead,
+            displayName: donorForm.displayName,
+            linkedEmail: donorForm.linkedEmail || null,
+            supporterType: donorForm.supporterType,
+            organizationName: donorForm.organizationName || null,
+            firstName: donorForm.firstName || null,
+            lastName: donorForm.lastName || null,
+            relationshipType: donorForm.relationshipType || null,
+            region: donorForm.region || null,
+            country: donorForm.country || null,
+            phone: donorForm.phone || null,
+            status: donorForm.status,
+            acquisitionChannel: donorForm.acquisitionChannel || null,
           }),
         }
       );
@@ -196,9 +235,9 @@ export default function Donors() {
   async function deleteDonor() {
     if (!deleteTargetDonor) return;
     try {
-      const response = await fetch(`${API_BASE}/api/admin/portal/donors/${deleteTargetDonor.id}`, {
+      const response = await apiFetch(`${API_BASE}/api/admin/portal/donors/${deleteTargetDonor.id}`, {
         method: 'DELETE',
-        credentials: 'include',
+        confirmDelete: true,
       });
       if (response.ok) {
         toast.success("Donor deleted");
@@ -217,21 +256,31 @@ export default function Donors() {
       const monetaryAmount = contributionForm.amountPhp ? Number(contributionForm.amountPhp) : null;
       const estimatedValue = contributionForm.estimatedValuePhp ? Number(contributionForm.estimatedValuePhp) : null;
       const payload = {
-        DonorId: contributionForm.donorId,
-        ContributionType: contributionForm.contributionType,
-        AmountPhp: contributionForm.contributionType === 'Monetary' ? monetaryAmount : null,
-        EstimatedValuePhp: contributionForm.contributionType === 'Monetary' ? null : estimatedValue,
-        ProgramArea: contributionForm.programArea,
-        Description: contributionForm.description,
-        ContributionAt: new Date(contributionForm.contributionAt).toISOString(),
+        donorId: contributionForm.donorId,
+        donationType: contributionForm.donationType,
+        amountPhp: contributionForm.donationType === 'Monetary' ? monetaryAmount : null,
+        estimatedValuePhp: contributionForm.donationType === 'Monetary' ? null : estimatedValue,
+        programArea: contributionForm.programArea,
+        description: contributionForm.description,
+        channelSource: contributionForm.channelSource || null,
+        campaignName: contributionForm.campaignName || null,
+        contributionAt: new Date(contributionForm.contributionAt).toISOString(),
+        allocations: allocationRows
+          .filter((allocation) => Number(allocation.amountAllocated) > 0)
+          .map((allocation) => ({
+            safehouseId: allocation.safehouseId ? Number(allocation.safehouseId) : null,
+            programArea: allocation.programArea,
+            amountAllocated: Number(allocation.amountAllocated),
+            allocationDate: allocation.allocationDate ? new Date(allocation.allocationDate).toISOString() : null,
+            allocationNotes: allocation.allocationNotes || null,
+          })),
       };
 
-      const response = await fetch(
+      const response = await apiFetch(
         editingContribution ? `${API_BASE}/api/admin/portal/contributions/${editingContribution.id}` : `${API_BASE}/api/admin/portal/donors/${contributionForm.donorId}/contributions`,
         {
           method: editingContribution ? 'PUT' : 'POST',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
           body: JSON.stringify(payload),
         }
       );
@@ -253,9 +302,9 @@ export default function Donors() {
   async function deleteContribution() {
     if (!deleteTargetContribution) return;
     try {
-      const response = await fetch(`${API_BASE}/api/admin/portal/contributions/${deleteTargetContribution.id}`, {
+      const response = await apiFetch(`${API_BASE}/api/admin/portal/contributions/${deleteTargetContribution.id}`, {
         method: 'DELETE',
-        credentials: 'include',
+        confirmDelete: true,
       });
       if (response.ok) {
         toast.success("Contribution deleted");
@@ -267,6 +316,18 @@ export default function Donors() {
     } catch (error) {
       toast.error("Failed to delete contribution");
     }
+  }
+
+  function updateAllocationRow(index: number, key: keyof AllocationDraft, value: string) {
+    setAllocationRows((prev) => prev.map((row, rowIndex) => rowIndex === index ? { ...row, [key]: value } : row));
+  }
+
+  function addAllocationRow() {
+    setAllocationRows((prev) => [...prev, createAllocationRow({ programArea: contributionForm.programArea })]);
+  }
+
+  function removeAllocationRow(index: number) {
+    setAllocationRows((prev) => prev.length === 1 ? [createAllocationRow({ programArea: contributionForm.programArea })] : prev.filter((_, rowIndex) => rowIndex !== index));
   }
 
   if (loading) {
@@ -288,7 +349,7 @@ export default function Donors() {
           <p className="font-body text-sm text-muted-foreground">Create, update, and remove donor and contribution records</p>
         </div>
         <div className="flex gap-2">
-          <Button onClick={openCreateContribution} variant="outline" className="font-body gap-2">
+          <Button onClick={() => openCreateContribution()} variant="outline" className="font-body gap-2">
             <IconCashBanknote className="h-4 w-4" />
             New Contribution
           </Button>
@@ -302,7 +363,7 @@ export default function Donors() {
       <div className="flex gap-4 items-center">
         <div className="relative max-w-sm flex-1">
           <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search donors, leads, or contributions..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 font-body" />
+          <Input placeholder="Search donors, leads, or contributions..." value={search} onChange={(e: ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)} className="pl-9 font-body" />
         </div>
       </div>
 
@@ -314,13 +375,14 @@ export default function Donors() {
         <div className="p-4 border-b border-border">
           <h2 className="font-display text-lg text-foreground">Donors</h2>
         </div>
+        <div className="max-h-[70vh] overflow-auto">
         <Table>
-          <TableHeader>
+          <TableHeader className="sticky top-0 z-10 bg-card">
             <TableRow className="bg-muted/30">
               <TableHead className="font-body text-xs uppercase tracking-wider">Donor / Organization</TableHead>
               <TableHead className="font-body text-xs uppercase tracking-wider hidden md:table-cell">Type</TableHead>
               <TableHead className="font-body text-xs uppercase tracking-wider">Status</TableHead>
-              <TableHead className="font-body text-xs uppercase tracking-wider hidden lg:table-cell">Stewardship Lead</TableHead>
+                <TableHead className="font-body text-xs uppercase tracking-wider hidden lg:table-cell">Channel / Region</TableHead>
               <TableHead className="font-body text-xs uppercase tracking-wider text-right">Lifetime Giving</TableHead>
               <TableHead className="font-body text-xs uppercase tracking-wider text-right">Actions</TableHead>
             </TableRow>
@@ -332,7 +394,7 @@ export default function Donors() {
               </TableRow>
             ) : (
               filteredDonors.map(donor => (
-                <TableRow key={donor.id} className="hover:bg-muted/10 transition-colors group">
+                <TableRow key={donor.id} className="group transition-colors odd:bg-card even:bg-muted/10 hover:bg-primary/5">
                   <TableCell className="font-body font-medium">
                     <div className="flex flex-col">
                       <span>{donor.displayName}</span>
@@ -340,17 +402,20 @@ export default function Donors() {
                         {donor.linkedEmail || 'No linked login'}
                       </span>
                       <span className="text-[10px] text-muted-foreground uppercase tracking-widest leading-none">
+                        First gift: {donor.firstDonationAt ? new Date(donor.firstDonationAt).toLocaleDateString() : 'None'}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground uppercase tracking-widest leading-none">
                         Last gift: {donor.lastDonationAt ? new Date(donor.lastDonationAt).toLocaleDateString() : 'None'}
                       </span>
                     </div>
                   </TableCell>
-                  <TableCell className="font-body text-sm text-muted-foreground hidden md:table-cell">{donor.donorType}</TableCell>
+                  <TableCell className="font-body text-sm text-muted-foreground hidden md:table-cell">{donor.supporterType}</TableCell>
                   <TableCell>
                     <span className={`inline-block px-2 py-0.5 rounded text-[10px] uppercase font-bold ${donor.status === 'Active' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'}`}>
                       {donor.status}
                     </span>
                   </TableCell>
-                  <TableCell className="font-body text-sm text-muted-foreground hidden lg:table-cell">{donor.stewardshipLead}</TableCell>
+                  <TableCell className="font-body text-sm text-muted-foreground hidden lg:table-cell">{donor.acquisitionChannel || donor.region || 'Unspecified'}</TableCell>
                   <TableCell className="text-right font-body font-bold text-primary">₱{donor.totalGivenPhp?.toLocaleString() || '0'}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
@@ -371,6 +436,7 @@ export default function Donors() {
             )}
           </TableBody>
         </Table>
+        </div>
       </motion.div>
 
       <motion.div
@@ -381,8 +447,9 @@ export default function Donors() {
         <div className="p-4 border-b border-border">
           <h2 className="font-display text-lg text-foreground">Contributions</h2>
         </div>
+        <div className="max-h-[70vh] overflow-auto">
         <Table>
-          <TableHeader>
+          <TableHeader className="sticky top-0 z-10 bg-card">
             <TableRow className="bg-muted/30">
               <TableHead className="font-body text-xs uppercase tracking-wider">Donor</TableHead>
               <TableHead className="font-body text-xs uppercase tracking-wider">Type</TableHead>
@@ -399,10 +466,17 @@ export default function Donors() {
               </TableRow>
             ) : (
               filteredContributions.map(contribution => (
-                <TableRow key={contribution.id} className="hover:bg-muted/10 transition-colors">
+                <TableRow key={contribution.id} className="transition-colors odd:bg-card even:bg-muted/10 hover:bg-primary/5">
                   <TableCell className="font-body font-medium">{contribution.donorName}</TableCell>
-                  <TableCell className="font-body text-sm text-muted-foreground">{contribution.contributionType}</TableCell>
-                  <TableCell className="font-body text-sm text-muted-foreground">{contribution.programArea}</TableCell>
+                  <TableCell className="font-body text-sm text-muted-foreground">{contribution.donationType}</TableCell>
+                  <TableCell className="font-body text-sm text-muted-foreground">
+                    <div className="flex flex-col">
+                      <span>{contribution.programArea}</span>
+                      <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                        {contribution.allocations.length} allocation{contribution.allocations.length === 1 ? '' : 's'}
+                      </span>
+                    </div>
+                  </TableCell>
                   <TableCell className="font-body text-sm text-muted-foreground">{new Date(contribution.contributionAt).toLocaleDateString()}</TableCell>
                   <TableCell className="text-right font-body font-bold text-primary">
                     ₱{(contribution.amountPhp ?? contribution.estimatedValuePhp ?? 0).toLocaleString()}
@@ -422,6 +496,7 @@ export default function Donors() {
             )}
           </TableBody>
         </Table>
+        </div>
       </motion.div>
 
       <Sheet open={donorDrawerOpen} onOpenChange={setDonorDrawerOpen}>
@@ -432,16 +507,16 @@ export default function Donors() {
           <div className="space-y-4 mt-6">
             <div>
               <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Display Name</Label>
-              <Input value={donorForm.displayName} onChange={e => setDonorForm(prev => ({ ...prev, displayName: e.target.value }))} className="font-body mt-1" />
+              <Input value={donorForm.displayName} onChange={(e: ChangeEvent<HTMLInputElement>) => setDonorForm(prev => ({ ...prev, displayName: e.target.value }))} className="font-body mt-1" />
             </div>
             <div>
               <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Linked Email</Label>
-              <Input value={donorForm.linkedEmail} onChange={e => setDonorForm(prev => ({ ...prev, linkedEmail: e.target.value }))} className="font-body mt-1" />
+              <Input value={donorForm.linkedEmail} onChange={(e: ChangeEvent<HTMLInputElement>) => setDonorForm(prev => ({ ...prev, linkedEmail: e.target.value }))} className="font-body mt-1" />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Donor Type</Label>
-                <Select value={donorForm.donorType} onValueChange={v => setDonorForm(prev => ({ ...prev, donorType: v }))}>
+                <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Supporter Type</Label>
+                <Select value={donorForm.supporterType} onValueChange={v => setDonorForm(prev => ({ ...prev, supporterType: v }))}>
                   <SelectTrigger className="font-body mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>{types.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}</SelectContent>
                 </Select>
@@ -455,15 +530,45 @@ export default function Donors() {
               </div>
             </div>
             <div>
-              <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Preferred Channel</Label>
-              <Select value={donorForm.preferredChannel} onValueChange={v => setDonorForm(prev => ({ ...prev, preferredChannel: v }))}>
+              <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Acquisition Channel</Label>
+              <Select value={donorForm.acquisitionChannel} onValueChange={v => setDonorForm(prev => ({ ...prev, acquisitionChannel: v }))}>
                 <SelectTrigger className="font-body mt-1"><SelectValue /></SelectTrigger>
                 <SelectContent>{channels.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}</SelectContent>
               </Select>
             </div>
-            <div>
-              <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Stewardship Lead</Label>
-              <Input value={donorForm.stewardshipLead} onChange={e => setDonorForm(prev => ({ ...prev, stewardshipLead: e.target.value }))} className="font-body mt-1" />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Organization</Label>
+                <Input value={donorForm.organizationName} onChange={(e: ChangeEvent<HTMLInputElement>) => setDonorForm(prev => ({ ...prev, organizationName: e.target.value }))} className="font-body mt-1" />
+              </div>
+              <div>
+                <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Relationship Type</Label>
+                <Input value={donorForm.relationshipType} onChange={(e: ChangeEvent<HTMLInputElement>) => setDonorForm(prev => ({ ...prev, relationshipType: e.target.value }))} className="font-body mt-1" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">First Name</Label>
+                <Input value={donorForm.firstName} onChange={(e: ChangeEvent<HTMLInputElement>) => setDonorForm(prev => ({ ...prev, firstName: e.target.value }))} className="font-body mt-1" />
+              </div>
+              <div>
+                <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Last Name</Label>
+                <Input value={donorForm.lastName} onChange={(e: ChangeEvent<HTMLInputElement>) => setDonorForm(prev => ({ ...prev, lastName: e.target.value }))} className="font-body mt-1" />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Region</Label>
+                <Input value={donorForm.region} onChange={(e: ChangeEvent<HTMLInputElement>) => setDonorForm(prev => ({ ...prev, region: e.target.value }))} className="font-body mt-1" />
+              </div>
+              <div>
+                <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Country</Label>
+                <Input value={donorForm.country} onChange={(e: ChangeEvent<HTMLInputElement>) => setDonorForm(prev => ({ ...prev, country: e.target.value }))} className="font-body mt-1" />
+              </div>
+              <div>
+                <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Phone</Label>
+                <Input value={donorForm.phone} onChange={(e: ChangeEvent<HTMLInputElement>) => setDonorForm(prev => ({ ...prev, phone: e.target.value }))} className="font-body mt-1" />
+              </div>
             </div>
             <Button onClick={saveDonor} className="font-body w-full mt-4">{editingDonor ? 'Save Donor' : 'Create Donor'}</Button>
           </div>
@@ -491,26 +596,26 @@ export default function Donors() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Type</Label>
-                <Select value={contributionForm.contributionType} onValueChange={v => setContributionForm(prev => ({ ...prev, contributionType: v }))}>
+                <Select value={contributionForm.donationType} onValueChange={v => setContributionForm(prev => ({ ...prev, donationType: v }))}>
                   <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>{contributionTypes.map(type => <SelectItem key={type} value={type}>{type}</SelectItem>)}</SelectContent>
                 </Select>
               </div>
               <div>
                 <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Date</Label>
-                <Input type="date" value={contributionForm.contributionAt} onChange={e => setContributionForm(prev => ({ ...prev, contributionAt: e.target.value }))} className="mt-1" />
+                <Input type="date" value={contributionForm.contributionAt} onChange={(e: ChangeEvent<HTMLInputElement>) => setContributionForm(prev => ({ ...prev, contributionAt: e.target.value }))} className="mt-1" />
               </div>
             </div>
 
-            {contributionForm.contributionType === 'Monetary' ? (
+            {contributionForm.donationType === 'Monetary' ? (
               <div>
                 <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Amount (PHP)</Label>
-                <Input type="number" value={contributionForm.amountPhp} onChange={e => setContributionForm(prev => ({ ...prev, amountPhp: e.target.value }))} className="mt-1" />
+                <Input type="number" value={contributionForm.amountPhp} onChange={(e: ChangeEvent<HTMLInputElement>) => setContributionForm(prev => ({ ...prev, amountPhp: e.target.value }))} className="mt-1" />
               </div>
             ) : (
               <div>
                 <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Estimated Value (PHP)</Label>
-                <Input type="number" value={contributionForm.estimatedValuePhp} onChange={e => setContributionForm(prev => ({ ...prev, estimatedValuePhp: e.target.value }))} className="mt-1" />
+                <Input type="number" value={contributionForm.estimatedValuePhp} onChange={(e: ChangeEvent<HTMLInputElement>) => setContributionForm(prev => ({ ...prev, estimatedValuePhp: e.target.value }))} className="mt-1" />
               </div>
             )}
 
@@ -526,7 +631,82 @@ export default function Donors() {
 
             <div>
               <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Memo / Description</Label>
-              <Input value={contributionForm.description} onChange={e => setContributionForm(prev => ({ ...prev, description: e.target.value }))} className="mt-1" placeholder="e.g. Annual gala donation" />
+              <Input value={contributionForm.description} onChange={(e: ChangeEvent<HTMLInputElement>) => setContributionForm(prev => ({ ...prev, description: e.target.value }))} className="mt-1" placeholder="e.g. Annual gala donation" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Channel Source</Label>
+                <Input value={contributionForm.channelSource} onChange={(e: ChangeEvent<HTMLInputElement>) => setContributionForm(prev => ({ ...prev, channelSource: e.target.value }))} className="mt-1" />
+              </div>
+              <div>
+                <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Campaign</Label>
+                <Input value={contributionForm.campaignName} onChange={(e: ChangeEvent<HTMLInputElement>) => setContributionForm(prev => ({ ...prev, campaignName: e.target.value }))} className="mt-1" />
+              </div>
+            </div>
+
+            <div className="space-y-3 rounded-lg border border-border p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Allocation Plan</p>
+                  <p className="text-xs text-muted-foreground mt-1">Split this contribution across canonical safehouse allocations.</p>
+                </div>
+                <Button type="button" variant="outline" size="sm" className="font-body" onClick={addAllocationRow}>
+                  Add Allocation
+                </Button>
+              </div>
+
+              {allocationRows.map((allocation, index) => (
+                <div key={`${index}-${allocation.safehouseId}-${allocation.programArea}`} className="space-y-3 rounded-lg bg-muted/20 p-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Safehouse</Label>
+                      <Select value={allocation.safehouseId || "none"} onValueChange={(value) => updateAllocationRow(index, 'safehouseId', value === 'none' ? '' : value)}>
+                        <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="none">Unassigned / general</SelectItem>
+                          {safehouses.map((safehouse) => (
+                            <SelectItem key={safehouse.safehouseId} value={safehouse.safehouseId.toString()}>
+                              {safehouse.safehouse}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Program Area</Label>
+                      <Select value={allocation.programArea} onValueChange={(value) => updateAllocationRow(index, 'programArea', value)}>
+                        <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          {programAreas.map((area) => <SelectItem key={area} value={area}>{area}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Amount Allocated</Label>
+                      <Input type="number" value={allocation.amountAllocated} onChange={(e: ChangeEvent<HTMLInputElement>) => updateAllocationRow(index, 'amountAllocated', e.target.value)} className="mt-1" />
+                    </div>
+                    <div>
+                      <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Allocation Date</Label>
+                      <Input type="date" value={allocation.allocationDate} onChange={(e: ChangeEvent<HTMLInputElement>) => updateAllocationRow(index, 'allocationDate', e.target.value)} className="mt-1" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Allocation Notes</Label>
+                    <Input value={allocation.allocationNotes} onChange={(e: ChangeEvent<HTMLInputElement>) => updateAllocationRow(index, 'allocationNotes', e.target.value)} className="mt-1" />
+                  </div>
+
+                  <div className="flex justify-end">
+                    <Button type="button" variant="ghost" size="sm" className="text-destructive font-body" onClick={() => removeAllocationRow(index)}>
+                      Remove
+                    </Button>
+                  </div>
+                </div>
+              ))}
             </div>
 
             <Button onClick={saveContribution} className="font-body w-full mt-4 bg-primary text-primary-foreground">

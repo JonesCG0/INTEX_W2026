@@ -17,4 +17,8 @@
 <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.5" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\ml-pipelines\generated_outputs\resident_reintegration_queue.csv" Link="ml-data\resident_reintegration_queue.csv" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

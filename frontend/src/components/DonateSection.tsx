@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, type ChangeEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import { IconHeart } from '@tabler/icons-react';
 
 import { API_BASE } from '@/lib/api-base';
+import { apiFetch } from '@/lib/api-client';
 import { useAuth } from '@/lib/AuthContext';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,9 +42,8 @@ export default function DonateSection() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(`${API_BASE}/api/DonorPortal/donate`, {
+      const response = await apiFetch(`${API_BASE}/api/DonorPortal/donate`, {
         method: 'POST',
-        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -141,7 +141,7 @@ export default function DonateSection() {
                     min="1"
                     step="1"
                     value={amount}
-                    onChange={(event) => setAmount(event.target.value)}
+                    onChange={(event: ChangeEvent<HTMLInputElement>) => setAmount(event.target.value)}
                     className="mt-1 font-body"
                   />
                 </div>
@@ -153,7 +153,7 @@ export default function DonateSection() {
                   <Input
                     id="donationNotes"
                     value={notes}
-                    onChange={(event) => setNotes(event.target.value)}
+                    onChange={(event: ChangeEvent<HTMLInputElement>) => setNotes(event.target.value)}
                     placeholder="Optional note for stewardship"
                     className="mt-1 font-body"
                   />

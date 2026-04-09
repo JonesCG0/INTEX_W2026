@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ChangeEvent } from 'react';
 import { API_BASE } from '@/lib/api-base';
+import { apiFetch } from '@/lib/api-client';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { IconPlus, IconPencil, IconTrash, IconRefresh, IconUserShield } from '@tabler/icons-react';
-import { toast } from 'react-hot-toast';
+import { toast } from 'sonner';
 import DeleteConfirmDialog from '../../components/DeleteConfirmDialog';
 import { motion } from 'framer-motion';
 
@@ -44,7 +45,7 @@ export default function Users() {
 
   async function load() {
     try {
-      const response = await fetch(`${API_BASE}/api/admin/users`, { credentials: 'include' });
+      const response = await apiFetch(`${API_BASE}/api/admin/users`);
       if (response.ok) {
         const data = await response.json();
         setUsers(data || []);
@@ -78,19 +79,17 @@ export default function Users() {
   async function handleSubmit() {
     try {
       const response = editingUser
-        ? await fetch(`${API_BASE}/api/admin/users/${editingUser.id}`, {
+        ? await apiFetch(`${API_BASE}/api/admin/users/${editingUser.id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
             body: JSON.stringify({
               DisplayName: editForm.displayName,
               Role: editForm.role,
             }),
           })
-        : await fetch(`${API_BASE}/api/admin/users`, {
+        : await apiFetch(`${API_BASE}/api/admin/users`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
             body: JSON.stringify({
               Email: createForm.email,
               DisplayName: createForm.displayName,
@@ -116,9 +115,9 @@ export default function Users() {
   async function handleDelete() {
     if (!deleteTarget) return;
     try {
-      const response = await fetch(`${API_BASE}/api/admin/users/${deleteTarget.id}`, {
+      const response = await apiFetch(`${API_BASE}/api/admin/users/${deleteTarget.id}`, {
         method: 'DELETE',
-        credentials: 'include',
+        confirmDelete: true,
       });
       if (response.ok) {
         toast.success("User deleted");
@@ -135,9 +134,8 @@ export default function Users() {
 
   async function handleUnlock(user: UserSummary) {
     try {
-      const response = await fetch(`${API_BASE}/api/admin/users/${user.id}/unlock`, {
+      const response = await apiFetch(`${API_BASE}/api/admin/users/${user.id}/unlock`, {
         method: 'POST',
-        credentials: 'include',
       });
       if (response.ok) {
         toast.success("User unlocked");
@@ -177,8 +175,9 @@ export default function Users() {
         animate={{ opacity: 1 }}
         className="bg-card border border-border rounded-xl overflow-hidden shadow-sm"
       >
+        <div className="max-h-[70vh] overflow-auto">
         <Table>
-          <TableHeader>
+          <TableHeader className="sticky top-0 z-10 bg-card">
             <TableRow className="bg-muted/30">
               <TableHead className="font-body text-xs uppercase tracking-wider">Email</TableHead>
               <TableHead className="font-body text-xs uppercase tracking-wider">Display Name</TableHead>
@@ -196,7 +195,7 @@ export default function Users() {
               </TableRow>
             ) : (
               users.map(user => (
-                <TableRow key={user.id} className="hover:bg-muted/10 transition-colors">
+                <TableRow key={user.id} className="transition-colors odd:bg-card even:bg-muted/10 hover:bg-primary/5">
                   <TableCell className="font-body">{user.email}</TableCell>
                   <TableCell className="font-body">{user.displayName}</TableCell>
                   <TableCell>
@@ -226,6 +225,7 @@ export default function Users() {
             )}
           </TableBody>
         </Table>
+        </div>
       </motion.div>
 
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
@@ -243,7 +243,7 @@ export default function Users() {
                   <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Email</Label>
                   <Input
                     value={createForm.email}
-                    onChange={e => setCreateForm(prev => ({ ...prev, email: e.target.value }))}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setCreateForm(prev => ({ ...prev, email: e.target.value }))}
                     className="font-body mt-1"
                     type="email"
                   />
@@ -252,7 +252,7 @@ export default function Users() {
                   <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Display Name</Label>
                   <Input
                     value={createForm.displayName}
-                    onChange={e => setCreateForm(prev => ({ ...prev, displayName: e.target.value }))}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setCreateForm(prev => ({ ...prev, displayName: e.target.value }))}
                     className="font-body mt-1"
                   />
                 </div>
@@ -260,7 +260,7 @@ export default function Users() {
                   <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Temporary Password</Label>
                   <Input
                     value={createForm.password}
-                    onChange={e => setCreateForm(prev => ({ ...prev, password: e.target.value }))}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setCreateForm(prev => ({ ...prev, password: e.target.value }))}
                     className="font-body mt-1"
                     type="password"
                   />
@@ -283,7 +283,7 @@ export default function Users() {
                   <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Display Name</Label>
                   <Input
                     value={editForm.displayName}
-                    onChange={e => setEditForm(prev => ({ ...prev, displayName: e.target.value }))}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setEditForm(prev => ({ ...prev, displayName: e.target.value }))}
                     className="font-body mt-1"
                   />
                 </div>
