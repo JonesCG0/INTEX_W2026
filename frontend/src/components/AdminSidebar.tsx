@@ -18,6 +18,7 @@ import DarkModeToggle from './DarkModeToggle';
 import { useState } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from '@/lib/AuthContext';
+import circleLogo from '@/assets/branding/circle-logo.png';
 
 const navItems = [
   { to: "/", icon: IconHome, label: "Home", exact: true },
@@ -61,7 +62,15 @@ export default function AdminSidebar() {
     <>
       <div className="sticky top-0 z-30 border-b border-border/60 bg-background/95 backdrop-blur md:hidden">
         <div className="flex h-16 items-center justify-between px-4">
-          <Link to="/admin" className="font-display text-lg text-primary">Project Haven</Link>
+          <Link to="/admin" className="inline-flex h-14 items-center gap-3 rounded-full border border-border/80 bg-[#f5e8ce] px-3">
+            <img
+              src={circleLogo}
+              alt=""
+              aria-hidden="true"
+              className="h-11 w-11 shrink-0 rounded-full"
+            />
+            <span className="font-display text-[2.1rem] leading-none text-primary">Project Haven</span>
+          </Link>
           <div className="flex items-center gap-2">
             <DarkModeToggle className="h-9 w-9" />
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -107,8 +116,14 @@ export default function AdminSidebar() {
       <aside className={`fixed left-0 top-0 hidden h-screen border-r border-border bg-card md:flex md:flex-col transition-all duration-300 z-40 ${collapsed ? 'w-20' : 'w-[260px]'}`}>
         <div className="flex h-16 items-center border-b border-border px-4">
           {!collapsed && (
-            <Link to="/admin" className="truncate font-display text-lg font-bold text-primary">
-              Project Haven
+            <Link to="/admin" className="inline-flex h-14 items-center gap-3 rounded-full border border-border/80 bg-[#f5e8ce] px-3">
+              <img
+                src={circleLogo}
+                alt=""
+                aria-hidden="true"
+                className="h-11 w-11 shrink-0 rounded-full"
+              />
+              <span className="font-display text-[2.1rem] leading-none text-primary">Project Haven</span>
             </Link>
           )}
           <Button

@@ -5,6 +5,7 @@ import DarkModeToggle from './DarkModeToggle';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { IconHeart, IconLogin, IconLogout, IconMenu2 } from '@tabler/icons-react';
 import { useAuth } from '@/lib/AuthContext';
+import circleLogo from '@/assets/branding/circle-logo.png';
 
 export default function PublicNav() {
   const location = useLocation();
@@ -26,12 +27,18 @@ export default function PublicNav() {
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-[1280px] items-center justify-between px-4 sm:px-6">
         <Link to="/" className="flex min-w-0 items-center gap-3">
-          <div className="flex h-10 items-center rounded-full border border-border/80 bg-card px-4">
-            <span className="font-display text-lg leading-none text-primary">Project Haven</span>
+          <div className="inline-flex h-14 items-center gap-3 rounded-full border border-border/80 bg-[#f5e8ce] px-3">
+            <img
+              src={circleLogo}
+              alt=""
+              aria-hidden="true"
+              className="h-11 w-11 shrink-0 rounded-full"
+            />
+            <span className="font-display text-[2.1rem] leading-none text-primary">Project Haven</span>
           </div>
           <div className="hidden lg:block">
             <p className="font-body text-xs uppercase tracking-[0.24em] text-muted-foreground">
-              Hopi-first youth safehouse network
+              Native youth safehouse network
             </p>
           </div>
         </Link>
@@ -80,7 +87,17 @@ export default function PublicNav() {
             </SheetTrigger>
             <SheetContent side="right" className="w-full sm:max-w-sm">
               <SheetHeader>
-                <SheetTitle className="font-display text-xl text-primary">Project Haven</SheetTitle>
+                <SheetTitle>
+                  <div className="inline-flex h-14 items-center gap-3 rounded-full border border-border/80 bg-[#f5e8ce] px-3">
+                    <img
+                      src={circleLogo}
+                      alt=""
+                      aria-hidden="true"
+                      className="h-11 w-11 shrink-0 rounded-full"
+                    />
+                    <span className="font-display text-[2.1rem] leading-none text-primary">Project Haven</span>
+                  </div>
+                </SheetTitle>
               </SheetHeader>
               <div className="mt-8 space-y-6">
                 <div className="space-y-4">
