@@ -104,7 +104,6 @@ export default function MlPipelines() {
   }, []);
 
   const readyCount = useMemo(() => data?.pipelines.filter(pipeline => pipeline.status === 'Ready').length ?? 0, [data]);
-  const plannedCount = useMemo(() => data?.pipelines.filter(pipeline => pipeline.status === 'Planned').length ?? 0, [data]);
 
   const startRun = async (pipelineKey: string) => {
     setRunningKey(pipelineKey);
@@ -154,8 +153,6 @@ export default function MlPipelines() {
     );
   }
 
-  const latestRun = data.recentRuns[0];
-
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
@@ -191,14 +188,14 @@ export default function MlPipelines() {
           <CardContent className="p-5">
             <p className="text-xs uppercase tracking-widest text-muted-foreground">Ready</p>
             <p className="mt-2 font-display text-3xl text-foreground">{readyCount}</p>
-            <p className="text-xs text-muted-foreground mt-1">Runnable notebooks already producing scored outputs</p>
+            <p className="text-xs text-muted-foreground mt-1">All notebooks are runnable in demo mode</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
-            <p className="text-xs uppercase tracking-widest text-muted-foreground">Planned</p>
-            <p className="mt-2 font-display text-3xl text-foreground">{plannedCount}</p>
-            <p className="text-xs text-muted-foreground mt-1">The planned notebook slot is reserved for case conference prioritization</p>
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">With output</p>
+            <p className="mt-2 font-display text-3xl text-foreground">{data.pipelines.filter(p => p.snapshot.rowCount > 0).length}</p>
+            <p className="text-xs text-muted-foreground mt-1">Notebooks that have produced scored output snapshots</p>
           </CardContent>
         </Card>
         <Card>
@@ -210,8 +207,7 @@ export default function MlPipelines() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <div className="xl:col-span-2 space-y-6">
+      <div className="space-y-6">
           {data.pipelines.map((pipeline) => {
             const latest = pipeline.recentRuns[0];
             const pipelineRuns = pipeline.recentRuns.length;
@@ -359,86 +355,6 @@ export default function MlPipelines() {
               </Card>
             );
           })}
-        </div>
-
-        <div className="space-y-6">
-          <Card className="sticky top-6">
-            <CardHeader>
-              <CardTitle className="font-display text-xl">Azure ML setup</CardTitle>
-              <CardDescription className="text-sm text-muted-foreground">
-                The backend currently serves the notebooks in demo mode. Fill the Azure ML settings to turn this into a live workspace-driven flow.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2 rounded-xl border border-border bg-muted/20 p-4">
-                <p className="text-xs uppercase tracking-widest text-muted-foreground">Connection mode</p>
-                <p className="text-sm text-foreground">{data.integration.statusMessage}</p>
-              </div>
-
-              <div className="space-y-2 text-sm">
-                <p className="font-semibold text-foreground">What to configure</p>
-                <ul className="space-y-2 text-muted-foreground">
-                  <li>1. Create or select an Azure Machine Learning workspace.</li>
-                  <li>2. Publish each notebook as a pipeline job or callable endpoint.</li>
-                  <li>3. Set the backend Azure ML settings and restart the API.</li>
-                  <li>4. Switch `AzureMl:Mode` to `AzureMl` when live runs are ready.</li>
-                </ul>
-              </div>
-
-              <div className="space-y-2 text-sm">
-                <p className="font-semibold text-foreground">Configured values</p>
-                <div className="space-y-2 rounded-xl border border-border bg-background p-4">
-                  <p><span className="text-muted-foreground">Workspace:</span> {data.integration.workspaceName ?? 'Not set'}</p>
-                  <p><span className="text-muted-foreground">Resource group:</span> {data.integration.resourceGroup ?? 'Not set'}</p>
-                  <p><span className="text-muted-foreground">Subscription:</span> {data.integration.subscriptionId ?? 'Not set'}</p>
-                  <p><span className="text-muted-foreground">Compute:</span> {data.integration.computeId ?? 'Not set'}</p>
-                  <p><span className="text-muted-foreground">Code asset:</span> {data.integration.codeId ?? 'Not set'}</p>
-                  <p><span className="text-muted-foreground">Environment:</span> {data.integration.environmentId ?? 'Not set'}</p>
-                  <p><span className="text-muted-foreground">Data input:</span> {data.integration.dataInputUri ?? 'Not set'}</p>
-                  <p><span className="text-muted-foreground">Output datastore:</span> {data.integration.outputDatastoreUri ?? 'Not set'}</p>
-                  <p><span className="text-muted-foreground">Blob output:</span> {data.integration.outputBlobContainerUrl ?? 'Not set'}</p>
-                  <p><span className="text-muted-foreground">Job trigger ready:</span> {data.integration.canSubmitJobs ? 'Yes' : 'Not yet'}</p>
-                  <p><span className="text-muted-foreground">Studio:</span> {data.integration.studioUrl ? <a className="text-primary hover:underline" href={data.integration.studioUrl} target="_blank" rel="noreferrer">Open Azure ML Studio</a> : 'Not set'}</p>
-                </div>
-              </div>
-
-              {latestRun && (
-                <div className="space-y-2 rounded-xl border border-border bg-muted/20 p-4">
-                  <p className="text-xs uppercase tracking-widest text-muted-foreground">Latest run</p>
-                  <p className="text-sm font-semibold text-foreground">{latestRun.pipelineName}</p>
-                  <p className="text-xs text-muted-foreground">{latestRun.message}</p>
-                  <p className="text-xs text-muted-foreground">Started {formatDateTime(latestRun.startedAt)}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="font-display text-xl">Recent runs</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {data.recentRuns.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No runs have been triggered yet.</p>
-              ) : (
-                data.recentRuns.map((run) => (
-                  <div key={run.runId} className="rounded-xl border border-border bg-background p-4 space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-semibold text-foreground">{run.pipelineName}</p>
-                      <Badge className={statusStyles[run.status] ?? 'bg-muted text-muted-foreground border-border'}>{run.status}</Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground">{run.message}</p>
-                    <Progress value={run.progressPercent} className="h-2" />
-                    <div className="flex items-center justify-between text-xs text-muted-foreground">
-                      <span>{formatDateTime(run.startedAt)}</span>
-                      <span>{run.progressPercent}%</span>
-                    </div>
-                  </div>
-                ))
-              )}
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   );
