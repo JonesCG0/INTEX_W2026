@@ -26,6 +26,20 @@ public sealed class MlPipelineStore
         _definitions =
         [
             new PipelineDefinition(
+                Key: "donation-allocation-optimization",
+                Name: "Donation allocation optimization",
+                Domain: "Funding strategy",
+                Status: "Ready",
+                Purpose: "Rank safehouse-months by funding pressure and recommend allocation shares for the next cycle.",
+                NotebookPath: "ml-pipelines/donation_allocation_optimization.ipynb",
+                OutputFileName: "donation_allocation_optimization_priority_recommendations.csv",
+                PrimaryMetricLabel: "Top allocation share",
+                PrimaryMetricColumn: "recommended_allocation_share",
+                Inputs: ["safehouses", "residents", "incident_reports", "process_recordings", "intervention_plans"],
+                Outputs: ["priority ranking", "recommended allocation share", "decision table"],
+                ResultSummary: "Surfaces safehouse-months that need the strongest next-cycle funding attention."
+            ),
+            new PipelineDefinition(
                 Key: "donor-lapse-classification",
                 Name: "Donor lapse classification",
                 Domain: "Donor stewardship",
@@ -68,6 +82,48 @@ public sealed class MlPipelineStore
                 ResultSummary: "Ranks planned posts so the team can favor high-conversion content and timing."
             ),
             new PipelineDefinition(
+                Key: "education-outcome-prediction",
+                Name: "Education outcome prediction",
+                Domain: "Case management",
+                Status: "Ready",
+                Purpose: "Forecast next-month milestone progress for residents using education, attendance, and case context.",
+                NotebookPath: "ml-pipelines/education_outcome_prediction.ipynb",
+                OutputFileName: "education_outcome_prediction_scores.csv",
+                PrimaryMetricLabel: "Best milestone probability",
+                PrimaryMetricColumn: "milestone_probability_next_month",
+                Inputs: ["residents", "education_records", "process_recordings", "incident_reports", "health_wellbeing_records"],
+                Outputs: ["scored resident-months", "milestone probability", "action list"],
+                ResultSummary: "Scores resident-months for next-month milestone achievement planning."
+            ),
+            new PipelineDefinition(
+                Key: "health-wellbeing-trajectory",
+                Name: "Health and wellbeing trajectory",
+                Domain: "Resident outcomes",
+                Status: "Ready",
+                Purpose: "Predict next-month health and wellbeing trajectory for active residents.",
+                NotebookPath: "ml-pipelines/health_wellbeing_trajectory.ipynb",
+                OutputFileName: "health_wellbeing_trajectory_scores.csv",
+                PrimaryMetricLabel: "Best trajectory score",
+                PrimaryMetricColumn: "positive_health_trajectory_next_month_score",
+                Inputs: ["residents", "health_wellbeing_records", "process_recordings", "incident_reports", "intervention_plans"],
+                Outputs: ["resident scores", "trajectory prediction", "risk review table"],
+                ResultSummary: "Scores residents by the likelihood of a positive next-month wellbeing trajectory."
+            ),
+            new PipelineDefinition(
+                Key: "intervention-effectiveness",
+                Name: "Intervention effectiveness",
+                Domain: "Program evaluation",
+                Status: "Ready",
+                Purpose: "Rank intervention opportunities by predicted success and expose a staff-facing priority list.",
+                NotebookPath: "ml-pipelines/intervention_effectiveness.ipynb",
+                OutputFileName: "intervention_effectiveness_scores.csv",
+                PrimaryMetricLabel: "Top success probability",
+                PrimaryMetricColumn: "pressure_probability",
+                Inputs: ["residents", "intervention_plans", "process_recordings", "education_records", "health_wellbeing_records"],
+                Outputs: ["priority list", "success probability", "intervention review table"],
+                ResultSummary: "Ranks intervention opportunities so staff can focus on the most promising next steps."
+            ),
+            new PipelineDefinition(
                 Key: "case-conference-priority-forecast",
                 Name: "Case conference priority forecast",
                 Domain: "Planned pipeline",
@@ -79,7 +135,7 @@ public sealed class MlPipelineStore
                 PrimaryMetricColumn: string.Empty,
                 Inputs: ["process_recordings", "home_visitations", "education_records", "health_wellbeing_records", "incident_reports"],
                 Outputs: ["priority score", "conference ordering", "review notes"],
-                ResultSummary: "This is the fourth notebook slot. Add it once you are ready to model case conference urgency."
+                ResultSummary: "This is the planned notebook slot. Add it once you are ready to model case conference urgency."
             ),
         ];
     }

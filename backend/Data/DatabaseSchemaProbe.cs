@@ -27,7 +27,8 @@ public static class DatabaseSchemaProbe
 
         var manualTables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        await using var conn = new SqlConnection(connectionString);
+        var builder = new SqlConnectionStringBuilder(connectionString) { ConnectTimeout = 8 };
+        await using var conn = new SqlConnection(builder.ConnectionString);
         await conn.OpenAsync(cancellationToken);
 
         foreach (var (table, pk) in ProbeTargets)

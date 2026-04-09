@@ -184,7 +184,7 @@ export default function MlPipelines() {
           <CardContent className="p-5">
             <p className="text-xs uppercase tracking-widest text-muted-foreground">Pipelines</p>
             <p className="mt-2 font-display text-3xl text-foreground">{data.pipelines.length}</p>
-            <p className="text-xs text-muted-foreground mt-1">Three live notebooks and one planned pipeline slot</p>
+            <p className="text-xs text-muted-foreground mt-1">Seven live notebooks and one planned pipeline slot</p>
           </CardContent>
         </Card>
         <Card>
@@ -198,7 +198,7 @@ export default function MlPipelines() {
           <CardContent className="p-5">
             <p className="text-xs uppercase tracking-widest text-muted-foreground">Planned</p>
             <p className="mt-2 font-display text-3xl text-foreground">{plannedCount}</p>
-            <p className="text-xs text-muted-foreground mt-1">The fourth notebook slot is reserved for case conference prioritization</p>
+            <p className="text-xs text-muted-foreground mt-1">The planned notebook slot is reserved for case conference prioritization</p>
           </CardContent>
         </Card>
         <Card>

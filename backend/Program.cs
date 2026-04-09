@@ -13,7 +13,16 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-var databaseKeyMode = await DatabaseSchemaProbe.DetectAsync(connectionString);
+DatabaseKeyMode databaseKeyMode;
+try
+{
+    databaseKeyMode = await DatabaseSchemaProbe.DetectAsync(connectionString);
+}
+catch (Exception probeEx)
+{
+    Console.Error.WriteLine($"[WARN] DatabaseSchemaProbe failed, using defaults: {probeEx.Message}");
+    databaseKeyMode = new DatabaseKeyMode();
+}
 builder.Services.AddSingleton(databaseKeyMode);
 // #region agent log
 try
