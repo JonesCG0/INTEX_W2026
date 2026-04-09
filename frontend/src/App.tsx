@@ -1,31 +1,36 @@
+import { Suspense, lazy, useEffect, useState, type ReactNode } from 'react'
 import { Toaster } from "@/components/ui/sonner"
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClientInstance } from '@/lib/query-client'
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
-import Home from './pages/Home';
-import Impact from './pages/Impact';
-import AdminDashboard from './pages/admin/Dashboard';
-import Residents from './pages/admin/Residents';
-import Recordings from './pages/admin/Recordings';
-import Visitations from './pages/admin/Visitations';
-import Conferences from './pages/admin/Conferences';
-import Donors from './pages/admin/Donors';
-import Outreach from './pages/admin/Outreach';
-import Users from './pages/admin/Users';
-import Analytics from './pages/admin/Analytics';
-import MlPipelines from './pages/admin/MlPipelines';
-import Privacy from './pages/Privacy';
-import DonorDashboard from './pages/DonorDashboard';
-import SignUp from './pages/SignUp';
-import AdminLayout from './components/AdminLayout';
-import DonorLayout from './components/DonorLayout';
-import PublicLayout from './components/PublicLayout';
-import Login from './pages/Login';
+import { CookieConsent } from "@/components/common/CookieConsent"
+import { useThemeStore } from "@/store/useThemeStore"
+import { allowsOptionalFeatures, getConsentState, type HavenConsentState } from "@/lib/cookie-consent"
 
-const ProtectedRoute = ({ children, allowedRole }: { children: React.ReactNode, allowedRole?: string }) => {
+const PageNotFound = lazy(() => import('./lib/PageNotFound'));
+const Home = lazy(() => import('./pages/Home'));
+const Impact = lazy(() => import('./pages/Impact'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const Login = lazy(() => import('./pages/Login'));
+const SignUp = lazy(() => import('./pages/SignUp'));
+const DonorDashboard = lazy(() => import('./pages/DonorDashboard'));
+const AdminDashboard = lazy(() => import('./pages/admin/Dashboard'));
+const Residents = lazy(() => import('./pages/admin/Residents'));
+const Recordings = lazy(() => import('./pages/admin/Recordings'));
+const Visitations = lazy(() => import('./pages/admin/Visitations'));
+const Conferences = lazy(() => import('./pages/admin/Conferences'));
+const Donors = lazy(() => import('./pages/admin/Donors'));
+const Outreach = lazy(() => import('./pages/admin/Outreach'));
+const Users = lazy(() => import('./pages/admin/Users'));
+const Analytics = lazy(() => import('./pages/admin/Analytics'));
+const MlPipelines = lazy(() => import('./pages/admin/MlPipelines'));
+const AdminLayout = lazy(() => import('./components/AdminLayout'));
+const DonorLayout = lazy(() => import('./components/DonorLayout'));
+const PublicLayout = lazy(() => import('./components/PublicLayout'));
+
+const ProtectedRoute = ({ children, allowedRole }: { children: ReactNode, allowedRole?: string }) => {
   const { isAuthenticated, user, isLoadingAuth } = useAuth();
   
   if (isLoadingAuth) return (
@@ -40,19 +45,19 @@ const ProtectedRoute = ({ children, allowedRole }: { children: React.ReactNode, 
   return <>{children}</>;
 };
 
+const LoadingScreen = () => (
+  <div className="fixed inset-0 flex items-center justify-center bg-background">
+    <div className="h-8 w-8 animate-spin rounded-full border-4 border-slate-200 border-t-slate-800" />
+  </div>
+);
+
 const AuthenticatedApp = () => {
   const { isLoadingAuth, isLoadingPublicSettings, authError } = useAuth();
 
-  // Handle loading
   if (isLoadingPublicSettings || isLoadingAuth) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-background">
-        <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
-  // Handle errors
   if (authError && authError.type === 'user_not_registered') {
     return <UserNotRegisteredError />;
   }
@@ -103,11 +108,6 @@ const AuthenticatedApp = () => {
   );
 };
 
-import { CookieConsent } from "@/components/common/CookieConsent"
-import { useThemeStore } from "@/store/useThemeStore"
-import { useEffect, useState } from "react"
-import { allowsOptionalFeatures, getConsentState, type HavenConsentState } from "@/lib/cookie-consent"
-
 const OptionalFeaturesBootstrap = ({ enabled }: { enabled: boolean }) => {
   useEffect(() => {
     document.documentElement.dataset.optionalFeatures = enabled ? "enabled" : "disabled";
@@ -115,6 +115,8 @@ const OptionalFeaturesBootstrap = ({ enabled }: { enabled: boolean }) => {
 
   return null;
 }
+
+const RouteFallback = () => <LoadingScreen />;
 
 function App() {
   const initializeTheme = useThemeStore((state) => state.initializeTheme);
@@ -135,7 +137,9 @@ function App() {
       <QueryClientProvider client={queryClientInstance}>
         <OptionalFeaturesBootstrap enabled={optionalFeaturesEnabled} />
         <Router>
-          <AuthenticatedApp />
+          <Suspense fallback={<RouteFallback />}>
+            <AuthenticatedApp />
+          </Suspense>
         </Router>
         <Toaster position="bottom-right" richColors closeButton />
         <CookieConsent onConsentChange={setConsentState} />

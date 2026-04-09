@@ -194,10 +194,10 @@ export default function Conferences() {
                       <p className="text-sm text-muted-foreground">{conference.safehouse} • {conference.status}</p>
                     </div>
                     <div className="flex gap-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(conference)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(conference)} aria-label={`Edit conference for ${conference.residentCode}`} title={`Edit conference for ${conference.residentCode}`} type="button">
                         <IconPencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(conference)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(conference)} aria-label={`Delete conference for ${conference.residentCode}`} title={`Delete conference for ${conference.residentCode}`} type="button">
                         <IconTrash className="h-3.5 w-3.5" />
                       </Button>
                     </div>

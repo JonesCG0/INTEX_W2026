@@ -256,10 +256,10 @@ export default function Visitations() {
                       <p className="text-sm text-muted-foreground">{visitation.visitType}</p>
                     </div>
                     <div className="flex gap-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(visitation)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(visitation)} aria-label={`Edit visitation for ${visitation.residentName}`} title={`Edit visitation for ${visitation.residentName}`} type="button">
                         <IconPencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(visitation)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(visitation)} aria-label={`Delete visitation for ${visitation.residentName}`} title={`Delete visitation for ${visitation.residentName}`} type="button">
                         <IconTrash className="h-3.5 w-3.5" />
                       </Button>
                     </div>

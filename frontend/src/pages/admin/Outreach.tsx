@@ -92,7 +92,9 @@ export default function Outreach() {
         <div>
           <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Platform</Label>
           <Select value={platformFilter} onValueChange={setPlatformFilter}>
-            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="mt-1" aria-label="Filter outreach platform">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All platforms</SelectItem>
               {performance.map((platform) => (
@@ -104,7 +106,9 @@ export default function Outreach() {
         <div>
           <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Campaign</Label>
           <Select value={campaignFilter} onValueChange={setCampaignFilter}>
-            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="mt-1" aria-label="Filter outreach campaign">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All campaigns</SelectItem>
               {campaignOptions.map((campaign) => (

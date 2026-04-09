@@ -209,13 +209,13 @@ export default function Users() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(user)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(user)} aria-label={`Edit ${user.email}`} title={`Edit ${user.email}`} type="button">
                         <IconPencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleUnlock(user)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleUnlock(user)} aria-label={`Unlock ${user.email}`} title={`Unlock ${user.email}`} type="button">
                         <IconRefresh className="h-3.5 w-3.5" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(user)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(user)} aria-label={`Delete ${user.email}`} title={`Delete ${user.email}`} type="button">
                         <IconTrash className="h-3.5 w-3.5" />
                       </Button>
                     </div>
