@@ -46,7 +46,7 @@ A secure, full-stack case management web application for a nonprofit safehouse s
 | `/admin/visitations` | Admin only | Visitation records overview |
 | `/admin/users` | Admin only | User management, create/edit/delete/unlock/role changes |
 | `/admin/analytics` | Admin only | Reporting and analytics charts |
-| `/admin/ml-pipelines` | Admin only | Notebook-backed ML pipeline demo, output previews, and Azure ML setup |
+| `/admin/ml-pipelines` | Admin only | Eight notebook-backed ML pipelines, output previews, and demo run simulation |
 
 ---
 
@@ -200,24 +200,30 @@ Drops and recreates CSV-backed tables. Requires `ConnectionStrings:DefaultConnec
 }
 ```
 
-### ML Pipelines Demo
+### ML Pipelines
 
-The repo includes three notebook-backed pipelines under `ml-pipelines/`:
+The repo includes eight notebook-backed pipelines surfaced in the admin UI at `/admin/ml-pipelines`:
 
-- donor lapse classification
-- reintegration readiness classification
-- social media donation conversion classification
+| Pipeline | Notebook | Output CSV |
+|---|---|---|
+| Donor lapse classification | `donor_lapse_classification.ipynb` | `donor_lapse_scores.csv` |
+| Reintegration readiness classification | `reintegration_readiness_classifications.ipynb` | `resident_reintegration_queue.csv` |
+| Safehouse performance monitoring | `safehouse_performance_monitoring.ipynb` | `safehouse_performance_scores.csv` |
+| Social media donation conversion classifier | `social_media_classification_commented.ipynb` | `social_media_planning_scores.csv` |
+| Donation allocation optimization | `donation_allocation_optimization.ipynb` | — |
+| Education outcome prediction | `education_outcome_prediction.ipynb` | — |
+| Health and wellbeing trajectory | `health_wellbeing_trajectory.ipynb` | — |
+| Intervention effectiveness analysis | `intervention_effectiveness.ipynb` | — |
 
-There is also a fourth planned slot in the admin UI for a future case-conference priority pipeline.
+All eight are marked Ready and runnable in demo mode. The four with a CSV column show live data previews; the others show run simulation only until their notebooks produce output.
 
-The new admin page at `/admin/ml-pipelines` shows:
+The admin ML page shows:
 
-- the notebook catalog
-- generated CSV snapshots from `ml-pipelines/generated_outputs/` when they are present locally
-- recent run history
-- a setup panel for Azure ML
+- the notebook catalog with inputs, outputs, and purpose for each pipeline
+- generated CSV snapshots from Azure Blob when configured, with local repo fallback
+- demo run simulation (Queued → Running → Succeeded) per pipeline
 
-By default the backend runs in `Demo` mode. To wire Azure ML later, fill the `AzureMl` section in backend configuration:
+By default the backend runs in `Demo` mode. To enable live Azure ML job submission, fill the `AzureMl` section in backend configuration:
 
 ```json
 {
@@ -225,13 +231,23 @@ By default the backend runs in `Demo` mode. To wire Azure ML later, fill the `Az
     "Mode": "AzureMl",
     "StudioUrl": "https://ml.azure.com/...",
     "WorkspaceName": "your-workspace",
-    "ResourceGroup": "your-resource-group",
-    "SubscriptionId": "your-subscription-id"
+    "ResourceGroup": "INTEXW2026",
+    "SubscriptionId": "your-subscription-id",
+    "ExperimentName": "ProjectHaven",
+    "ComputeId": "/subscriptions/.../computes/pipeline-cpu",
+    "CodeId": "/subscriptions/.../codes/ml-pipelines/versions/1",
+    "EnvironmentId": "/subscriptions/.../environments/project-haven-ml/versions/1",
+    "DataInputUri": "azureml://datastores/workspaceblobstore/paths/data/",
+    "OutputDatastoreUri": "azureml://datastores/workspaceblobstore/paths/generated_outputs/",
+    "OutputBlobContainerUrl": "https://projecthaven5752238671.blob.core.windows.net/azureml-blobstore-29c25e54-8c23-4de2-8b5d-ecc8ba6bb5e5",
+    "OutputBlobPrefix": "generated_outputs",
+    "RunnerScriptPath": "run_notebook_job.py",
+    "JobApiVersion": "2025-09-01"
   }
 }
 ```
 
-If you later publish the notebooks as callable Azure ML jobs or endpoints, the backend can be pointed at that workspace and the webapp can keep the same dashboard surface.
+The backend submits Azure ML command jobs when those settings are present. It reads output snapshots from Blob first and falls back to local repo CSVs if Blob access or live job output is unavailable.
 
 ---
 
@@ -308,14 +324,23 @@ If you later publish the notebooks as callable Azure ML jobs or endpoints, the b
 │               ├── Donors.tsx
 │               ├── Visitations.tsx
 │               ├── Users.tsx
-│               └── Analytics.tsx
+│               ├── Analytics.tsx
+│               └── MlPipelines.tsx
 ├── backend/
 │   ├── Controllers/
+│   │   └── MlPipelinesController.cs
 │   ├── Data/
 │   ├── Migrations/
 │   ├── Models/
 │   ├── Services/
+│   │   ├── MlPipelineStore.cs
+│   │   └── AzureMlJobClient.cs
 │   └── Program.cs
+├── ml-pipelines/
+│   ├── generated_outputs/        # CSV snapshots copied into backend publish output
+│   ├── run_notebook_job.py       # Azure ML command job runner
+│   ├── AZURE_ML_SETUP.md
+│   └── *.ipynb                   # Eight pipeline notebooks
 ├── seed_data/
 ├── md files/
 ├── .github/workflows/
@@ -330,6 +355,7 @@ If you later publish the notebooks as callable Azure ML jobs or endpoints, the b
 - [x] Donor dashboard, contribution history, and anonymized impact view
 - [x] Privacy policy page
 - [x] Cookie consent banner
+- [x] Eight ML pipeline notebooks with demo run simulation and CSV output previews
 - [ ] CSP headers hardening
 - [ ] Lighthouse accessibility audit
 - [ ] Azure Blob Storage for file uploads

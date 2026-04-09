@@ -18,9 +18,13 @@ Completed:
 - donor dashboard
 - donor contribution recording
 - admin portal with CRUD for donors, contributions, residents, recordings, visitations, and users
+- ML pipelines page with eight notebooks, CSV output previews, and demo run simulation
 - Azure SQL persistence
 - seeded admin and donor accounts
 - backend health checks
+- admin ML pipelines dashboard
+- Azure Blob-backed ML snapshot reading with local repo fallback
+- Azure ML command-job trigger support in the backend
 
 ---
 
@@ -33,6 +37,8 @@ Completed:
 5. Configure the backend connection string with `dotnet user-secrets`.
 6. Run the backend with `dotnet run` in `backend/`.
 7. Confirm the app can log in as admin and donor.
+8. If using the ML dashboard in demo mode, confirm CSV outputs exist under `ml-pipelines/generated_outputs/`.
+9. If using live Azure ML mode, configure the `AzureMl` section in backend settings and confirm Blob access.
 
 ---
 
@@ -44,6 +50,7 @@ Completed:
 - `md files/claude.md`
 - `md files/PRD.md`
 - `md files/Web_App_PRD.md`
+- `ml-pipelines/AZURE_ML_SETUP.md`
 
 ---
 
@@ -55,6 +62,8 @@ Completed:
 - [x] Donor dashboard loads seeded or user-recorded contributions
 - [x] Public impact dashboard includes portal contributions
 - [x] User management routes exist
+- [x] Admin ML dashboard reads local CSV snapshots
+- [x] Backend can submit Azure ML jobs when configured
 - [ ] CSP header hardening
 - [ ] Lighthouse audit
-- [ ] Blob storage implementation
+- [ ] End-to-end validation of live Azure ML runs in deployed environment

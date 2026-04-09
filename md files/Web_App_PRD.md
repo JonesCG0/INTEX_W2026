@@ -15,6 +15,8 @@ The repository currently includes:
 - admin CRUD for donors, contributions, residents, recordings, visitations, and users
 - public impact data backed by Azure SQL
 - seeded admin and donor accounts
+- admin ML pipelines dashboard with eight pipeline slots
+- Azure ML job-trigger integration with Blob-backed output previews and local CSV fallback
 
 ---
 
@@ -39,6 +41,7 @@ The repository currently includes:
 - Manage residents, recordings, and visitations.
 - Manage users and roles.
 - Review reporting and analytics.
+- Review notebook-backed ML outputs and trigger Azure ML jobs from the admin ML dashboard.
 
 ---
 
@@ -49,6 +52,8 @@ The repository currently includes:
 - Admin features require the admin role.
 - Delete actions use confirmation dialogs.
 - Public impact data combines public and portal contribution sources.
+- The admin ML page reads pipeline CSV snapshots from Azure Blob when configured, or from `ml-pipelines/generated_outputs/` as a fallback.
+- Seven notebook pipelines currently produce outputs; the eighth case conference pipeline remains a planned slot.
 
 ---
 

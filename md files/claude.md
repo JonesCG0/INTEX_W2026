@@ -15,6 +15,7 @@ Current implementation:
 - public home, impact, privacy, login, and donor signup pages
 - donor dashboard and donor contribution recording
 - admin dashboard, donor management, resident management, process recordings, visitations, analytics, and user management
+- ML pipelines page with eight notebook-backed pipelines, CSV output previews, and demo run simulation
 - seeded admin and donor accounts
 - Azure SQL-backed data persistence
 

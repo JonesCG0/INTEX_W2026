@@ -2,7 +2,7 @@
 
 ## Product Overview
 
-Project Haven is a secure, role-based web platform designed for a Native American youth safehouse nonprofit, beginning with the Hopi tribe in Arizona and intended for expansion across tribal nations. The product has two primary fronts: a visually-rich, culturally evocative public site for visitors and donors; and a secure, clean admin/staff portal for resident case management, donor management, and organizational reporting. The prototype covers the public home page (with signature scroll animation), a public impact dashboard, login/auth, admin dashboard, resident inventory (caseload management), process/session logs, donor & contribution manager, and the donor-facing dashboard. Excluded in this prototype: home visitation/case conferences, machine learning pipeline outputs, OAuth/MFA, analytics export module.
+Project Haven is a secure, role-based web platform designed for a Native American youth safehouse nonprofit, beginning with the Hopi tribe in Arizona and intended for expansion across tribal nations. The product has two primary fronts: a visually-rich, culturally evocative public site for visitors and donors; and a secure, clean admin/staff portal for resident case management, donor management, organizational reporting, and ML-assisted operational review. The current prototype covers the public home page (with signature scroll animation), a public impact dashboard, login/auth, admin dashboard, resident inventory (caseload management), process/session logs, donor & contribution manager, donor-facing dashboard, and an admin ML dashboard that previews eight notebook-backed pipeline slots. Excluded in this prototype: OAuth/MFA and analytics export module. The case conference priority notebook remains the planned ML slot.
 
 ---
 
@@ -97,7 +97,7 @@ Project Haven is a secure, role-based web platform designed for a Native America
 - **Framework:** Vite + React 18
 - **Language:** TypeScript (strict mode)
 - **Database:** None (mock data only)
-- **Backend:** .NET 10/C# REST API (all calls are **MSW**-mocked for this prototype; backend not included)
+- **Backend:** .NET 10/C# REST API in the real repository, with MSW-backed frontend prototyping and Azure ML trigger support for the admin ML dashboard
 - **Auth:** Mock role-based via React Context (Admin, Staff, Donor, Visitor)
 - **Hosting target:** Local SPA, also deployable to \[Vercel static hosting\]
 - **Key Libraries:**
@@ -141,6 +141,7 @@ _Top nav for public:_
 - **Caseload Inventory (/admin/residents):** Paginated searchable/filterable resident table. Add/Edit via drawer form.
 - **Resident Process Recordings (/admin/residents/:id/recordings):** Timeline view of resident's session history. Add session form.
 - **Supporters & Contributions (/admin/donors):** Donor/supporter table, CRUD, contribution record linkage.
+- **ML Pipelines (/admin/ml-pipelines):** Eight notebook-backed pipeline cards with snapshot previews, recent runs, and Azure ML setup status.
 
 _Sidebar for admin/donor:_
 

@@ -28,6 +28,8 @@ Project Haven is a digital platform supporting a Native American youth safehouse
 
 ## TECH STACK
 
+Implementation note: this document captures the broader product direction. The current repository implementation uses ASP.NET Identity with cookie auth, Azure SQL, Azure Static Web Apps, Azure App Service, and an admin ML dashboard backed by notebook outputs and Azure ML job triggers.
+
 - **Frontend:** React (Vite, TypeScript)
   - Aceternity UI (**public pages**), shadcn/ui (**admin/donor portal**)
   - Tailwind CSS v4
@@ -36,9 +38,9 @@ Project Haven is a digital platform supporting a Native American youth safehouse
   - Tabler Icons for iconography
   - Rive for signature animated moments
   - Zustand for global state management
-- **Backend:** (real-world) .NET/C#, Azure SQL, MS Graph SSO, Azure Storage/Blob
-- **Authentication:** Azure AD B2C (for staff/admin); passwordless email magic link (for donors/community)
-- **Cloud hosting:** Azure App Service
+- **Backend:** .NET/C#, Azure SQL, Azure Storage/Blob, Azure ML for notebook job execution
+- **Authentication:** ASP.NET Identity with cookie-based role access in the current implementation
+- **Cloud hosting:** Azure Static Web Apps + Azure App Service
 - **Testing:** Vitest, Storybook, Cypress (component/e2e smoke coverage)
 - **Mock Service Worker (MSW):** Used for prototyping and AI-based demo environments
 
@@ -166,6 +168,7 @@ Project Haven is a digital platform supporting a Native American youth safehouse
 
 - Nivo data visualization (ResponsiveBar, ResponsiveLine, ResponsivePie) with custom site theme, accessible legend for all charts
 - Export feature (CSV/PDF) for reports
+- Admin ML dashboard with eight notebook-backed pipeline slots, Blob-backed CSV previews, and Azure ML run triggers
 
 ---
 

@@ -122,6 +122,8 @@ var configuredOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<s
 var fallbackOrigins = new[]
 {
     "https://polite-rock-003bb5b1e.1.azurestaticapps.net",
+    "https://jonescg0.net",
+    "https://www.jonescg0.net",
     "http://localhost:5173",
     "https://localhost:5173",
 };
