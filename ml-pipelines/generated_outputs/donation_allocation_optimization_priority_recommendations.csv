@@ -1,0 +1,2 @@
+safehouse_id,panel_month,safehouse_name,predicted_pressure_flag,pressure_probability,allocated_amount_lag1,allocation_per_active_resident_lag1,active_resident_proxy_lag1,incident_count_lag1,incident_burden_per_resident_lag1,service_touch_count_lag1,raw_priority_score,recommended_allocation_share,recommended_allocation_share_pct
+8,2026-03-01,Lighthouse Safehouse 8,0,0.4362319318917388,1064.06,177.34333333333333,6.0,0.0,0.0,0.0,0.4362319318917388,1.0,100.0

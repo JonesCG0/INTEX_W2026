@@ -1,0 +1,2 @@
+resident_id,safehouse_id,name,region,metric_month,education_progress,attendance_rate,incident_count,process_session_count,plans_created,milestone_probability_next_month,predicted_milestone_next_month
+40,1,Lighthouse Safehouse 1,Luzon,2026-01-01,100.0,0.886,0.0,4.0,0.0,0.6685639948600506,1
