@@ -186,7 +186,7 @@ export default function Recordings() {
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-6">
-        <Link to="/admin/residents">
+        <Link to="/admin/residents" aria-label="Back to residents" title="Back to residents">
           <Button variant="outline" size="icon" className="h-10 w-10 rounded-full">
             <IconArrowLeft className="h-5 w-5" />
           </Button>
