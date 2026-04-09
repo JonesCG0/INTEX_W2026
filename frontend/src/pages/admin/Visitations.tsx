@@ -245,7 +245,7 @@ export default function Visitations() {
           <p className="font-body text-sm text-muted-foreground">Track home visits, assessments, and family engagement</p>
         </div>
         <Button onClick={openCreate} className="font-body gap-2">
-          <IconPlus className="h-4 w-4" />
+          <IconPlus className="h-4 w-4" aria-hidden="true" />
           New Visitation
         </Button>
       </div>
@@ -275,7 +275,7 @@ export default function Visitations() {
 
       {filteredVisitations.length === 0 ? (
         <div className="py-20 text-center border-2 border-dashed border-border rounded-2xl bg-card">
-          <IconCalendar className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-20" />
+          <IconCalendar className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-20" aria-hidden="true" />
           <p className="text-muted-foreground font-body">No visitation records are available for the selected filter.</p>
         </div>
       ) : (
@@ -300,10 +300,10 @@ export default function Visitations() {
                     </div>
                     <div className="flex gap-2">
                       <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(visitation)} aria-label={`Edit visitation for ${visitation.residentName}`} title={`Edit visitation for ${visitation.residentName}`} type="button">
-                        <IconPencil className="h-3.5 w-3.5" />
+                        <IconPencil className="h-3.5 w-3.5" aria-hidden="true" />
                       </Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(visitation)} aria-label={`Delete visitation for ${visitation.residentName}`} title={`Delete visitation for ${visitation.residentName}`} type="button">
-                        <IconTrash className="h-3.5 w-3.5" />
+                        <IconTrash className="h-3.5 w-3.5" aria-hidden="true" />
                       </Button>
                     </div>
                   </div>
