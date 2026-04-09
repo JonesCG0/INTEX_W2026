@@ -17,6 +17,7 @@ The repository currently includes:
 - seeded admin and donor accounts
 - admin ML pipelines dashboard with eight pipeline slots
 - Azure ML job-trigger integration with Blob-backed output previews and local CSV fallback
+- production auth configuration targeting `https://api.jonescg0.net` for same-site mobile-safe cookie auth
 
 ---
 
@@ -53,7 +54,8 @@ The repository currently includes:
 - Delete actions use confirmation dialogs.
 - Public impact data combines public and portal contribution sources.
 - The admin ML page reads pipeline CSV snapshots from Azure Blob when configured, or from `ml-pipelines/generated_outputs/` as a fallback.
-- Seven notebook pipelines currently produce outputs; the eighth case conference pipeline remains a planned slot.
+- All eight current notebook slots have expected fallback CSV outputs wired into the admin ML dashboard.
+- Production login is intended to run with the frontend on `jonescg0.net`, the API on `api.jonescg0.net`, and the auth cookie scoped to `.jonescg0.net`.
 
 ---
 

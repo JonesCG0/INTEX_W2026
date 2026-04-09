@@ -262,6 +262,8 @@ const SidebarTrigger = React.forwardRef<
         toggleSidebar()
       }}
       asChild={asChild}
+      aria-label="Toggle Sidebar"
+      title="Toggle Sidebar"
       {...props}>
       {asChild ? (
         <IconLayoutSidebar />

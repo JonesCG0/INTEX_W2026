@@ -69,7 +69,7 @@ export default function Outreach() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-display text-2xl text-foreground">Outreach Performance</h1>
+        <h1 className="font-body text-2xl text-foreground">Outreach Performance</h1>
         <p className="font-body text-sm text-muted-foreground">Staff-facing view of canonical `social_media_posts` reach, referrals, and campaign quality.</p>
       </div>
 
@@ -80,7 +80,7 @@ export default function Outreach() {
               <CardTitle className="font-body text-sm uppercase tracking-widest text-muted-foreground">{platform.platform}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-1">
-              <p className="font-display text-3xl text-foreground">{platform.posts}</p>
+              <p className="font-body text-3xl text-foreground">{platform.posts}</p>
               <p className="text-xs text-muted-foreground">Posts • Reach {platform.reach.toLocaleString()}</p>
               <p className="text-xs text-muted-foreground">Donation referrals {platform.donationReferrals.toLocaleString()} • PHP {platform.estimatedDonationValuePhp.toLocaleString()}</p>
             </CardContent>
@@ -92,7 +92,9 @@ export default function Outreach() {
         <div>
           <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Platform</Label>
           <Select value={platformFilter} onValueChange={setPlatformFilter}>
-            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="mt-1" aria-label="Filter outreach platform">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All platforms</SelectItem>
               {performance.map((platform) => (
@@ -104,7 +106,9 @@ export default function Outreach() {
         <div>
           <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Campaign</Label>
           <Select value={campaignFilter} onValueChange={setCampaignFilter}>
-            <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+            <SelectTrigger className="mt-1" aria-label="Filter outreach campaign">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All campaigns</SelectItem>
               {campaignOptions.map((campaign) => (

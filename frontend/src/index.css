@@ -105,6 +105,8 @@
     --haven-surface-elevated: #1E2E2C;
     --haven-muted: #BECFC7;
     --haven-dark: #F0EBE0;
+    --font-display: 'Yeseva One', serif;
+    --font-body: 'Geist Sans', 'Inter', system-ui, -apple-system, sans-serif;
   }
 }
 

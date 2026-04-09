@@ -1,6 +1,6 @@
 # Project Haven
 
-A secure, full-stack case management web application for a nonprofit safehouse supporting abuse and trafficking survivors. The current build includes the public home page, public impact dashboard, privacy policy, cookie-consent flow, donor self-registration, donor contribution recording, and a fully operational authenticated admin and donor portal.
+A secure full-stack case management application for a nonprofit safehouse supporting abuse and trafficking survivors. The current build includes the public site, public impact reporting, donor self-service, the authenticated admin portal, and an admin ML dashboard backed by notebook pipelines.
 
 ---
 
@@ -11,8 +11,8 @@ A secure, full-stack case management web application for a nonprofit safehouse s
 | Frontend (primary) | https://jonescg0.net |
 | Frontend (www) | https://www.jonescg0.net |
 | Frontend (Azure Static Web Apps) | https://polite-rock-003bb5b1e.1.azurestaticapps.net |
-| Backend API (target custom domain) | https://api.jonescg0.net |
-| Backend API (current App Service hostname) | https://intexw2026-crd9brarcfhyf9b8.francecentral-01.azurewebsites.net |
+| Backend API (primary custom domain) | https://api.jonescg0.net |
+| Backend API (App Service hostname) | https://intexw2026-crd9brarcfhyf9b8.francecentral-01.azurewebsites.net |
 
 ---
 
@@ -22,104 +22,65 @@ A secure, full-stack case management web application for a nonprofit safehouse s
 |---|---|
 | Frontend | React 19 + TypeScript + Vite |
 | Backend | ASP.NET Core (.NET 10) Web API |
-| Auth | ASP.NET Identity (cookie-based, roles: Admin / Donor) |
-| Database | Azure SQL Database (EF Core with migrations) |
+| Auth | ASP.NET Identity, cookie-based, roles: `Admin` / `Donor` |
+| Database | Azure SQL Database with EF Core migrations |
 | Hosting (frontend) | Azure Static Web Apps |
-| Hosting (backend) | Azure App Service (France Central) |
+| Hosting (backend) | Azure App Service, France Central |
 | CI/CD | GitHub Actions |
 
 ---
 
-## Pages & Routes
+## Routes
 
 | Route | Access | Description |
 |---|---|---|
-| `/` | Public | Home page, auth-aware nav, impact stats |
-| `/impact` | Public | Donor-facing impact dashboard, live anonymized metrics |
-| `/privacy` | Public | Privacy policy and cookie-consent information |
-| `/login` | Public | Login form |
+| `/` | Public | Home page |
+| `/impact` | Public | Public impact dashboard |
+| `/privacy` | Public | Privacy policy |
+| `/login` | Public | Email/password login |
 | `/signup` | Public | Donor registration |
-| `/donor` | Donor only | Donor dashboard, contribution history, and impact view |
-| `/admin` | Admin only | Admin portal entry point, redirects to dashboard |
-| `/admin/dashboard` | Admin only | Operational overview for residents, donors, recordings, and reports |
-| `/admin/residents` | Admin only | Resident care management, enroll, edit, delete, track progress |
-| `/admin/residents/:id/recordings` | Admin only | Clinical session timeline for a resident |
-| `/admin/residents/:id/visitations` | Admin only | Visitation timeline for a resident |
-| `/admin/donors` | Admin only | Donor stewardship, donor CRUD, contribution CRUD |
-| `/admin/visitations` | Admin only | Visitation records overview |
-| `/admin/users` | Admin only | User management, create/edit/delete/unlock/role changes |
-| `/admin/analytics` | Admin only | Reporting and analytics charts |
-| `/admin/ml-pipelines` | Admin only | Eight notebook-backed ML pipelines, output previews, and demo run simulation |
+| `/donor` | Donor | Donor dashboard and contribution history |
+| `/admin` | Admin | Admin portal entry |
+| `/admin/residents` | Admin | Resident management |
+| `/admin/donors` | Admin | Donor and contribution management |
+| `/admin/visitations` | Admin | Visitation records |
+| `/admin/users` | Admin | User and role management |
+| `/admin/analytics` | Admin | Reporting and analytics |
+| `/admin/ml-pipelines` | Admin | Eight notebook-backed ML pipelines with output previews |
 
 ---
 
-## API Endpoints
+## API Surface
 
-### Auth (`/api/auth`)
+### Auth
 
-| Method | Route | Auth | Description |
+| Method | Route | Access | Description |
 |---|---|---|---|
-| POST | `/login` | Public | Login with email and password |
-| POST | `/logout` | Any | Clear session cookie |
-| GET | `/me` | Public | Get current session user |
-| POST | `/register` | Public | Create Donor account |
+| `POST` | `/api/auth/login` | Public | Log in with email and password |
+| `POST` | `/api/auth/logout` | Authenticated | Clear auth cookie |
+| `GET` | `/api/auth/me` | Public | Return current session status |
+| `POST` | `/api/auth/register` | Public | Create donor account |
 
-### Public Impact (`/api/public`)
+### Public
 
-| Method | Route | Auth | Description |
+| Method | Route | Access | Description |
 |---|---|---|---|
-| GET | `/impact` | Public | Read-only impact dashboard backed by Azure SQL |
+| `GET` | `/api/public/impact` | Public | Public impact dashboard data |
+| `GET` | `/api/health` | Public | Readiness check |
+| `GET` | `/api/health/ready` | Public | Readiness alias |
+| `GET` | `/api/health/live` | Public | Liveness check |
+| `GET` | `/api/health/full?details=true` | Public | Full startup diagnostics |
 
-### Health (`/api/health`)
+### Admin
 
-| Method | Route | Auth | Description |
-|---|---|---|---|
-| GET | `/` | Public | Readiness check for startup and database connectivity |
-| GET | `/ready` | Public | Alias for readiness check |
-| GET | `/live` | Public | Lightweight liveness check that returns 200 when the process is running |
-| GET | `/full?details=true` | Public | Readiness check with startup checkpoints and diagnostics |
-
-### Admin Portal (`/api/admin`)
-
-| Method | Route | Auth | Description |
-|---|---|---|---|
-| GET | `/portal` | Admin | Load dashboard overview |
-| POST | `/portal/donors` | Admin | Create donor profile |
-| PUT | `/portal/donors/{id}` | Admin | Update donor profile |
-| DELETE | `/portal/donors/{id}` | Admin | Delete donor profile |
-| POST | `/portal/donors/{id}/contributions` | Admin | Record a contribution for a donor |
-| PUT | `/portal/contributions/{id}` | Admin | Update a contribution |
-| DELETE | `/portal/contributions/{id}` | Admin | Delete a contribution |
-| POST | `/portal/residents` | Admin | Enroll a new resident |
-| PUT | `/portal/residents/{id}` | Admin | Update a resident record |
-| DELETE | `/portal/residents/{id}` | Admin | Remove a resident record |
-| GET | `/portal/residents/{id}/recordings` | Admin | List clinical session recordings for a resident |
-| POST | `/portal/residents/{id}/recordings` | Admin | Add a clinical session recording |
-| PUT | `/portal/recordings/{id}` | Admin | Update a clinical session recording |
-| DELETE | `/portal/recordings/{id}` | Admin | Delete a clinical session recording |
-| GET | `/portal/residents/{id}/visitations` | Admin | List visitation records for a resident |
-| POST | `/portal/visitations` | Admin | Add a visitation record |
-| PUT | `/portal/visitations/{id}` | Admin | Update a visitation record |
-| DELETE | `/portal/visitations/{id}` | Admin | Delete a visitation record |
-
-### Admin Users (`/api/admin`)
-
-| Method | Route | Auth | Description |
-|---|---|---|---|
-| GET | `/users` | Admin | List all users with roles |
-| POST | `/users` | Admin | Create a user |
-| PUT | `/users/{id}` | Admin | Update a user profile and role |
-| PUT | `/users/{id}/role` | Admin | Change a user's role |
-| DELETE | `/users/{id}` | Admin | Delete a user |
-| POST | `/users/{id}/unlock` | Admin | Clear lockout on a user |
-| GET | `/roles` | Admin | List available roles |
-| POST | `/query` | Admin | Run a SELECT query (max 500 rows) |
+The admin API supports donor, contribution, resident, recording, visitation, user, analytics, and ML dashboard workflows through `/api/admin/*` and `/api/ml/*`.
 
 ---
 
-## Local Setup
+## Local Development
 
 ### Prerequisites
+
 - Node.js 20+
 - .NET 10 SDK
 
@@ -131,18 +92,10 @@ npm ci
 npm run dev
 ```
 
-Runs at `http://localhost:5173`.
-
 Create `frontend/.env`:
 
 ```env
 VITE_API_URL=http://localhost:5262
-```
-
-For production, use the custom API domain:
-
-```env
-VITE_API_URL=https://api.jonescg0.net
 ```
 
 ### Backend
@@ -152,71 +105,32 @@ cd backend
 dotnet run
 ```
 
-Runs at `http://localhost:5262`.
-
-Set the connection string via user-secrets:
+Set the connection string with user secrets:
 
 ```bash
 cd backend
 dotnet user-secrets set "ConnectionStrings:DefaultConnection" "YOUR_CONNECTION_STRING"
 ```
 
-On startup the backend will:
-1. Auto-apply EF Core migrations
-2. Seed the admin account if `AdminSeed__*` env vars are set
-3. Seed portal starter data, including donor profiles, sample contributions, residents, recordings, and visitations
+The backend auto-applies migrations and seeds starter portal data on startup when configuration is present.
 
-### Admin Seed Account
+---
 
-```bash
-dotnet user-secrets set "AdminSeed:Email" "admin@example.com"
-dotnet user-secrets set "AdminSeed:Password" "YourPassword123!"
-dotnet user-secrets set "AdminSeed:DisplayName" "Project Haven Admin"
+## Production Auth Configuration
+
+The production frontend should call the API through the custom API domain:
+
+```env
+VITE_API_URL=https://api.jonescg0.net
 ```
 
-On Azure, set these as App Service environment variables instead.
+For reliable mobile login, the frontend and backend must stay on the same site boundary:
 
-### Seeded Donor Account
+1. Frontend on `https://jonescg0.net`
+2. API on `https://api.jonescg0.net`
+3. Auth cookie scoped to `.jonescg0.net`
 
-The current seed process also creates a donor account for testing the donor portal:
-
-```text
-Email: donor@example.com
-Password: ProjectHaven2026!
-Role: Donor
-```
-
-That donor seed is linked to a portal profile and sample contributions so the donor dashboard has content immediately after seeding.
-
-### Password Policy (IS414)
-
-Passwords must be at least **12 characters** and include uppercase, lowercase, digit, and special character.
-
-### Seed the database from CSV export
-
-```bash
-cd backend
-dotnet run -- --seed-csv ../seed_data
-```
-
-Drops and recreates CSV-backed tables. Requires `ConnectionStrings:DefaultConnection` to be set.
-
-### Backend allowed CORS origins (`appsettings.Development.json`)
-
-```json
-{
-  "AllowedOrigins": ["http://localhost:5173"]
-}
-```
-
-### Production auth cookie and API domain
-
-For reliable mobile login, the frontend and backend need to stay on the same site boundary:
-
-1. Add `api.jonescg0.net` to the Azure App Service as a custom domain.
-2. Point DNS for `api.jonescg0.net` at that App Service.
-3. Set the frontend production API URL to `https://api.jonescg0.net`.
-4. Configure the ASP.NET Identity auth cookie for the parent domain:
+Backend production settings:
 
 ```json
 "AuthCookie": {
@@ -225,11 +139,32 @@ For reliable mobile login, the frontend and backend need to stay on the same sit
 }
 ```
 
-This avoids third-party cookie behavior on mobile browsers when the frontend is on `jonescg0.net`.
+This avoids third-party cookie behavior on mobile browsers.
 
-### ML Pipelines
+Recommended App Service environment variables:
 
-The repo includes eight notebook-backed pipelines surfaced in the admin UI at `/admin/ml-pipelines`:
+| Variable | Purpose |
+|---|---|
+| `ConnectionStrings__DefaultConnection` | Azure SQL connection string |
+| `AllowedOrigins__0` | `https://jonescg0.net` |
+| `AllowedOrigins__1` | `https://www.jonescg0.net` |
+| `AllowedOrigins__2` | `https://api.jonescg0.net` |
+| `AuthCookie__Domain` | `.jonescg0.net` |
+| `AuthCookie__SameSite` | `None` |
+| `AdminSeed__Email` | Seed admin email |
+| `AdminSeed__Password` | Seed admin password |
+| `AdminSeed__DisplayName` | Seed admin display name |
+
+Important:
+
+- Do not run Azure with `ASPNETCORE_ENVIRONMENT=Development`
+- Development mode forces a different cookie policy and is not valid for production auth behavior
+
+---
+
+## ML Pipelines
+
+The admin ML dashboard surfaces eight notebook-backed pipelines:
 
 | Pipeline | Notebook | Output CSV |
 |---|---|---|
@@ -237,94 +172,44 @@ The repo includes eight notebook-backed pipelines surfaced in the admin UI at `/
 | Reintegration readiness classification | `reintegration_readiness_classifications.ipynb` | `resident_reintegration_queue.csv` |
 | Safehouse performance monitoring | `safehouse_performance_monitoring.ipynb` | `safehouse_performance_scores.csv` |
 | Social media donation conversion classifier | `social_media_classification_commented.ipynb` | `social_media_planning_scores.csv` |
-| Donation allocation optimization | `donation_allocation_optimization.ipynb` | — |
-| Education outcome prediction | `education_outcome_prediction.ipynb` | — |
-| Health and wellbeing trajectory | `health_wellbeing_trajectory.ipynb` | — |
-| Intervention effectiveness analysis | `intervention_effectiveness.ipynb` | — |
+| Donation allocation optimization | `donation_allocation_optimization.ipynb` | `donation_allocation_optimization_priority_recommendations.csv` |
+| Education outcome prediction | `education_outcome_prediction.ipynb` | `education_outcome_prediction_scores.csv` |
+| Health and wellbeing trajectory | `health_wellbeing_trajectory.ipynb` | `health_wellbeing_trajectory_metrics.csv` |
+| Intervention effectiveness analysis | `intervention_effectiveness.ipynb` | `intervention_effectiveness_scores.csv` |
 
-All eight are marked Ready and runnable in demo mode. The four with a CSV column show live data previews; the others show run simulation only until their notebooks produce output.
+Output behavior:
 
-The admin ML page shows:
+- Azure Blob output is preferred when configured
+- local repo CSVs under `ml-pipelines/generated_outputs/` remain the fallback
+- the admin page can still preview repo snapshots if live Azure ML output is unavailable
 
-- the notebook catalog with inputs, outputs, and purpose for each pipeline
-- generated CSV snapshots from Azure Blob when configured, with local repo fallback
-- demo run simulation (Queued → Running → Succeeded) per pipeline
-
-By default the backend runs in `Demo` mode. To enable live Azure ML job submission, fill the `AzureMl` section in backend configuration:
-
-```json
-{
-  "AzureMl": {
-    "Mode": "AzureMl",
-    "StudioUrl": "https://ml.azure.com/...",
-    "WorkspaceName": "your-workspace",
-    "ResourceGroup": "INTEXW2026",
-    "SubscriptionId": "your-subscription-id",
-    "ExperimentName": "ProjectHaven",
-    "ComputeId": "/subscriptions/.../computes/pipeline-cpu",
-    "CodeId": "/subscriptions/.../codes/ml-pipelines/versions/1",
-    "EnvironmentId": "/subscriptions/.../environments/project-haven-ml/versions/1",
-    "DataInputUri": "azureml://datastores/workspaceblobstore/paths/data/",
-    "OutputDatastoreUri": "azureml://datastores/workspaceblobstore/paths/generated_outputs/",
-    "OutputBlobContainerUrl": "https://projecthaven5752238671.blob.core.windows.net/azureml-blobstore-29c25e54-8c23-4de2-8b5d-ecc8ba6bb5e5",
-    "OutputBlobPrefix": "generated_outputs",
-    "RunnerScriptPath": "run_notebook_job.py",
-    "JobApiVersion": "2025-09-01"
-  }
-}
-```
-
-The backend submits Azure ML command jobs when those settings are present. It reads output snapshots from Blob first and falls back to local repo CSVs if Blob access or live job output is unavailable.
+Live Azure ML mode uses backend `AzureMl` configuration plus the command-job runner in `ml-pipelines/run_notebook_job.py`.
 
 ---
 
-## Deployment
+## Deployment Notes
 
-### Frontend - Azure Static Web Apps
-- Auto-deploys on push to `main` via `.github/workflows/azure-static-web-apps-polite-rock-003bb5b1e.yml`
-- Build: `npm ci && npm run build` -> `frontend/dist`
-- SPA routing handled by `frontend/public/staticwebapp.config.json`
-- `VITE_API_URL` is injected at build time from the GitHub secret
-- `frontend/package-lock.json` is committed so CI uses a stable dependency tree
+### Frontend
 
-### Backend - Azure App Service
-- Auto-deploys on push to `main` (changes to `backend/`) via `.github/workflows/deploy-backend.yml`
-- EF Core migrations run automatically on startup
-- Admin portal seed data is applied after migrations
+- Azure Static Web Apps deploys from `.github/workflows/azure-static-web-apps-polite-rock-003bb5b1e.yml`
+- `VITE_API_URL` is injected at build time from the GitHub Actions secret
+- SPA routing is handled by `frontend/public/staticwebapp.config.json`
 
-### Azure SQL Seed Workflow
-- Manual workflow: `.github/workflows/seed-azure-db.yml`
-- Runs EF migrations then loads all CSV files from `seed_data/` into Azure SQL
-- Drops and recreates CSV-backed tables, so use only for a full re-seed
+### Backend
+
+- Azure App Service hosts the ASP.NET Core API
+- EF Core migrations run on startup
+- the backend supports Azure ML job submission and Blob-first output reads with repo fallback
 
 ### Required GitHub Secrets
 
 | Secret | Purpose |
 |---|---|
-| `AZURE_STATIC_WEB_APPS_API_TOKEN_POLITE_ROCK_003BB5B1E` | Frontend deploy token |
-| `AZURE_APP_SERVICE_NAME` | Backend App Service name (`INTEXW2026`) |
-| `AZURE_PUBLISH_PROFILE` | Backend publish credentials |
-| `AZURE_SQL_CONNECTION_STRING` | Azure SQL connection string for CSV seed workflow |
-| `VITE_API_URL` | Backend API base URL injected into the frontend build |
-
-### Required Azure App Service Environment Variables
-
-| Variable | Purpose |
-|---|---|
-| `ConnectionStrings__DefaultConnection` | Azure SQL connection string |
-| `AdminSeed__Email` | Admin account email to seed on startup |
-| `AdminSeed__Password` | Admin account password to seed on startup |
-| `AdminSeed__DisplayName` | Admin display name to seed on startup |
-| `AllowedOrigins__0` | Frontend URL for CORS (Static Web Apps URL) |
-
-> **Important:** Do NOT set `ASPNETCORE_ENVIRONMENT=Development` in Azure. Development mode sets the auth cookie to `SameSite=Lax`, which breaks cross-origin login between the Static Web App and App Service. Leave it unset (defaults to `Production`).
-
-### Health Checks
-- The frontend health page was removed.
-- Use the backend endpoints directly for probes:
-  - `/api/health/live`
-  - `/api/health/ready`
-  - `/api/health/full?details=true`
+| `AZURE_STATIC_WEB_APPS_API_TOKEN_POLITE_ROCK_003BB5B1E` | Frontend deployment token |
+| `AZURE_APP_SERVICE_NAME` | Backend App Service name |
+| `AZURE_PUBLISH_PROFILE` | Backend publish profile |
+| `AZURE_SQL_CONNECTION_STRING` | Azure SQL seed workflow |
+| `VITE_API_URL` | Frontend API base URL |
 
 ---
 
@@ -332,57 +217,35 @@ The backend submits Azure ML command jobs when those settings are present. It re
 
 ```text
 /
-├── frontend/
-│   ├── public/
-│   │   └── staticwebapp.config.json
-│   └── src/
-│       ├── components/
-│       ├── lib/
-│       └── pages/
-│           ├── Home.tsx
-│           ├── Login.tsx
-│           ├── SignUp.tsx
-│           ├── Impact.tsx
-│           ├── DonorDashboard.tsx
-│           └── admin/
-│               ├── Dashboard.tsx
-│               ├── Residents.tsx
-│               ├── Recordings.tsx
-│               ├── Donors.tsx
-│               ├── Visitations.tsx
-│               ├── Users.tsx
-│               ├── Analytics.tsx
-│               └── MlPipelines.tsx
-├── backend/
-│   ├── Controllers/
-│   │   └── MlPipelinesController.cs
-│   ├── Data/
-│   ├── Migrations/
-│   ├── Models/
-│   ├── Services/
-│   │   ├── MlPipelineStore.cs
-│   │   └── AzureMlJobClient.cs
-│   └── Program.cs
-├── ml-pipelines/
-│   ├── generated_outputs/        # CSV snapshots copied into backend publish output
-│   ├── run_notebook_job.py       # Azure ML command job runner
-│   ├── AZURE_ML_SETUP.md
-│   └── *.ipynb                   # Eight pipeline notebooks
-├── seed_data/
-├── md files/
-├── .github/workflows/
-└── README.md
+|-- frontend/
+|   |-- public/
+|   |   `-- staticwebapp.config.json
+|   `-- src/
+|       |-- components/
+|       |-- lib/
+|       `-- pages/
+|-- backend/
+|   |-- Controllers/
+|   |-- Data/
+|   |-- Migrations/
+|   |-- Models/
+|   |-- Services/
+|   `-- Program.cs
+|-- ml-pipelines/
+|   |-- generated_outputs/
+|   |-- run_notebook_job.py
+|   |-- AZURE_ML_SETUP.md
+|   `-- *.ipynb
+|-- seed_data/
+|-- md files/
+|-- .github/workflows/
+`-- README.md
 ```
 
 ---
 
-## TODOs
+## Current Gaps
 
-- [x] Admin/staff portal with donors, residents, recordings, visitations, users, and report workflows
-- [x] Donor dashboard, contribution history, and anonymized impact view
-- [x] Privacy policy page
-- [x] Cookie consent banner
-- [x] Eight ML pipeline notebooks with demo run simulation and CSV output previews
-- [ ] CSP headers hardening
-- [ ] Lighthouse accessibility audit
-- [ ] Azure Blob Storage for file uploads
+- CSP hardening can still be improved
+- Lighthouse accessibility audit is still pending
+- live end-to-end Azure ML production validation remains to be fully exercised after deployment

@@ -198,7 +198,7 @@ export default function Visitations() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl text-foreground">Visitation Records</h1>
+          <h1 className="font-body text-2xl text-foreground">Visitation Records</h1>
           <p className="font-body text-sm text-muted-foreground">Track home visits, assessments, and family engagement</p>
         </div>
         <Button onClick={openCreate} className="font-body gap-2">
@@ -252,14 +252,14 @@ export default function Visitations() {
                         <span className="text-[10px] uppercase font-bold tracking-widest text-primary px-2 py-0.5 bg-primary/10 rounded">Visitation</span>
                         <span className="text-xs uppercase tracking-widest text-muted-foreground">{new Date(visitation.visitAt).toLocaleDateString()}</span>
                       </div>
-                      <h3 className="font-display text-xl text-foreground">{visitation.residentName}</h3>
+                      <h3 className="font-body text-xl text-foreground">{visitation.residentName}</h3>
                       <p className="text-sm text-muted-foreground">{visitation.visitType}</p>
                     </div>
                     <div className="flex gap-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(visitation)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(visitation)} aria-label={`Edit visitation for ${visitation.residentName}`} title={`Edit visitation for ${visitation.residentName}`} type="button">
                         <IconPencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(visitation)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(visitation)} aria-label={`Delete visitation for ${visitation.residentName}`} title={`Delete visitation for ${visitation.residentName}`} type="button">
                         <IconTrash className="h-3.5 w-3.5" />
                       </Button>
                     </div>
@@ -299,7 +299,7 @@ export default function Visitations() {
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
         <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
           <SheetHeader>
-            <SheetTitle className="font-display text-2xl tracking-tight">
+            <SheetTitle className="font-body text-2xl tracking-tight">
               {editingVisitation ? 'Edit Visitation' : 'New Visitation'}
             </SheetTitle>
           </SheetHeader>

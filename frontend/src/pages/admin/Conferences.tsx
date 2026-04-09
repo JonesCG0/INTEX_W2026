@@ -160,7 +160,7 @@ export default function Conferences() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl text-foreground">Case Conferences</h1>
+          <h1 className="font-body text-2xl text-foreground">Case Conferences</h1>
           <p className="font-body text-sm text-muted-foreground">Manage intervention-plan conference dates, targets, and follow-up scope.</p>
         </div>
         <Button onClick={openCreate} className="font-body gap-2">
@@ -190,14 +190,14 @@ export default function Conferences() {
                         <span className="text-[10px] uppercase font-bold tracking-widest text-primary px-2 py-0.5 bg-primary/10 rounded">{conference.planCategory}</span>
                         <span className="text-xs uppercase tracking-widest text-muted-foreground">{new Date(conference.conferenceDate).toLocaleDateString()}</span>
                       </div>
-                      <h3 className="font-display text-xl text-foreground">{conference.residentCode}</h3>
+                      <h3 className="font-body text-xl text-foreground">{conference.residentCode}</h3>
                       <p className="text-sm text-muted-foreground">{conference.safehouse} • {conference.status}</p>
                     </div>
                     <div className="flex gap-2">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(conference)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(conference)} aria-label={`Edit conference for ${conference.residentCode}`} title={`Edit conference for ${conference.residentCode}`} type="button">
                         <IconPencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(conference)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(conference)} aria-label={`Delete conference for ${conference.residentCode}`} title={`Delete conference for ${conference.residentCode}`} type="button">
                         <IconTrash className="h-3.5 w-3.5" />
                       </Button>
                     </div>
@@ -229,7 +229,7 @@ export default function Conferences() {
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
         <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
           <SheetHeader>
-            <SheetTitle className="font-display text-2xl tracking-tight">
+            <SheetTitle className="font-body text-2xl tracking-tight">
               {editingConference ? 'Edit Conference Plan' : 'Schedule Conference'}
             </SheetTitle>
           </SheetHeader>

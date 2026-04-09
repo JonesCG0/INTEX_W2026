@@ -48,7 +48,7 @@ export default function AdminSidebar() {
     navItems.map(item => {
       const active = isActive(item);
       return (
-        <Link key={item.to} to={item.to} onClick={onNavigate}>
+        <Link key={item.to} to={item.to} onClick={onNavigate} aria-label={item.label} title={item.label}>
           <div className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors font-body text-sm ${active ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'}`}>
             <item.icon className="h-5 w-5 shrink-0" />
             {!compact && <span className="truncate">{item.label}</span>}
@@ -81,7 +81,7 @@ export default function AdminSidebar() {
               </SheetTrigger>
               <SheetContent side="left" className="w-full sm:max-w-sm">
                 <SheetHeader>
-                  <SheetTitle className="font-display text-xl text-primary">Admin Navigation</SheetTitle>
+                  <SheetTitle className="font-body text-xl text-primary">Admin Navigation</SheetTitle>
                 </SheetHeader>
                 <div className="mt-8 flex h-full flex-col">
                   <nav className="space-y-2">{renderNavItems(false, () => setMobileOpen(false))}</nav>
@@ -116,7 +116,12 @@ export default function AdminSidebar() {
       <aside className={`fixed left-0 top-0 hidden h-screen border-r border-border bg-card md:flex md:flex-col transition-all duration-300 z-40 ${collapsed ? 'w-20' : 'w-[260px]'}`}>
         <div className="flex h-16 items-center border-b border-border px-4">
           {!collapsed && (
-            <Link to="/admin" className="inline-flex h-14 items-center gap-3 rounded-full border border-border/80 bg-[#f5e8ce] px-3">
+            <Link
+              to="/admin"
+              className="inline-flex h-14 items-center gap-3 rounded-full border border-border/80 bg-[#f5e8ce] px-3"
+              aria-label="Project Haven admin home"
+              title="Project Haven admin home"
+            >
               <img
                 src={circleLogo}
                 alt=""
@@ -131,6 +136,8 @@ export default function AdminSidebar() {
             size="icon"
             onClick={() => setCollapsed(!collapsed)}
             className={`h-8 w-8 shrink-0 rounded-full ${collapsed ? 'mx-auto' : 'ml-auto'}`}
+            aria-label={collapsed ? "Expand admin sidebar" : "Collapse admin sidebar"}
+            title={collapsed ? "Expand admin sidebar" : "Collapse admin sidebar"}
           >
             {collapsed ? <IconChevronRight className="h-4 w-4" /> : <IconChevronLeft className="h-4 w-4" />}
           </Button>

@@ -1,20 +1,25 @@
-import { useState, useEffect } from 'react';
+import { Suspense, lazy, useState, useEffect } from 'react';
 import { API_BASE } from '@/lib/api-base';
 import { apiFetch } from '@/lib/api-client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { motion, useReducedMotion } from 'framer-motion';
-import { ResponsivePie } from '@nivo/pie';
-import { ResponsiveBar } from '@nivo/bar';
 import { toast } from 'sonner';
 import type { AdminPortalOverview, ResidentRecord } from '@/types/admin';
 import { formatCompactChartNumber, formatCompactCurrencyTick, getRiskColor, HAVEN_NIVO_COLORS, havenNivoTheme, shortenSafehouseLabel } from '@/lib/nivo';
 
 const COLORS = HAVEN_NIVO_COLORS;
+const ResponsivePie = lazy(() => import('@nivo/pie').then((mod) => ({ default: mod.ResponsivePie })));
+const ResponsiveBar = lazy(() => import('@nivo/bar').then((mod) => ({ default: mod.ResponsiveBar })));
+
+const ChartSkeleton = () => (
+  <div className="h-full rounded-lg border border-dashed border-border/60 bg-muted/20" />
+);
 
 export default function Analytics() {
   const reduceMotion = useReducedMotion();
   const [data, setData] = useState<AdminPortalOverview | null>(null);
   const [loading, setLoading] = useState(true);
+  const [chartsReady, setChartsReady] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -33,6 +38,11 @@ export default function Analytics() {
       }
     }
     load();
+  }, []);
+
+  useEffect(() => {
+    const handle = window.setTimeout(() => setChartsReady(true), 0);
+    return () => window.clearTimeout(handle);
   }, []);
 
   if (loading) {
@@ -106,7 +116,7 @@ export default function Analytics() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="font-display text-3xl text-foreground mb-1 tracking-tight">Executive Intelligence</h1>
+        <h1 className="font-body text-3xl text-foreground mb-1 tracking-tight">Executive Intelligence</h1>
         <p className="font-body text-sm text-muted-foreground">High-fidelity safehouse metrics and operational insights</p>
         <p className="font-body text-xs text-muted-foreground mt-2">
           Data refreshed {new Date(data?.generatedAt ?? Date.now()).toLocaleString()} from {data?.sourceTables?.length ?? 0} source tables.
@@ -122,37 +132,43 @@ export default function Analytics() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="h-[260px]">
-                <ResponsivePie
-                  data={statusPieData}
-                  margin={{ top: 20, right: 72, bottom: 72, left: 72 }}
-                  innerRadius={0.6}
-                  padAngle={0.7}
-                  cornerRadius={3}
-                  activeOuterRadiusOffset={8}
-                  colors={COLORS}
-                  borderWidth={1}
-                  borderColor={{ from: 'color', modifiers: [['darker', 0.2]] }}
-                  arcLinkLabelsSkipAngle={10}
-                  arcLinkLabelsTextColor="hsl(var(--foreground))"
-                  arcLinkLabelsThickness={2}
-                  arcLinkLabelsColor={{ from: 'color' }}
-                  arcLabelsSkipAngle={10}
-                  legends={[
-                    {
-                      anchor: 'bottom',
-                      direction: 'row',
-                      translateY: 56,
-                      itemWidth: 90,
-                      itemHeight: 18,
-                      symbolSize: 12,
-                      itemTextColor: 'hsl(var(--foreground))',
-                    },
-                  ]}
-                  theme={havenNivoTheme}
-                  role="img"
-                  ariaLabel="Resident enrollment status distribution chart"
-                  animate={!reduceMotion}
-                />
+                {!chartsReady ? (
+                  <ChartSkeleton />
+                ) : (
+                  <Suspense fallback={<ChartSkeleton />}>
+                    <ResponsivePie
+                      data={statusPieData}
+                      margin={{ top: 20, right: 72, bottom: 72, left: 72 }}
+                      innerRadius={0.6}
+                      padAngle={0.7}
+                      cornerRadius={3}
+                      activeOuterRadiusOffset={8}
+                      colors={COLORS}
+                      borderWidth={1}
+                      borderColor={{ from: 'color', modifiers: [['darker', 0.2]] }}
+                      arcLinkLabelsSkipAngle={10}
+                      arcLinkLabelsTextColor="hsl(var(--foreground))"
+                      arcLinkLabelsThickness={2}
+                      arcLinkLabelsColor={{ from: 'color' }}
+                      arcLabelsSkipAngle={10}
+                      legends={[
+                        {
+                          anchor: 'bottom',
+                          direction: 'row',
+                          translateY: 56,
+                          itemWidth: 90,
+                          itemHeight: 18,
+                          symbolSize: 12,
+                          itemTextColor: 'hsl(var(--foreground))',
+                        },
+                      ]}
+                      theme={havenNivoTheme}
+                      role="img"
+                      ariaLabel="Resident enrollment status distribution chart"
+                      animate={!reduceMotion}
+                    />
+                  </Suspense>
+                )}
               </div>
               <details className="mt-2">
                 <summary className="text-xs text-muted-foreground cursor-pointer">View status distribution table</summary>
@@ -185,29 +201,33 @@ export default function Analytics() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="h-[260px]">
-                {riskBarData.length > 0 ? (
-                  <ResponsiveBar
-                    data={riskBarData}
-                    keys={['count']}
-                    indexBy="level"
-                    margin={{ top: 16, right: 24, bottom: 56, left: 64 }}
-                    padding={0.4}
-                    valueScale={{ type: 'linear' }}
-                    colors={({ data }) => getRiskColor(String(data.level))}
-                    borderRadius={4}
-                    axisLeft={{
-                      tickSize: 5,
-                      tickPadding: 5,
-                      tickRotation: 0,
-                      legend: 'Resident Count',
-                      legendPosition: 'middle',
-                      legendOffset: -48
-                    }}
-                    theme={havenNivoTheme}
-                    role="img"
-                    ariaLabel="Resident risk assessment chart"
-                    animate={!reduceMotion}
-                  />
+                {!chartsReady ? (
+                  <ChartSkeleton />
+                ) : riskBarData.length > 0 ? (
+                  <Suspense fallback={<ChartSkeleton />}>
+                    <ResponsiveBar
+                      data={riskBarData}
+                      keys={['count']}
+                      indexBy="level"
+                      margin={{ top: 16, right: 24, bottom: 56, left: 64 }}
+                      padding={0.4}
+                      valueScale={{ type: 'linear' }}
+                      colors={({ data }) => getRiskColor(String(data.level))}
+                      borderRadius={4}
+                      axisLeft={{
+                        tickSize: 5,
+                        tickPadding: 5,
+                        tickRotation: 0,
+                        legend: 'Resident Count',
+                        legendPosition: 'middle',
+                        legendOffset: -48
+                      }}
+                      theme={havenNivoTheme}
+                      role="img"
+                      ariaLabel="Resident risk assessment chart"
+                      animate={!reduceMotion}
+                    />
+                  </Suspense>
                 ) : (
                   <div className="h-full flex items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 px-6 text-center">
                     <p className="text-sm text-muted-foreground">Risk distribution data is not available yet.</p>
@@ -245,40 +265,44 @@ export default function Analytics() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="h-[270px]">
-                {safehouseBarData.length > 0 ? (
-                  <ResponsiveBar
-                    data={safehouseBarData}
-                    keys={['count']}
-                    indexBy="shortLabel"
-                    margin={{ top: 12, right: 24, bottom: 52, left: 144 }}
-                    padding={0.24}
-                    layout="horizontal"
-                    valueScale={{ type: 'linear' }}
-                    colors={[COLORS[0]]}
-                    borderRadius={2}
-                    axisBottom={{
-                      tickSize: 5,
-                      tickPadding: 5,
-                      tickRotation: 0,
-                      format: (value) => formatCompactChartNumber(Number(value)),
-                      legend: 'Total Residents',
-                      legendPosition: 'middle',
-                      legendOffset: 34
-                    }}
-                    axisLeft={{
-                      tickSize: 0,
-                      tickPadding: 10,
-                      tickRotation: 0,
-                    }}
-                    enableLabel
-                    labelSkipWidth={18}
-                    labelFormat={(value) => formatCompactChartNumber(Number(value))}
-                    labelTextColor="hsl(var(--foreground))"
-                    theme={havenNivoTheme}
-                    role="img"
-                    ariaLabel="Safehouse occupancy volume chart"
-                    animate={!reduceMotion}
-                  />
+                {!chartsReady ? (
+                  <ChartSkeleton />
+                ) : safehouseBarData.length > 0 ? (
+                  <Suspense fallback={<ChartSkeleton />}>
+                    <ResponsiveBar
+                      data={safehouseBarData}
+                      keys={['count']}
+                      indexBy="shortLabel"
+                      margin={{ top: 12, right: 24, bottom: 52, left: 144 }}
+                      padding={0.24}
+                      layout="horizontal"
+                      valueScale={{ type: 'linear' }}
+                      colors={[COLORS[0]]}
+                      borderRadius={2}
+                      axisBottom={{
+                        tickSize: 5,
+                        tickPadding: 5,
+                        tickRotation: 0,
+                        format: (value) => formatCompactChartNumber(Number(value)),
+                        legend: 'Total Residents',
+                        legendPosition: 'middle',
+                        legendOffset: 34
+                      }}
+                      axisLeft={{
+                        tickSize: 0,
+                        tickPadding: 10,
+                        tickRotation: 0,
+                      }}
+                      enableLabel
+                      labelSkipWidth={18}
+                      labelFormat={(value) => formatCompactChartNumber(Number(value))}
+                      labelTextColor="hsl(var(--foreground))"
+                      theme={havenNivoTheme}
+                      role="img"
+                      ariaLabel="Safehouse occupancy volume chart"
+                      animate={!reduceMotion}
+                    />
+                  </Suspense>
                 ) : (
                   <div className="h-full flex items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 px-6 text-center">
                     <p className="text-sm text-muted-foreground">Safehouse occupancy volume data is not available yet.</p>
@@ -315,39 +339,43 @@ export default function Analytics() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="h-[260px]">
-                {donationsMonthlyData.length > 0 ? (
-                  <ResponsiveBar
-                    data={donationsMonthlyData}
-                    keys={['donations']}
-                    indexBy="month"
-                    margin={{ top: 16, right: 20, bottom: 64, left: 72 }}
-                    padding={0.3}
-                    groupMode="grouped"
-                    colors={[COLORS[0]]}
-                    legends={[
-                      {
-                        dataFrom: 'keys',
-                        anchor: 'bottom-left',
-                        direction: 'row',
-                        translateX: 0,
-                        translateY: 56,
-                        itemsSpacing: 16,
-                        itemWidth: 96,
-                        itemHeight: 18,
-                        symbolSize: 12,
-                      },
-                    ]}
-                    axisLeft={{
-                      tickSize: 5,
-                      tickPadding: 5,
-                      tickRotation: 0,
-                      format: (value) => formatCompactCurrencyTick(Number(value)),
-                    }}
-                    theme={havenNivoTheme}
-                    role="img"
-                    ariaLabel="Monthly donations chart"
-                    animate={!reduceMotion}
-                  />
+                {!chartsReady ? (
+                  <ChartSkeleton />
+                ) : donationsMonthlyData.length > 0 ? (
+                  <Suspense fallback={<ChartSkeleton />}>
+                    <ResponsiveBar
+                      data={donationsMonthlyData}
+                      keys={['donations']}
+                      indexBy="month"
+                      margin={{ top: 16, right: 20, bottom: 64, left: 72 }}
+                      padding={0.3}
+                      groupMode="grouped"
+                      colors={[COLORS[0]]}
+                      legends={[
+                        {
+                          dataFrom: 'keys',
+                          anchor: 'bottom-left',
+                          direction: 'row',
+                          translateX: 0,
+                          translateY: 56,
+                          itemsSpacing: 16,
+                          itemWidth: 96,
+                          itemHeight: 18,
+                          symbolSize: 12,
+                        },
+                      ]}
+                      axisLeft={{
+                        tickSize: 5,
+                        tickPadding: 5,
+                        tickRotation: 0,
+                        format: (value) => formatCompactCurrencyTick(Number(value)),
+                      }}
+                      theme={havenNivoTheme}
+                      role="img"
+                      ariaLabel="Monthly donations chart"
+                      animate={!reduceMotion}
+                    />
+                  </Suspense>
                 ) : (
                   <div className="h-full flex items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 px-6 text-center">
                     <p className="text-sm text-muted-foreground">Monthly donations data is not available yet.</p>
@@ -384,27 +412,31 @@ export default function Analytics() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="h-[260px]">
-                {interactionsMonthlyData.length > 0 ? (
-                  <ResponsiveBar
-                    data={interactionsMonthlyData}
-                    keys={['recordings', 'visitations']}
-                    indexBy="month"
-                    margin={{ top: 16, right: 20, bottom: 64, left: 64 }}
-                    padding={0.3}
-                    colors={[COLORS[1], COLORS[2]]}
-                    axisLeft={{
-                      tickSize: 5,
-                      tickPadding: 5,
-                      tickRotation: 0,
-                      format: (value) => formatCompactChartNumber(Number(value)),
-                    }}
-                    labelSkipWidth={16}
-                    labelFormat={(value) => formatCompactChartNumber(Number(value))}
-                    theme={havenNivoTheme}
-                    role="img"
-                    ariaLabel="Monthly case interactions chart for recordings and visitations"
-                    animate={!reduceMotion}
-                  />
+                {!chartsReady ? (
+                  <ChartSkeleton />
+                ) : interactionsMonthlyData.length > 0 ? (
+                  <Suspense fallback={<ChartSkeleton />}>
+                    <ResponsiveBar
+                      data={interactionsMonthlyData}
+                      keys={['recordings', 'visitations']}
+                      indexBy="month"
+                      margin={{ top: 16, right: 20, bottom: 64, left: 64 }}
+                      padding={0.3}
+                      colors={[COLORS[1], COLORS[2]]}
+                      axisLeft={{
+                        tickSize: 5,
+                        tickPadding: 5,
+                        tickRotation: 0,
+                        format: (value) => formatCompactChartNumber(Number(value)),
+                      }}
+                      labelSkipWidth={16}
+                      labelFormat={(value) => formatCompactChartNumber(Number(value))}
+                      theme={havenNivoTheme}
+                      role="img"
+                      ariaLabel="Monthly case interactions chart for recordings and visitations"
+                      animate={!reduceMotion}
+                    />
+                  </Suspense>
                 ) : (
                   <div className="h-full flex items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 px-6 text-center">
                     <p className="text-sm text-muted-foreground">Case interaction data is not available yet.</p>
@@ -443,25 +475,29 @@ export default function Analytics() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="h-[260px]">
-                {allocationData.length > 0 ? (
-                  <ResponsiveBar
-                    data={allocationData}
-                    keys={['amount']}
-                    indexBy="programArea"
-                    margin={{ top: 16, right: 20, bottom: 64, left: 88 }}
-                    padding={0.3}
-                    colors={[COLORS[3]]}
-                    axisLeft={{
-                      tickSize: 5,
-                      tickPadding: 5,
-                      tickRotation: 0,
-                      format: (value) => formatCompactCurrencyTick(Number(value)),
-                    }}
-                    theme={havenNivoTheme}
-                    role="img"
-                    ariaLabel="Program allocation totals chart"
-                    animate={!reduceMotion}
-                  />
+                {!chartsReady ? (
+                  <ChartSkeleton />
+                ) : allocationData.length > 0 ? (
+                  <Suspense fallback={<ChartSkeleton />}>
+                    <ResponsiveBar
+                      data={allocationData}
+                      keys={['amount']}
+                      indexBy="programArea"
+                      margin={{ top: 16, right: 20, bottom: 64, left: 88 }}
+                      padding={0.3}
+                      colors={[COLORS[3]]}
+                      axisLeft={{
+                        tickSize: 5,
+                        tickPadding: 5,
+                        tickRotation: 0,
+                        format: (value) => formatCompactCurrencyTick(Number(value)),
+                      }}
+                      theme={havenNivoTheme}
+                      role="img"
+                      ariaLabel="Program allocation totals chart"
+                      animate={!reduceMotion}
+                    />
+                  </Suspense>
                 ) : (
                   <div className="h-full flex items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 px-6 text-center">
                     <p className="text-sm text-muted-foreground">Program allocation data is not available yet.</p>
@@ -494,7 +530,7 @@ export default function Analytics() {
 
       <div className="flex justify-between items-center bg-primary/5 p-6 rounded-2xl border border-primary/10">
         <div>
-          <h3 className="font-display text-lg text-primary tracking-tight">Compliance & Privacy</h3>
+          <h3 className="font-body text-lg text-primary tracking-tight">Compliance & Privacy</h3>
           <p className="font-body text-xs text-muted-foreground mt-1">All analytics are derived from anonymized data points. Individual identities are protected per IS414 protocols.</p>
         </div>
         <button type="button" disabled className="px-6 h-11 bg-primary/60 text-primary-foreground font-bold rounded-xl text-xs uppercase tracking-widest shadow-lg shadow-primary/10 cursor-not-allowed">

@@ -186,7 +186,7 @@ export default function Recordings() {
   return (
     <div className="space-y-8">
       <div className="flex items-center gap-6">
-        <Link to="/admin/residents">
+        <Link to="/admin/residents" aria-label="Back to residents" title="Back to residents">
           <Button variant="outline" size="icon" className="h-10 w-10 rounded-full">
             <IconArrowLeft className="h-5 w-5" />
           </Button>
@@ -194,7 +194,7 @@ export default function Recordings() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-[10px] uppercase font-bold tracking-widest text-primary px-2 py-0.5 bg-primary/10 rounded">Clinical File</span>
-            <h1 className="font-display text-3xl text-foreground tracking-tight">{resident?.codeName || 'Anonymized Resident'}</h1>
+            <h1 className="font-body text-3xl text-foreground tracking-tight">{resident?.codeName || 'Anonymized Resident'}</h1>
           </div>
           <p className="font-body text-sm text-muted-foreground flex items-center gap-2">
             Status: <span className="font-semibold text-foreground">Verified</span>
@@ -245,10 +245,10 @@ export default function Recordings() {
                     {rec.emotionalState && (
                       <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter bg-accent/20 text-accent-foreground">{rec.emotionalState}</span>
                     )}
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(rec)}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(rec)} aria-label={`Edit clinical record for ${rec.residentCode || 'resident'}`} title={`Edit clinical record for ${rec.residentCode || 'resident'}`} type="button">
                       <IconPencil className="h-3.5 w-3.5" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(rec)}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(rec)} aria-label={`Discard clinical record for ${rec.residentCode || 'resident'}`} title={`Discard clinical record for ${rec.residentCode || 'resident'}`} type="button">
                       <IconTrash className="h-3.5 w-3.5" />
                     </Button>
                   </div>
@@ -297,7 +297,7 @@ export default function Recordings() {
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
         <SheetContent className="w-full sm:max-w-xl overflow-y-auto">
           <SheetHeader>
-            <SheetTitle className="font-display text-2xl tracking-tight">
+            <SheetTitle className="font-body text-2xl tracking-tight">
               {editingRecording ? 'Edit Clinical Process Recording' : 'Clinical Process Recording'}
             </SheetTitle>
           </SheetHeader>

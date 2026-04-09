@@ -74,7 +74,7 @@ export default function Login() {
             <p className="font-body text-[11px] uppercase tracking-[0.32em] text-[#8d6a47]">
               Project Haven Access
             </p>
-            <h2 className="font-display text-xl text-[#4f341d] md:text-2xl">
+            <h2 className="font-body text-xl text-[#4f341d] md:text-2xl">
               Welcome back
             </h2>
             <p className="max-w-sm text-sm text-[#735740] font-body">

@@ -13,18 +13,18 @@ import { motion } from 'framer-motion';
 import type { AdminPortalOverview, ResidentRecord, SafehouseComparisonRecord } from '@/types/admin';
 
 const riskColors = {
-  Low: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-  Medium: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-  High: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
-  Critical: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+  Low: 'bg-emerald-200 text-emerald-950 dark:bg-emerald-900/40 dark:text-emerald-100',
+  Medium: 'bg-amber-200 text-amber-950 dark:bg-amber-900/40 dark:text-amber-100',
+  High: 'bg-orange-200 text-orange-950 dark:bg-orange-900/40 dark:text-orange-100',
+  Critical: 'bg-red-200 text-red-950 dark:bg-red-900/40 dark:text-red-100',
 };
 
 const statusColors = {
-  Active: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-  Closed: 'bg-slate-100 text-slate-800 dark:bg-slate-900/30 dark:text-slate-300',
-  Transferred: 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
-  Review: 'bg-violet-100 text-violet-800 dark:bg-violet-900/30 dark:text-violet-300',
-  Stabilizing: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-300',
+  Active: 'bg-blue-200 text-blue-950 dark:bg-blue-900/40 dark:text-blue-100',
+  Closed: 'bg-slate-200 text-slate-950 dark:bg-slate-900/40 dark:text-slate-100',
+  Transferred: 'bg-amber-200 text-amber-950 dark:bg-amber-900/40 dark:text-amber-100',
+  Review: 'bg-violet-200 text-violet-950 dark:bg-violet-900/40 dark:text-violet-100',
+  Stabilizing: 'bg-emerald-200 text-emerald-950 dark:bg-emerald-900/40 dark:text-emerald-100',
 };
 
 export default function Residents() {
@@ -101,7 +101,7 @@ export default function Residents() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl text-foreground">Resident Care Management</h1>
+          <h1 className="font-body text-2xl text-foreground">Resident Care Management</h1>
           <p className="font-body text-sm text-muted-foreground">Privacy-first tracking of safehouse residents (IS414 Compliant)</p>
         </div>
         <Button onClick={handleAdd} className="font-body gap-2">
@@ -111,12 +111,15 @@ export default function Residents() {
       </div>
 
       <div className="relative max-w-sm">
+        <label htmlFor="resident-search" className="sr-only">Search residents</label>
         <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
+          id="resident-search"
           placeholder="Search code, case control, safehouse..."
           value={search}
           onChange={(e: ChangeEvent<HTMLInputElement>) => setSearch(e.target.value)}
           className="pl-9 font-body"
+          aria-label="Search residents"
         />
       </div>
 
@@ -190,19 +193,19 @@ export default function Residents() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1 opacity-100 lg:opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(r)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEdit(r)} aria-label={`Edit resident ${r.codeName}`} title={`Edit resident ${r.codeName}`}>
                         <IconPencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(r)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(r)} aria-label={`Delete resident ${r.codeName}`} title={`Delete resident ${r.codeName}`}>
                         <IconTrash className="h-3.5 w-3.5" />
                       </Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
-                        <Link to={`/admin/residents/${r.id}/recordings`}>
+                        <Link to={`/admin/residents/${r.id}/recordings`} aria-label={`Open recordings for ${r.codeName}`} title={`Open recordings for ${r.codeName}`}>
                           <IconArrowRight className="h-3.5 w-3.5" />
                         </Link>
                       </Button>
                       <Button variant="ghost" size="icon" className="h-8 w-8" asChild title="Visitations">
-                        <Link to={`/admin/residents/${r.id}/visitations`}>
+                        <Link to={`/admin/residents/${r.id}/visitations`} aria-label={`Open visitations for ${r.codeName}`} title={`Open visitations for ${r.codeName}`}>
                           <IconCalendar className="h-3.5 w-3.5" />
                         </Link>
                       </Button>
