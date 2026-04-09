@@ -241,22 +241,24 @@ export default function Impact() {
               </div>
               <details className="mt-2">
                 <summary className="text-xs text-muted-foreground cursor-pointer">View donation trend data table</summary>
-                <table className="w-full mt-2 text-xs">
-                  <thead>
-                    <tr className="text-left text-muted-foreground">
-                      <th>Month</th>
-                      <th>Donation (PHP)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.donationTrend.map((row) => (
-                      <tr key={`donation-${row.monthLabel}`}>
-                        <td>{row.monthLabel}</td>
-                        <td>{row.donationAmountPhp.toLocaleString()}</td>
+                <div className="mt-2 overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="text-left text-muted-foreground">
+                        <th>Month</th>
+                        <th>Donation (PHP)</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {data.donationTrend.map((row) => (
+                        <tr key={`donation-${row.monthLabel}`}>
+                          <td>{row.monthLabel}</td>
+                          <td>{row.donationAmountPhp.toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </details>
             </motion.div>
 
@@ -319,22 +321,24 @@ export default function Impact() {
               </div>
               <details className="mt-2">
                 <summary className="text-xs text-muted-foreground cursor-pointer">View resident trend data table</summary>
-                <table className="w-full mt-2 text-xs">
-                  <thead>
-                    <tr className="text-left text-muted-foreground">
-                      <th>Month</th>
-                      <th>Active Residents</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {data.donationTrend.map((row) => (
-                      <tr key={`residents-${row.monthLabel}`}>
-                        <td>{row.monthLabel}</td>
-                        <td>{row.activeResidents.toLocaleString()}</td>
+                <div className="mt-2 overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="text-left text-muted-foreground">
+                        <th>Month</th>
+                        <th>Active Residents</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {data.donationTrend.map((row) => (
+                        <tr key={`residents-${row.monthLabel}`}>
+                          <td>{row.monthLabel}</td>
+                          <td>{row.activeResidents.toLocaleString()}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </details>
             </motion.div>
 
@@ -393,24 +397,26 @@ export default function Impact() {
               </div>
               <details className="mt-2">
                 <summary className="text-xs text-muted-foreground cursor-pointer">View safehouse occupancy table</summary>
-                <table className="w-full mt-2 text-xs">
-                  <thead>
-                    <tr className="text-left text-muted-foreground">
-                      <th>Safehouse</th>
-                      <th>Occupancy</th>
-                      <th>Capacity</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {barData.map((row) => (
-                      <tr key={`safehouse-${row.name}`}>
-                        <td>{row.name}</td>
-                        <td>{row.Occupancy}</td>
-                        <td>{row.Capacity}</td>
+                <div className="mt-2 overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="text-left text-muted-foreground">
+                        <th>Safehouse</th>
+                        <th>Occupancy</th>
+                        <th>Capacity</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {barData.map((row) => (
+                        <tr key={`safehouse-${row.name}`}>
+                          <td>{row.name}</td>
+                          <td>{row.Occupancy}</td>
+                          <td>{row.Capacity}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </details>
             </motion.div>
           </div>

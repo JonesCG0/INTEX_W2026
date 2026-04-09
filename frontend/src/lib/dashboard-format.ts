@@ -15,25 +15,25 @@ export function parseDisplayValue(valueDisplay: string): {
   prefix: string;
   suffix: string;
 } {
-  const sanitized = valueDisplay.replace(/,/g, "");
+  const sanitized = valueDisplay.replace(/,/g, '');
   const numericMatch = sanitized.match(/-?\d+(\.\d+)?/);
   const numericValue = numericMatch ? Number.parseFloat(numericMatch[0]) : 0;
 
-  let prefix = "";
-  let suffix = "";
+  let prefix = '';
+  let suffix = '';
 
   if (/php|₱/i.test(valueDisplay)) {
-    prefix = "₱";
+    prefix = '₱';
   }
 
   if (/%/.test(valueDisplay)) {
-    suffix = "%";
+    suffix = '%';
   }
 
   return { numericValue, prefix, suffix };
 }
 
 export function formatMonthKey(dateLike: string | Date): string {
-  const date = typeof dateLike === "string" ? new Date(dateLike) : dateLike;
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+  const date = typeof dateLike === 'string' ? new Date(dateLike) : dateLike;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 }

@@ -47,6 +47,23 @@ export default function ImpactStatCard({
     return () => clearInterval(timer);
   }, [isInView, reduceMotion, value]);
 
+  const formatDisplayValue = (currentValue: number) => {
+    const absValue = Math.abs(currentValue);
+    const useCompact = absValue >= 100000;
+
+    const formattedNumber = useCompact
+      ? new Intl.NumberFormat('en-US', {
+          notation: 'compact',
+          maximumFractionDigits: absValue >= 1000000 ? 1 : 0,
+        }).format(currentValue)
+      : currentValue.toLocaleString(undefined, {
+          minimumFractionDigits: decimals,
+          maximumFractionDigits: decimals,
+        });
+
+    return `${prefix}${formattedNumber}${suffix}`;
+  };
+
   return (
     <motion.div
       ref={ref}
@@ -54,11 +71,11 @@ export default function ImpactStatCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: reduceMotion ? 0.2 : 0.6, delay }}
-      className="relative bg-card border border-border rounded-xl p-8 text-center group hover:shadow-lg transition-shadow"
+      className="relative bg-card border border-border rounded-xl p-8 text-center group hover:shadow-lg transition-shadow min-h-[208px]"
     >
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-1 bg-accent rounded-b-full" />
-      <p className="font-display text-4xl md:text-5xl text-primary mb-2">
-        {prefix}{count.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}{suffix}
+      <p className="font-display text-3xl sm:text-4xl lg:text-5xl text-primary mb-2 break-words leading-none">
+        {formatDisplayValue(count)}
       </p>
       <p className="font-body text-sm text-muted-foreground uppercase tracking-wider">
         {label}

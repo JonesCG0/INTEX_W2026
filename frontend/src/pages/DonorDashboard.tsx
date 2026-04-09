@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 import { IconHeart } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
 import { formatCompactCurrencyTick, HAVEN_NIVO_COLORS, barLegend, havenNivoTheme } from '@/lib/nivo';
-import { formatCurrencyPhp, formatMonthKey } from '@/lib/dashboard-format';
+import { formatMonthKey } from '@/lib/dashboard-format';
 
 interface DonorDashboardData {
   displayName: string;
@@ -106,17 +106,16 @@ export default function DonorDashboard() {
     );
   }
 
-  // Prepare Chart Data
-  const typeCounts = data.contributions.reduce((acc: Record<string, number>, c) => {
-    acc[c.type] = (acc[c.type] || 0) + (c.amountPhp || 0);
+  const typeCounts = data.contributions.reduce((acc: Record<string, number>, contribution) => {
+    acc[contribution.type] = (acc[contribution.type] || 0) + (contribution.amountPhp || 0);
     return acc;
   }, {});
 
   const pieData = Object.entries(typeCounts).map(([id, value]) => ({ id, label: id, value }));
 
-  const monthCounts = data.contributions.reduce((acc: Record<string, number>, c) => {
-    const month = formatMonthKey(c.date);
-    acc[month] = (acc[month] || 0) + (c.amountPhp || 0);
+  const monthCounts = data.contributions.reduce((acc: Record<string, number>, contribution) => {
+    const month = formatMonthKey(contribution.date);
+    acc[month] = (acc[month] || 0) + (contribution.amountPhp || 0);
     return acc;
   }, {});
 
@@ -126,14 +125,16 @@ export default function DonorDashboard() {
       month: new Date(`${month}-01T00:00:00`).toLocaleString('default', { month: 'short', year: '2-digit' }),
       amount: amount as number,
     }));
+
   const hasContributionData = pieData.length > 0;
   const hasTrendData = barData.length > 0;
+  const compactLifetimeImpact = `₱${formatCompactCurrencyTick(data.totalImpactPhp)}`;
 
   return (
     <div className="max-w-6xl mx-auto space-y-8 py-6 px-4 sm:px-6">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="font-display text-4xl text-foreground mb-1 tracking-tight">Your Stewardship Journey</h1>
+          <h1 className="font-display text-3xl sm:text-4xl text-foreground mb-1 tracking-tight">Your Stewardship Journey</h1>
           <p className="font-body text-sm text-muted-foreground">Thank you for your partnership, {data.displayName}</p>
           <p className="font-body text-xs text-muted-foreground mt-2">
             Data refreshed {new Date(data.generatedAt).toLocaleString()} from {data.sourceTables?.length ?? 0} source tables.
@@ -145,28 +146,27 @@ export default function DonorDashboard() {
         </div>
       </div>
 
-      {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
           <Card className="bg-gradient-to-br from-primary/10 to-transparent border-primary/20">
-            <CardContent className="p-8 text-center">
-              <p className="font-display text-4xl text-primary font-bold">{formatCurrencyPhp(data.totalImpactPhp).replace('PHP ', '₱')}</p>
+            <CardContent className="min-h-[156px] p-6 sm:p-8 text-center flex flex-col justify-center">
+              <p className="font-display text-3xl sm:text-4xl text-primary font-bold break-words leading-none">{compactLifetimeImpact}</p>
               <p className="font-body text-xs uppercase tracking-widest text-muted-foreground mt-2 font-bold">Lifetime Impact</p>
             </CardContent>
           </Card>
         </motion.div>
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.1 }}>
           <Card>
-            <CardContent className="p-8 text-center">
-              <p className="font-display text-4xl text-foreground font-bold">{data.totalDonations}</p>
+            <CardContent className="min-h-[156px] p-6 sm:p-8 text-center flex flex-col justify-center">
+              <p className="font-display text-3xl sm:text-4xl text-foreground font-bold break-words leading-none">{data.totalDonations.toLocaleString()}</p>
               <p className="font-body text-xs uppercase tracking-widest text-muted-foreground mt-2 font-bold">Gifts Recorded</p>
             </CardContent>
           </Card>
         </motion.div>
         <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 0.2 }}>
           <Card>
-            <CardContent className="p-8 text-center">
-              <p className="font-display text-4xl text-accent font-bold">
+            <CardContent className="min-h-[156px] p-6 sm:p-8 text-center flex flex-col justify-center">
+              <p className="font-display text-3xl sm:text-4xl text-accent font-bold break-words leading-none">
                 {data.lastGiftingAt ? new Date(data.lastGiftingAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—'}
               </p>
               <p className="font-body text-xs uppercase tracking-widest text-muted-foreground mt-2 font-bold">Latest Gift</p>
@@ -176,11 +176,12 @@ export default function DonorDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Charts Section */}
         <div className="lg:col-span-2 space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="min-h-[370px]">
-              <CardHeader><CardTitle className="font-body text-xs uppercase tracking-widest text-muted-foreground font-extrabold">Giving Allocation</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle className="font-body text-xs uppercase tracking-widest text-muted-foreground font-extrabold">Giving Allocation</CardTitle>
+              </CardHeader>
               <CardContent className="space-y-3">
                 <div className="h-[250px]">
                   {hasContributionData ? (
@@ -200,12 +201,12 @@ export default function DonorDashboard() {
                           anchor: 'bottom',
                           direction: 'row',
                           translateY: 56,
-                          itemWidth: 80,
+                          itemWidth: 72,
                           itemHeight: 18,
                           itemTextColor: 'hsl(var(--foreground))',
                           symbolSize: 10,
-                          symbolShape: 'circle'
-                        }
+                          symbolShape: 'circle',
+                        },
                       ]}
                     />
                   ) : (
@@ -239,7 +240,9 @@ export default function DonorDashboard() {
             </Card>
 
             <Card className="min-h-[370px]">
-              <CardHeader><CardTitle className="font-body text-xs uppercase tracking-widest text-muted-foreground font-extrabold">Monthly Trends (PHP)</CardTitle></CardHeader>
+              <CardHeader>
+                <CardTitle className="font-body text-xs uppercase tracking-widest text-muted-foreground font-extrabold">Monthly Trends (PHP)</CardTitle>
+              </CardHeader>
               <CardContent className="space-y-3">
                 <div className="h-[250px]">
                   {hasTrendData ? (
@@ -295,9 +298,10 @@ export default function DonorDashboard() {
             </Card>
           </div>
 
-          {/* Donation History Table */}
           <Card>
-            <CardHeader><CardTitle className="font-body text-xs uppercase tracking-widest text-muted-foreground font-extrabold font-bold">Verified Contribution Record</CardTitle></CardHeader>
+            <CardHeader>
+              <CardTitle className="font-body text-xs uppercase tracking-widest text-muted-foreground font-extrabold font-bold">Verified Contribution Record</CardTitle>
+            </CardHeader>
             <CardContent>
               <div className="overflow-x-auto rounded-xl border border-border/60">
                 <Table>
@@ -315,16 +319,16 @@ export default function DonorDashboard() {
                         <TableCell colSpan={4} className="text-center py-12 text-muted-foreground font-body italic">No contributions found in this record</TableCell>
                       </TableRow>
                     ) : (
-                      data.contributions.map(c => (
-                        <TableRow key={c.id} className="border-b border-border/40 transition-colors odd:bg-card even:bg-muted/10 hover:bg-primary/5">
-                          <TableCell className="font-body text-xs">{new Date(c.date).toLocaleDateString()}</TableCell>
+                      data.contributions.map((contribution) => (
+                        <TableRow key={contribution.id} className="border-b border-border/40 transition-colors odd:bg-card even:bg-muted/10 hover:bg-primary/5">
+                          <TableCell className="font-body text-xs">{new Date(contribution.date).toLocaleDateString()}</TableCell>
                           <TableCell className="font-body text-xs pb-1">
                             <span className="inline-block px-2 py-0.5 rounded-full bg-primary/5 text-primary text-xs font-bold">
-                              {c.type}
+                              {contribution.type}
                             </span>
                           </TableCell>
-                          <TableCell className="font-body text-xs text-muted-foreground">{c.programArea}</TableCell>
-                          <TableCell className="font-body text-xs font-bold text-right tracking-tight">₱{c.amountPhp?.toLocaleString()}</TableCell>
+                          <TableCell className="font-body text-xs text-muted-foreground">{contribution.programArea}</TableCell>
+                          <TableCell className="font-body text-xs font-bold text-right tracking-tight">₱{contribution.amountPhp?.toLocaleString()}</TableCell>
                         </TableRow>
                       ))
                     )}
@@ -335,7 +339,6 @@ export default function DonorDashboard() {
           </Card>
         </div>
 
-        {/* Safehouse Updates Sidebar */}
         <div className="space-y-6">
           <h3 className="font-display text-xl text-foreground tracking-tight">Project Pulse</h3>
           {data.safehouseUpdates.length === 0 ? (
@@ -349,8 +352,8 @@ export default function DonorDashboard() {
               <motion.div key={idx} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3 + (idx * 0.1) }}>
                 <Card className="hover:border-primary/40 transition-colors group cursor-default">
                   <CardContent className="p-6">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-bold uppercase tracking-widest text-primary bg-primary/5 px-2 py-1 rounded">
+                    <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <span className="max-w-full break-words text-xs font-bold uppercase tracking-widest text-primary bg-primary/5 px-2 py-1 rounded">
                         {update.safehouseName}
                       </span>
                       <span className="text-xs text-muted-foreground">
@@ -364,7 +367,7 @@ export default function DonorDashboard() {
               </motion.div>
             ))
           )}
-          
+
           <Card className="bg-secondary/5 border-secondary/20">
             <CardContent className="p-6">
               <h4 className="font-display text-sm text-secondary mb-3 flex items-center gap-2">
