@@ -13,7 +13,17 @@ public sealed class MlPipelinesController(MlPipelineStore store) : ControllerBas
     [HttpGet]
     public async Task<ActionResult<MlPipelinesOverviewDto>> GetOverview()
     {
-        return Ok(await store.GetOverviewAsync());
+        try
+        {
+            return Ok(await store.GetOverviewAsync());
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new
+            {
+                error = ex.GetBaseException().Message
+            });
+        }
     }
 
     [HttpPost("{key}/runs")]
@@ -32,6 +42,13 @@ public sealed class MlPipelinesController(MlPipelineStore store) : ControllerBas
         {
             return Conflict(new { error = ex.Message });
         }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new
+            {
+                error = ex.GetBaseException().Message
+            });
+        }
     }
 
     [HttpGet("{key}/runs/{runId}")]
@@ -45,6 +62,13 @@ public sealed class MlPipelinesController(MlPipelineStore store) : ControllerBas
         catch (KeyNotFoundException)
         {
             return NotFound(new { error = "Pipeline not found." });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new
+            {
+                error = ex.GetBaseException().Message
+            });
         }
     }
 }
