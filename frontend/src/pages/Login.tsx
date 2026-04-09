@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
 import { useAuth } from "@/lib/AuthContext";
 import { apiFetch } from "@/lib/api-client";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { API_BASE } from "@/lib/api-base";
 
@@ -16,7 +16,6 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
 
   const { checkAppState } = useAuth();
-  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -24,27 +23,31 @@ export default function Login() {
 
     try {
       const response = await apiFetch(`${API_BASE}/api/auth/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         skipAuthHandling: true,
         body: JSON.stringify({ email, password }),
       });
 
-      if (response.ok) {
-        const data = await response.json();
-        toast.success(`Welcome back, ${data.displayName}`);
-
-        await checkAppState();
-
-        if (data.role === 'Admin') {
-          navigate("/admin");
-        } else {
-          navigate("/donor");
-        }
-      } else {
+      if (!response.ok) {
         const errorData = await response.json().catch(() => null);
         toast.error(errorData?.error || "Login failed. Please check your credentials.");
+        return;
       }
+
+      const data = await response.json();
+      toast.success(`Welcome back, ${data.displayName}`);
+
+      await checkAppState();
+
+      const destination =
+        data.role === "Admin"
+          ? "/admin"
+          : data.role === "Donor"
+            ? "/donor"
+            : "/";
+
+      window.location.assign(destination);
     } catch (error) {
       console.error("Login error:", error);
       toast.error("A network error occurred. Please try again.");
