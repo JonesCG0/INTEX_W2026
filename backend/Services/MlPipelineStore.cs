@@ -5,6 +5,7 @@ namespace backend.Services;
 
 public sealed class MlPipelineStore
 {
+    private static readonly HttpClient HttpClient = new();
     private readonly AzureMlOptions _options;
     private readonly string _repoRoot;
     private readonly string[] _outputRoots;
@@ -213,8 +214,8 @@ public sealed class MlPipelineStore
             );
         }
 
-        var outputPath = ResolveOutputPath(definition.OutputFileName);
-        if (!File.Exists(outputPath))
+        var snapshotSource = ResolveOutputSource(definition.OutputFileName);
+        if (snapshotSource is null)
         {
             return new MlPipelineSnapshotData(
                 ResultSummary: definition.ResultSummary,
@@ -224,14 +225,15 @@ public sealed class MlPipelineStore
             );
         }
 
-        var lines = File.ReadAllLines(outputPath);
+        var lines = snapshotSource.Content
+            .Split(["\r\n", "\n"], StringSplitOptions.None);
         if (lines.Length == 0)
         {
             return new MlPipelineSnapshotData(
                 ResultSummary: definition.ResultSummary,
                 PrimaryMetricLabel: definition.PrimaryMetricLabel,
                 PrimaryMetricValue: definition.Status,
-                Snapshot: new MlPipelineSnapshotDto(definition.OutputFileName, File.GetLastWriteTimeUtc(outputPath).ToString("u"), 0, [], [])
+                Snapshot: new MlPipelineSnapshotDto(definition.OutputFileName, snapshotSource.LastModifiedUtc?.ToString("u"), 0, [], [])
             );
         }
 
@@ -252,7 +254,7 @@ public sealed class MlPipelineStore
             PrimaryMetricValue: primaryMetricValue,
             Snapshot: new MlPipelineSnapshotDto(
                 definition.OutputFileName,
-                File.GetLastWriteTimeUtc(outputPath).ToString("u"),
+                snapshotSource.LastModifiedUtc?.ToString("u"),
                 rowCount,
                 headers,
                 previewRows
@@ -267,40 +269,114 @@ public sealed class MlPipelineStore
             yield break;
         }
 
-        var outputPath = ResolveOutputPath(definition.OutputFileName);
-        if (!File.Exists(outputPath))
+        var snapshotSource = ResolveOutputSource(definition.OutputFileName);
+        if (snapshotSource is null)
         {
             yield break;
         }
 
-        var fileInfo = new FileInfo(outputPath);
         var snapshot = BuildSnapshot(definition);
+        var lastModifiedUtc = snapshotSource.LastModifiedUtc ?? DateTimeOffset.UtcNow;
 
         yield return new MlPipelineRunRecord(
             RunId: $"snapshot-{definition.Key}",
             PipelineKey: definition.Key,
-            StartedAt: new DateTimeOffset(fileInfo.LastWriteTimeUtc),
+            StartedAt: lastModifiedUtc,
             Notes: "Snapshot loaded from generated_outputs",
             StatusOverride: "Succeeded",
-            CompletedAtOverride: new DateTimeOffset(fileInfo.LastWriteTimeUtc),
+            CompletedAtOverride: lastModifiedUtc,
             ResultFileNameOverride: definition.OutputFileName,
             ResultSummaryOverride: snapshot.ResultSummary,
             ProgressOverride: 100
         );
     }
 
-    private string ResolveOutputPath(string fileName)
+    private SnapshotSource? ResolveOutputSource(string fileName)
     {
+        var blobSource = TryReadBlobSnapshot(fileName);
+        if (blobSource is not null)
+        {
+            return blobSource;
+        }
+
         foreach (var outputRoot in _outputRoots)
         {
             var candidate = Path.Combine(outputRoot, fileName);
             if (File.Exists(candidate))
             {
-                return candidate;
+                return new SnapshotSource(
+                    FileName: fileName,
+                    Content: File.ReadAllText(candidate),
+                    LastModifiedUtc: File.GetLastWriteTimeUtc(candidate)
+                );
             }
         }
 
-        return Path.Combine(_outputRoots[0], fileName);
+        return null;
+    }
+
+    private SnapshotSource? TryReadBlobSnapshot(string fileName)
+    {
+        if (string.IsNullOrWhiteSpace(_options.OutputBlobContainerUrl))
+        {
+            return null;
+        }
+
+        var containerUrl = _options.OutputBlobContainerUrl.Trim().TrimEnd('/');
+        var prefix = _options.OutputBlobPrefix.Trim().Trim('/');
+
+        var candidateUrls = new[]
+        {
+            CombineBlobUrl(containerUrl, prefix, fileName),
+            CombineBlobUrl(containerUrl, fileName),
+        };
+
+        foreach (var url in candidateUrls)
+        {
+            try
+            {
+                using var response = HttpClient.GetAsync(url).GetAwaiter().GetResult();
+                if (!response.IsSuccessStatusCode)
+                {
+                    continue;
+                }
+
+                var content = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                var lastModified = response.Content.Headers.LastModified;
+
+                return new SnapshotSource(
+                    FileName: fileName,
+                    Content: content,
+                    LastModifiedUtc: lastModified
+                );
+            }
+            catch
+            {
+                // Fall back to local files if the blob path is unavailable or unauthorized.
+            }
+        }
+
+        return null;
+    }
+
+    private static string CombineBlobUrl(string baseUrl, params string[] segments)
+    {
+        var uri = new Uri(baseUrl, UriKind.Absolute);
+        var path = uri.AbsolutePath.TrimEnd('/');
+        foreach (var segment in segments)
+        {
+            if (!string.IsNullOrWhiteSpace(segment))
+            {
+                path = $"{path}/{Uri.EscapeDataString(segment.Trim('/'))}";
+            }
+        }
+
+        var builder = new UriBuilder(uri)
+        {
+            Path = path
+        };
+
+        return builder.Uri.ToString();
     }
 
     private static MlPipelineRunDto ToDto(MlPipelineRunRecord run, string pipelineName)
@@ -464,6 +540,11 @@ public sealed class MlPipelineStore
         string PrimaryMetricLabel,
         string PrimaryMetricValue,
         MlPipelineSnapshotDto Snapshot);
+
+    private sealed record SnapshotSource(
+        string FileName,
+        string Content,
+        DateTimeOffset? LastModifiedUtc);
 
     private sealed record RunState(
         string Status,
