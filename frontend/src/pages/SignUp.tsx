@@ -1,33 +1,44 @@
-import { useState, type FormEvent, type ReactNode } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { toast } from 'sonner';
+import { useState, type FormEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
+import { IconUserPlus } from "@tabler/icons-react";
+import { toast } from "sonner";
 
-import { API_BASE } from '@/lib/api-base';
-import { apiFetch } from '@/lib/api-client';
-import { useAuth } from '@/lib/AuthContext';
-import { cn } from '@/lib/utils';
-import { Label } from '@/components/ui/aceternity/Label';
-import { Input } from '@/components/ui/aceternity/Input';
+import { API_BASE } from "@/lib/api-base";
+import { apiFetch } from "@/lib/api-client";
+import { useAuth } from "@/lib/AuthContext";
+import { AuthPageLayout } from "@/components/auth/AuthPageLayout";
+import { AuthFormField } from "@/components/auth/AuthFormField";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+const AUTH_INPUT =
+  "bg-background focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
 export default function SignUp() {
-  const [email, setEmail] = useState('');
-  const [displayName, setDisplayName] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const reduceMotion = useReducedMotion();
 
   const { checkAppState } = useAuth();
   const navigate = useNavigate();
 
+  const clearError = () => setErrorMessage(null);
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    clearError();
 
     try {
       const response = await apiFetch(`${API_BASE}/api/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         skipAuthHandling: true,
         body: JSON.stringify({
           email,
@@ -39,124 +50,159 @@ export default function SignUp() {
 
       if (response.ok) {
         const data = await response.json();
-        toast.success(`Welcome, ${data.displayName}. Your donor account is ready.`);
+        toast.success(
+          `Welcome, ${data.displayName}. Your donor account is ready.`
+        );
         await checkAppState();
-        navigate('/donor');
+        navigate("/donor");
         return;
       }
 
-      const errorData = await response.json().catch(() => ({ error: 'Registration failed.' }));
-      toast.error(errorData.error || 'Registration failed. Please try again.');
+      const errorData = await response
+        .json()
+        .catch(() => ({ error: "Registration failed." }));
+      setErrorMessage(
+        errorData.error ?? "Registration failed. Please try again."
+      );
     } catch (error) {
-      console.error('Registration error:', error);
-      toast.error('A network error occurred. Please try again.');
+      console.error("Registration error:", error);
+      setErrorMessage("A network error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-zinc-950 px-4">
+    <AuthPageLayout>
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: reduceMotion ? 1 : 0, y: reduceMotion ? 0 : 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-md w-full mx-auto rounded-none md:rounded-2xl p-4 md:p-8 shadow-input bg-white dark:bg-black border border-neutral-200 dark:border-neutral-800"
+        transition={{ duration: reduceMotion ? 0 : 0.35, ease: "easeOut" }}
+        className="w-full max-w-md rounded-lg border border-border bg-card p-6 text-card-foreground shadow-sm"
       >
-        <h2 className="font-body font-bold text-xl text-neutral-800 dark:text-neutral-200">
-          Create a Donor Account
-        </h2>
-        <p className="text-neutral-600 text-sm max-w-sm mt-2 dark:text-neutral-300 font-body">
-          Register to view your donation history and personal impact dashboard.
-        </p>
+        <div className="mb-6 space-y-2">
+          <p className="font-body text-[0.85rem] font-medium uppercase tracking-wider text-muted-foreground">
+            Donor registration
+          </p>
+          <h1 className="font-body text-2xl font-semibold tracking-tight text-foreground">
+            Create a donor account
+          </h1>
+          <p className="font-body max-w-sm text-base leading-relaxed text-muted-foreground">
+            Register to view your donation history and personal impact dashboard.
+          </p>
+        </div>
 
-        <form className="my-8" onSubmit={handleSubmit}>
-          <LabelInputContainer className="mb-4">
-            <Label htmlFor="displayName">Display Name</Label>
+        <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+          {errorMessage ? (
+            <p
+              className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+              role="alert"
+            >
+              {errorMessage}
+            </p>
+          ) : null}
+
+          <AuthFormField>
+            <Label htmlFor="displayName" className="text-[0.85rem] font-medium">
+              Display name
+            </Label>
             <Input
               id="displayName"
               placeholder="Project Haven Donor"
               value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
+              onChange={(e) => {
+                setDisplayName(e.target.value);
+                clearError();
+              }}
+              className={AUTH_INPUT}
+              autoComplete="name"
               required
             />
-          </LabelInputContainer>
+          </AuthFormField>
 
-          <LabelInputContainer className="mb-4">
-            <Label htmlFor="email">Email Address</Label>
+          <AuthFormField>
+            <Label htmlFor="email" className="text-[0.85rem] font-medium">
+              Email address
+            </Label>
             <Input
               id="email"
               placeholder="donor@example.com"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                clearError();
+              }}
+              className={AUTH_INPUT}
+              autoComplete="email"
               required
             />
-          </LabelInputContainer>
+          </AuthFormField>
 
-          <LabelInputContainer className="mb-4">
-            <Label htmlFor="password">Password</Label>
+          <AuthFormField>
+            <Label htmlFor="password" className="text-[0.85rem] font-medium">
+              Password
+            </Label>
             <Input
               id="password"
               placeholder="••••••••••••"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                clearError();
+              }}
+              className={AUTH_INPUT}
+              autoComplete="new-password"
               required
             />
-          </LabelInputContainer>
+          </AuthFormField>
 
-          <LabelInputContainer className="mb-8">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
+          <AuthFormField>
+            <Label
+              htmlFor="confirmPassword"
+              className="text-[0.85rem] font-medium"
+            >
+              Confirm password
+            </Label>
             <Input
               id="confirmPassword"
               placeholder="••••••••••••"
               type="password"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e) => {
+                setConfirmPassword(e.target.value);
+                clearError();
+              }}
+              className={AUTH_INPUT}
+              autoComplete="new-password"
               required
             />
-          </LabelInputContainer>
+          </AuthFormField>
 
-          <button
-            className="bg-gradient-to-br relative group/btn from-black dark:from-zinc-900 dark:to-zinc-900 to-neutral-600 block dark:bg-zinc-800 w-full text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
+          <Button
             type="submit"
             disabled={isLoading}
+            size="lg"
+            className="h-11 w-full font-medium focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background [&_svg]:h-6 [&_svg]:w-6"
           >
-            {isLoading ? 'Creating account...' : 'Create account →'}
-            <BottomGradient />
-          </button>
+            <IconUserPlus className="shrink-0" aria-hidden />
+            {isLoading ? "Creating account…" : "Create account"}
+          </Button>
 
-          <p className="mt-4 text-center text-sm text-neutral-600 dark:text-neutral-300 font-body">
-            Already have an account?{' '}
-            <Link to="/login" className="font-semibold text-primary hover:underline">
-              Sign in
-            </Link>
-          </p>
+          <div className="rounded-lg border border-border bg-muted/30 px-4 py-3">
+            <p className="text-center font-body text-sm text-muted-foreground">
+              Already have an account?{" "}
+              <Link
+                to="/login"
+                className="font-semibold text-primary hover:underline"
+              >
+                Sign in
+              </Link>
+            </p>
+          </div>
         </form>
       </motion.div>
-    </div>
+    </AuthPageLayout>
   );
 }
-
-const BottomGradient = () => {
-  return (
-    <>
-      <span className="group-hover/btn:opacity-100 block transition duration-500 opacity-0 absolute h-px w-full -bottom-px inset-x-0 bg-gradient-to-r from-transparent via-cyan-500 to-transparent" />
-      <span className="group-hover/btn:opacity-100 blur-sm block transition duration-500 opacity-0 absolute h-px w-1/2 mx-auto -bottom-px inset-x-10 bg-gradient-to-r from-transparent via-indigo-500 to-transparent" />
-    </>
-  );
-};
-
-const LabelInputContainer = ({
-  children,
-  className,
-}: {
-  children: ReactNode;
-  className?: string;
-}) => {
-  return (
-    <div className={cn('flex flex-col space-y-2 w-full', className)}>
-      {children}
-    </div>
-  );
-};

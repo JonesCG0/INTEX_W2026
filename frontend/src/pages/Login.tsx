@@ -1,25 +1,35 @@
-"use client";
-import React, { useState } from "react";
-import { Label } from "@/components/ui/aceternity/Label";
-import { Input } from "@/components/ui/aceternity/Input";
-import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
-import { useAuth } from "@/lib/AuthContext";
-import { apiFetch } from "@/lib/api-client";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
+import { IconLogin } from "@tabler/icons-react";
 import { toast } from "sonner";
+
 import { API_BASE } from "@/lib/api-base";
+import { apiFetch } from "@/lib/api-client";
+import { useAuth } from "@/lib/AuthContext";
+import { AuthPageLayout } from "@/components/auth/AuthPageLayout";
+import { AuthFormField } from "@/components/auth/AuthFormField";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+
+const AUTH_INPUT =
+  "bg-background focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const reduceMotion = useReducedMotion();
   const { checkAppState } = useAuth();
+
+  const clearError = () => setErrorMessage(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
+    clearError();
 
     try {
       const response = await apiFetch(`${API_BASE}/api/auth/login`, {
@@ -31,7 +41,9 @@ export default function Login() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        toast.error(errorData?.error || "Login failed. Please check your credentials.");
+        setErrorMessage(
+          errorData?.error ?? "Login failed. Please check your credentials."
+        );
         return;
       }
 
@@ -50,106 +62,104 @@ export default function Login() {
       window.location.assign(destination);
     } catch (error) {
       console.error("Login error:", error);
-      toast.error("A network error occurred. Please try again.");
+      setErrorMessage("A network error occurred. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-[#efe2cf] px-4 py-10">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(188,145,93,0.22),_transparent_32%),radial-gradient(circle_at_bottom_right,_rgba(101,67,33,0.18),_transparent_30%)]" />
-      <div className="absolute inset-y-0 left-0 w-20 bg-[linear-gradient(180deg,_rgba(129,88,47,0.14),_rgba(208,182,141,0.06))]" />
-      <div className="absolute inset-y-0 right-0 w-24 bg-[linear-gradient(180deg,_rgba(90,58,31,0.18),_rgba(207,180,137,0.08))]" />
-      <div className="absolute left-6 top-10 h-32 w-32 rounded-full bg-[#cba97a]/20 blur-3xl" />
-      <div className="absolute bottom-8 right-8 h-40 w-40 rounded-full bg-[#7b5634]/15 blur-3xl" />
+    <AuthPageLayout>
+      <motion.div
+        initial={{ opacity: reduceMotion ? 1 : 0, y: reduceMotion ? 0 : 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: reduceMotion ? 0 : 0.35, ease: "easeOut" }}
+        className="w-full max-w-md rounded-lg border border-border bg-card p-6 text-card-foreground shadow-sm"
+      >
+        <div className="mb-6 space-y-2">
+          <p className="font-body text-[0.85rem] font-medium uppercase tracking-wider text-muted-foreground">
+            Staff &amp; donor sign-in
+          </p>
+          <h1 className="font-body text-2xl font-semibold tracking-tight text-foreground">
+            Welcome back
+          </h1>
+          <p className="font-body max-w-sm text-base leading-relaxed text-muted-foreground">
+            Sign in to manage safehouse operations or review your donor impact
+            data.
+          </p>
+        </div>
 
-      <div className="relative z-10 flex min-h-[calc(100vh-5rem)] items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mx-auto w-full max-w-md rounded-2xl border border-[#c9b08e] bg-[#fffaf3]/95 p-5 shadow-[0_24px_80px_rgba(71,47,25,0.16)] backdrop-blur md:p-8"
-        >
-          <div className="mb-6 space-y-2">
-            <p className="font-body text-[11px] uppercase tracking-[0.32em] text-[#8d6a47]">
-              Project Haven Access
+        <form className="space-y-5" onSubmit={handleSubmit} noValidate>
+          {errorMessage ? (
+            <p
+              className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+              role="alert"
+            >
+              {errorMessage}
             </p>
-            <h2 className="font-body text-xl text-[#4f341d] md:text-2xl">
-              Welcome back
-            </h2>
-            <p className="max-w-sm text-sm text-[#735740] font-body">
-              Sign in to manage safehouse operations or review your donor impact data.
+          ) : null}
+
+          <AuthFormField>
+            <Label htmlFor="email" className="text-[0.85rem] font-medium">
+              Email address
+            </Label>
+            <Input
+              id="email"
+              placeholder="admin@example.com"
+              type="email"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                clearError();
+              }}
+              className={AUTH_INPUT}
+              required
+            />
+          </AuthFormField>
+
+          <AuthFormField>
+            <Label htmlFor="password" className="text-[0.85rem] font-medium">
+              Password
+            </Label>
+            <Input
+              id="password"
+              placeholder="••••••••"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                clearError();
+              }}
+              className={AUTH_INPUT}
+              required
+            />
+          </AuthFormField>
+
+          <Button
+            type="submit"
+            disabled={isLoading}
+            size="lg"
+            className="h-11 w-full font-medium focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background [&_svg]:h-6 [&_svg]:w-6"
+          >
+            <IconLogin className="shrink-0" aria-hidden />
+            {isLoading ? "Signing in…" : "Sign in"}
+          </Button>
+
+          <div className="rounded-lg border border-border bg-muted/30 px-4 py-3">
+            <p className="font-body text-sm text-muted-foreground">
+              Donor looking for an account?{" "}
+              <Link
+                to="/signup"
+                className="font-semibold text-primary hover:underline"
+              >
+                Create one here
+              </Link>
             </p>
           </div>
-
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <LabelInputContainer>
-              <Label htmlFor="email">Email Address</Label>
-              <Input
-                id="email"
-                placeholder="admin@example.com"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </LabelInputContainer>
-
-            <LabelInputContainer>
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                placeholder="••••••••"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </LabelInputContainer>
-
-            <button
-              className="relative block h-11 w-full rounded-md bg-gradient-to-r from-[#7c5735] via-[#a77b4a] to-[#c9a372] font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_10px_24px_rgba(114,79,45,0.24)] transition-transform hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-70"
-              type="submit"
-              disabled={isLoading}
-            >
-              {isLoading ? "Signing in..." : "Login →"}
-              <BottomGradient />
-            </button>
-
-            <div className="rounded-xl border border-[#d8c3a5] bg-[#f6ecdf] px-4 py-3">
-              <p className="text-sm text-[#735740] font-body">
-                Donor looking for an account?{" "}
-                <Link to="/signup" className="font-semibold text-[#8d5b2e] hover:underline">
-                  Create one here
-                </Link>
-              </p>
-            </div>
-          </form>
-        </motion.div>
-      </div>
-    </div>
+        </form>
+      </motion.div>
+    </AuthPageLayout>
   );
 }
-
-const BottomGradient = () => {
-  return (
-    <>
-      <span className="absolute inset-x-0 -bottom-px block h-px bg-gradient-to-r from-transparent via-[#f4ddbd] to-transparent opacity-80" />
-      <span className="absolute inset-x-10 -bottom-px mx-auto block h-px w-1/2 blur-sm bg-gradient-to-r from-transparent via-[#fff1de] to-transparent opacity-70" />
-    </>
-  );
-};
-
-const LabelInputContainer = ({
-  children,
-  className,
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) => {
-  return (
-    <div className={cn("flex w-full flex-col space-y-2", className)}>
-      {children}
-    </div>
-  );
-};
