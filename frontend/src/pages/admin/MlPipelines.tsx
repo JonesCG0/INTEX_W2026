@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { API_BASE } from '@/lib/api-base';
+import { apiFetch, readApiErrorMessage } from '@/lib/api-client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -75,20 +76,24 @@ const formatDateTime = (value?: string | null) => value ? new Date(value).toLoca
 export default function MlPipelines() {
   const [data, setData] = useState<MlOverview | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [runningKey, setRunningKey] = useState<string | null>(null);
   const [notes, setNotes] = useState<Record<string, string>>({});
 
   const load = async () => {
+    setLoadError(null);
     try {
-      const response = await fetch(`${API_BASE}/api/ml/pipelines`, { credentials: 'include' });
+      const response = await apiFetch(`${API_BASE}/api/ml/pipelines`);
       if (!response.ok) {
-        throw new Error('Failed to load ML pipeline overview.');
+        throw new Error(await readApiErrorMessage(response, 'Failed to load ML pipeline overview.'));
       }
 
       setData(await response.json());
     } catch (error) {
       console.error('ML pipelines load error:', error);
-      toast.error('Failed to load pipeline data');
+      const message = error instanceof Error ? error.message : 'Failed to load pipeline data';
+      setLoadError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -104,18 +109,17 @@ export default function MlPipelines() {
   const startRun = async (pipelineKey: string) => {
     setRunningKey(pipelineKey);
     try {
-      const response = await fetch(`${API_BASE}/api/ml/pipelines/${pipelineKey}/runs`, {
+      const response = await apiFetch(`${API_BASE}/api/ml/pipelines/${pipelineKey}/runs`, {
         method: 'POST',
-        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notes: notes[pipelineKey] ?? '' })
       });
 
-      const payload = await response.json();
       if (!response.ok) {
-        throw new Error(payload?.error ?? 'Unable to start pipeline run.');
+        throw new Error(await readApiErrorMessage(response, 'Unable to start pipeline run.'));
       }
 
+      const payload = await response.json();
       toast.success(`Started ${payload.pipelineName}`);
       await load();
     } catch (error: unknown) {
@@ -142,7 +146,9 @@ export default function MlPipelines() {
       <div className="flex items-center justify-center h-96 border rounded-xl bg-card border-border/50 shadow-sm mt-6">
         <div className="text-center space-y-2">
           <p className="font-display font-medium text-foreground text-lg">ML Pipelines Unavailable</p>
-          <p className="text-muted-foreground text-sm max-w-sm mx-auto">We could not load the pipeline catalog. Check the backend API or sign in again as an admin.</p>
+          <p className="text-muted-foreground text-sm max-w-sm mx-auto">
+            {loadError ?? 'We could not load the pipeline catalog. Check the backend API or sign in again as an admin.'}
+          </p>
         </div>
       </div>
     );
