@@ -15,7 +15,7 @@ import { ResponsiveBar } from '@nivo/bar';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import type { AdminPortalOverview } from '@/types/admin';
-import { HAVEN_NIVO_COLORS, barLegend, havenNivoTheme } from '@/lib/nivo';
+import { formatCompactChartNumber, HAVEN_NIVO_COLORS, barLegend, havenNivoTheme, shortenSafehouseLabel } from '@/lib/nivo';
 
 const COLORS = HAVEN_NIVO_COLORS;
 const STAT_BORDER_CLASSES = ['border-l-chart-1', 'border-l-chart-2', 'border-l-chart-3', 'border-l-chart-4'] as const;
@@ -109,6 +109,7 @@ export default function AdminDashboard() {
 
   const chartData = data?.reports?.safehouseComparison?.map(sh => ({
     safehouse: sh?.safehouse || '',
+    shortSafehouse: shortenSafehouseLabel(sh?.safehouse || ''),
     "Occupancy": sh?.occupancy || 0,
     "Capacity": sh?.capacity || 0
   })) || [];
@@ -146,18 +147,18 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Occupancy Chart */}
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 min-h-[420px]">
           <CardHeader>
             <CardTitle className="font-body text-base">Safehouse Comparison</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
             <div className="h-[300px]">
               {chartData.length > 0 ? (
                 <ResponsiveBar
                   data={chartData}
                   keys={['Occupancy', 'Capacity']}
-                  indexBy="safehouse"
-                  margin={{ top: 20, right: 24, bottom: 72, left: 60 }}
+                  indexBy="shortSafehouse"
+                  margin={{ top: 20, right: 24, bottom: 72, left: 68 }}
                   padding={0.3}
                   groupMode="grouped"
                   valueScale={{ type: 'linear' }}
@@ -166,10 +167,17 @@ export default function AdminDashboard() {
                   axisBottom={{
                     tickSize: 5,
                     tickPadding: 5,
-                    tickRotation: -45,
+                    tickRotation: -20,
+                  }}
+                  axisLeft={{
+                    tickSize: 5,
+                    tickPadding: 5,
+                    tickRotation: 0,
+                    format: (value) => formatCompactChartNumber(Number(value)),
                   }}
                   labelSkipWidth={12}
                   labelSkipHeight={12}
+                  labelFormat={(value) => formatCompactChartNumber(Number(value))}
                   legends={[barLegend]}
                   theme={havenNivoTheme}
                   animate={!reduceMotion}
@@ -184,27 +192,27 @@ export default function AdminDashboard() {
                 </div>
               )}
             </div>
-              <details className="mt-2">
-                <summary className="text-xs text-muted-foreground cursor-pointer">View safehouse comparison table</summary>
-                <table className="w-full mt-2 text-xs">
-                  <thead>
-                    <tr className="text-left text-muted-foreground">
-                      <th>Safehouse</th>
-                      <th>Occupancy</th>
-                      <th>Capacity</th>
+            <details>
+              <summary className="text-xs text-muted-foreground cursor-pointer">View safehouse comparison table</summary>
+              <table className="w-full mt-2 text-xs">
+                <thead>
+                  <tr className="text-left text-muted-foreground">
+                    <th>Safehouse</th>
+                    <th>Occupancy</th>
+                    <th>Capacity</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {chartData.map((row) => (
+                    <tr key={`admin-safehouse-${row.safehouse}`}>
+                      <td>{row.safehouse}</td>
+                      <td>{row.Occupancy}</td>
+                      <td>{row.Capacity}</td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {chartData.map((row) => (
-                      <tr key={`admin-safehouse-${row.safehouse}`}>
-                        <td>{row.safehouse}</td>
-                        <td>{row.Occupancy}</td>
-                        <td>{row.Capacity}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </details>
+                  ))}
+                </tbody>
+              </table>
+            </details>
           </CardContent>
         </Card>
 

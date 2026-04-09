@@ -8,7 +8,9 @@ A secure, full-stack case management web application for a nonprofit safehouse s
 
 | Service | URL |
 |---|---|
-| Frontend | https://polite-rock-003bb5b1e.1.azurestaticapps.net |
+| Frontend (primary) | https://jonescg0.net |
+| Frontend (www) | https://www.jonescg0.net |
+| Frontend (Azure Static Web Apps) | https://polite-rock-003bb5b1e.1.azurestaticapps.net |
 | Backend API | https://intexw2026-crd9brarcfhyf9b8.francecentral-01.azurewebsites.net |
 
 ---

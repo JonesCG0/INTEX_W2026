@@ -10,7 +10,7 @@ import { useAuth } from '@/lib/AuthContext';
 import { toast } from 'sonner';
 import { IconHeart } from '@tabler/icons-react';
 import { Button } from '@/components/ui/button';
-import { HAVEN_NIVO_COLORS, barLegend, havenNivoTheme } from '@/lib/nivo';
+import { formatCompactCurrencyTick, HAVEN_NIVO_COLORS, barLegend, havenNivoTheme } from '@/lib/nivo';
 import { formatCurrencyPhp, formatMonthKey } from '@/lib/dashboard-format';
 
 interface DonorDashboardData {
@@ -179,41 +179,43 @@ export default function DonorDashboard() {
         {/* Charts Section */}
         <div className="lg:col-span-2 space-y-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="h-[350px]">
+            <Card className="min-h-[370px]">
               <CardHeader><CardTitle className="font-body text-xs uppercase tracking-widest text-muted-foreground font-extrabold">Giving Allocation</CardTitle></CardHeader>
-              <CardContent className="h-[270px]">
-                {hasContributionData ? (
-                  <ResponsivePie
-                    data={pieData}
-                    margin={{ top: 20, right: 20, bottom: 72, left: 20 }}
-                    innerRadius={0.6}
-                    padAngle={0.5}
-                    cornerRadius={4}
-                    colors={HAVEN_NIVO_COLORS}
-                    enableArcLinkLabels={false}
-                    theme={havenNivoTheme}
-                    role="img"
-                    ariaLabel="Donor giving allocation chart grouped by contribution type"
-                    legends={[
-                      {
-                        anchor: 'bottom',
-                        direction: 'row',
-                        translateY: 56,
-                        itemWidth: 80,
-                        itemHeight: 18,
-                        itemTextColor: 'hsl(var(--foreground))',
-                        symbolSize: 10,
-                        symbolShape: 'circle'
-                      }
-                    ]}
-                  />
-                ) : (
-                  <div className="h-full flex items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 px-6 text-center">
-                    <p className="text-sm text-muted-foreground">
-                      No donation history has been recorded yet. This chart will populate once contributions exist.
-                    </p>
-                  </div>
-                )}
+              <CardContent className="space-y-3">
+                <div className="h-[250px]">
+                  {hasContributionData ? (
+                    <ResponsivePie
+                      data={pieData}
+                      margin={{ top: 20, right: 20, bottom: 72, left: 20 }}
+                      innerRadius={0.6}
+                      padAngle={0.5}
+                      cornerRadius={4}
+                      colors={HAVEN_NIVO_COLORS}
+                      enableArcLinkLabels={false}
+                      theme={havenNivoTheme}
+                      role="img"
+                      ariaLabel="Donor giving allocation chart grouped by contribution type"
+                      legends={[
+                        {
+                          anchor: 'bottom',
+                          direction: 'row',
+                          translateY: 56,
+                          itemWidth: 80,
+                          itemHeight: 18,
+                          itemTextColor: 'hsl(var(--foreground))',
+                          symbolSize: 10,
+                          symbolShape: 'circle'
+                        }
+                      ]}
+                    />
+                  ) : (
+                    <div className="h-full flex items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 px-6 text-center">
+                      <p className="text-sm text-muted-foreground">
+                        No donation history has been recorded yet. This chart will populate once contributions exist.
+                      </p>
+                    </div>
+                  )}
+                </div>
               </CardContent>
               <details className="px-6 pb-4">
                 <summary className="text-xs text-muted-foreground cursor-pointer">View giving allocation table</summary>
@@ -236,32 +238,40 @@ export default function DonorDashboard() {
               </details>
             </Card>
 
-            <Card className="h-[350px]">
+            <Card className="min-h-[370px]">
               <CardHeader><CardTitle className="font-body text-xs uppercase tracking-widest text-muted-foreground font-extrabold">Monthly Trends (PHP)</CardTitle></CardHeader>
-              <CardContent className="h-[270px]">
-                {hasTrendData ? (
-                  <ResponsiveBar
-                    data={barData}
-                    keys={['amount']}
-                    indexBy="month"
-                    margin={{ top: 10, right: 10, bottom: 72, left: 48 }}
-                    padding={0.4}
-                    colors={[HAVEN_NIVO_COLORS[0]]}
-                    borderRadius={4}
-                    axisLeft={{ tickSize: 0, tickPadding: 10 }}
-                    axisBottom={{ tickSize: 0, tickPadding: 10 }}
-                    legends={[barLegend]}
-                    theme={havenNivoTheme}
-                    role="img"
-                    ariaLabel="Monthly donor contribution trend chart"
-                  />
-                ) : (
-                  <div className="h-full flex items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 px-6 text-center">
-                    <p className="text-sm text-muted-foreground">
-                      Monthly contribution trends will appear after the first donation is recorded.
-                    </p>
-                  </div>
-                )}
+              <CardContent className="space-y-3">
+                <div className="h-[250px]">
+                  {hasTrendData ? (
+                    <ResponsiveBar
+                      data={barData}
+                      keys={['amount']}
+                      indexBy="month"
+                      margin={{ top: 10, right: 10, bottom: 72, left: 64 }}
+                      padding={0.4}
+                      colors={[HAVEN_NIVO_COLORS[0]]}
+                      borderRadius={4}
+                      axisLeft={{
+                        tickSize: 0,
+                        tickPadding: 10,
+                        format: (value) => formatCompactCurrencyTick(Number(value)),
+                      }}
+                      axisBottom={{ tickSize: 0, tickPadding: 10 }}
+                      labelSkipWidth={16}
+                      labelFormat={(value) => formatCompactCurrencyTick(Number(value))}
+                      legends={[barLegend]}
+                      theme={havenNivoTheme}
+                      role="img"
+                      ariaLabel="Monthly donor contribution trend chart"
+                    />
+                  ) : (
+                    <div className="h-full flex items-center justify-center rounded-lg border border-dashed border-border/60 bg-muted/20 px-6 text-center">
+                      <p className="text-sm text-muted-foreground">
+                        Monthly contribution trends will appear after the first donation is recorded.
+                      </p>
+                    </div>
+                  )}
+                </div>
               </CardContent>
               <details className="px-6 pb-4">
                 <summary className="text-xs text-muted-foreground cursor-pointer">View monthly contribution table</summary>

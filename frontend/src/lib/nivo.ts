@@ -17,6 +17,49 @@ export function getRiskColor(level: string): string {
   return RISK_LEVEL_COLOR[level] ?? HAVEN_NIVO_COLORS[1];
 }
 
+export function formatCompactChartNumber(value: number): string {
+  const absValue = Math.abs(value);
+  if (absValue >= 1000) {
+    return new Intl.NumberFormat('en-US', {
+      notation: 'compact',
+      maximumFractionDigits: 1,
+    }).format(value);
+  }
+
+  if (Number.isInteger(value)) {
+    return value.toLocaleString('en-US');
+  }
+
+  return new Intl.NumberFormat('en-US', {
+    maximumFractionDigits: 1,
+  }).format(value);
+}
+
+export function formatCompactCurrencyTick(value: number): string {
+  if (Math.abs(value) < 1000) {
+    return Math.round(value).toLocaleString('en-US');
+  }
+
+  return new Intl.NumberFormat('en-US', {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(value);
+}
+
+export function shortenSafehouseLabel(name: string): string {
+  const normalized = name
+    .replace(/^Lighthouse Safehouse\s+/i, 'LH ')
+    .replace(/^Safehouse\s+/i, 'SH ')
+    .replace(/\s+Safehouse\s+/i, ' SH ')
+    .trim();
+
+  if (normalized.length <= 16) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, 13).trimEnd()}...`;
+}
+
 export const havenNivoTheme = {
   background: 'transparent',
   text: {

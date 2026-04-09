@@ -7,7 +7,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { ResponsiveLine } from '@nivo/line';
 import { ResponsiveBar } from '@nivo/bar';
 import { toast } from 'sonner';
-import { HAVEN_NIVO_COLORS, barLegend, havenNivoTheme, lineLegend } from '@/lib/nivo';
+import { formatCompactChartNumber, formatCompactCurrencyTick, HAVEN_NIVO_COLORS, barLegend, havenNivoTheme, lineLegend, shortenSafehouseLabel } from '@/lib/nivo';
 import { parseDisplayValue } from '@/lib/dashboard-format';
 
 interface ImpactTrendPoint {
@@ -124,6 +124,7 @@ export default function Impact() {
 
   const barData = data.safehouses.map(sh => ({
     name: sh.name,
+    shortName: shortenSafehouseLabel(sh.name),
     "Occupancy": sh.currentOccupancy,
     "Capacity": sh.capacityGirls
   }));
@@ -187,7 +188,7 @@ export default function Impact() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={reduceMotion ? { duration: 0.15 } : undefined}
-              className="bg-card border border-border rounded-xl p-6 h-[400px]"
+              className="bg-card border border-border rounded-xl p-6 min-h-[420px]"
             >
               <h3 className="font-body text-lg font-semibold text-foreground mb-4 text-center">Donation Trend (PHP)</h3>
               <div className="h-[300px]">
@@ -211,6 +212,7 @@ export default function Impact() {
                       tickSize: 5,
                       tickPadding: 5,
                       tickRotation: 0,
+                      format: (value) => formatCompactCurrencyTick(Number(value)),
                       legend: 'PHP',
                       legendOffset: -45,
                       legendPosition: 'middle'
@@ -264,7 +266,7 @@ export default function Impact() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={reduceMotion ? { duration: 0.15 } : undefined}
-              className="bg-card border border-border rounded-xl p-6 h-[400px]"
+              className="bg-card border border-border rounded-xl p-6 min-h-[420px]"
             >
               <h3 className="font-body text-lg font-semibold text-foreground mb-4 text-center">Active Residents Trend</h3>
               <div className="h-[300px]">
@@ -288,6 +290,7 @@ export default function Impact() {
                       tickSize: 5,
                       tickPadding: 5,
                       tickRotation: 0,
+                      format: (value) => formatCompactChartNumber(Number(value)),
                       legend: 'Resident Count',
                       legendOffset: -45,
                       legendPosition: 'middle'
@@ -341,7 +344,7 @@ export default function Impact() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={reduceMotion ? { duration: 0.15 } : undefined}
-              className="bg-card border border-border rounded-xl p-6 h-[400px]"
+              className="bg-card border border-border rounded-xl p-6 min-h-[420px]"
             >
               <h3 className="font-body text-lg font-semibold text-foreground mb-4 text-center">Safehouse Occupancy</h3>
               <div className="h-[300px]">
@@ -349,8 +352,8 @@ export default function Impact() {
                   <ResponsiveBar
                     data={barData}
                     keys={['Occupancy', 'Capacity']}
-                    indexBy="name"
-                    margin={{ top: 20, right: 24, bottom: 72, left: 60 }}
+                    indexBy="shortName"
+                    margin={{ top: 16, right: 24, bottom: 72, left: 68 }}
                     padding={0.3}
                     groupMode="grouped"
                     valueScale={{ type: 'linear' }}
@@ -364,8 +367,15 @@ export default function Impact() {
                       tickPadding: 5,
                       tickRotation: -25,
                     }}
+                    axisLeft={{
+                      tickSize: 5,
+                      tickPadding: 5,
+                      tickRotation: 0,
+                      format: (value) => formatCompactChartNumber(Number(value)),
+                    }}
                     labelSkipWidth={12}
                     labelSkipHeight={12}
+                    labelFormat={(value) => formatCompactChartNumber(Number(value))}
                     labelTextColor={{ from: 'color', modifiers: [['darker', 1.6]] }}
                     legends={[barLegend]}
                     theme={havenNivoTheme}
