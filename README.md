@@ -40,10 +40,13 @@ A secure full-stack case management application for a nonprofit safehouse suppor
 | `/login` | Public | Email/password login |
 | `/signup` | Public | Donor registration |
 | `/donor` | Donor | Donor dashboard and contribution history |
-| `/admin` | Admin | Admin portal entry |
+| `/admin` | Admin | Operational overview dashboard |
 | `/admin/residents` | Admin | Resident management |
 | `/admin/donors` | Admin | Donor and contribution management |
 | `/admin/visitations` | Admin | Visitation records |
+| `/admin/conferences` | Admin | Case conferences |
+| `/admin/recordings` | Admin | Process recordings |
+| `/admin/outreach` | Admin | Outreach performance |
 | `/admin/users` | Admin | User and role management |
 | `/admin/analytics` | Admin | Reporting and analytics |
 | `/admin/ml-pipelines` | Admin | Eight notebook-backed ML pipelines with output previews |
@@ -73,7 +76,7 @@ A secure full-stack case management application for a nonprofit safehouse suppor
 
 ### Admin
 
-The admin API supports donor, contribution, resident, recording, visitation, user, analytics, and ML dashboard workflows through `/api/admin/*` and `/api/ml/*`.
+The admin API supports donor, contribution, resident, recording, visitation, conference, outreach, user, analytics, and ML dashboard workflows through `/api/admin/*` and `/api/ml/*`.
 
 ---
 
@@ -246,6 +249,4 @@ Live Azure ML mode uses backend `AzureMl` configuration plus the command-job run
 
 ## Current Gaps
 
-- CSP hardening can still be improved
-- Lighthouse accessibility audit is still pending
-- live end-to-end Azure ML production validation remains to be fully exercised after deployment
+- End-to-end validation of live Azure ML runs in the deployed environment remains to be fully exercised

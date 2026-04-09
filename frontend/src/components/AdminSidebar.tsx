@@ -81,7 +81,7 @@ export default function AdminSidebar() {
                   <IconMenu2 className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-full sm:max-w-sm">
+              <SheetContent side="right" className="w-full sm:max-w-sm">
                 <SheetHeader>
                   <SheetTitle className="font-body text-xl text-primary">Admin Navigation</SheetTitle>
                 </SheetHeader>

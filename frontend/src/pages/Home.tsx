@@ -29,6 +29,21 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    if (window.location.hash === '#donate') {
+      const el = document.getElementById('donate');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      } else {
+        // Element not rendered yet — wait a tick for the DOM to settle
+        const timer = setTimeout(() => {
+          document.getElementById('donate')?.scrollIntoView({ behavior: 'smooth' });
+        }, 100);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     let isMounted = true;
 
     async function loadImpactPreview() {

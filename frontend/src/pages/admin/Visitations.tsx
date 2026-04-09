@@ -254,7 +254,7 @@ export default function Visitations() {
         <div className="w-full sm:max-w-sm">
           <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Resident Filter</Label>
           <Select value={residentFilter} onValueChange={value => setResidentFilter(value)}>
-            <SelectTrigger className="font-body mt-1">
+            <SelectTrigger className="font-body mt-1" aria-label="Filter visitations by resident">
               <SelectValue placeholder="All residents" />
             </SelectTrigger>
             <SelectContent>
@@ -351,7 +351,7 @@ export default function Visitations() {
             <div>
               <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Resident</Label>
               <Select value={form.residentId ? form.residentId.toString() : ''} onValueChange={value => update('residentId', Number(value))}>
-                <SelectTrigger className="font-body mt-1">
+                <SelectTrigger className="font-body mt-1" aria-label="Select resident">
                   <SelectValue placeholder="Select resident" />
                 </SelectTrigger>
                 <SelectContent>
@@ -372,7 +372,7 @@ export default function Visitations() {
               <div>
                 <Label className="font-body text-xs uppercase tracking-widest text-muted-foreground">Visit Type</Label>
                 <Select value={form.visitType} onValueChange={value => update('visitType', value)}>
-                  <SelectTrigger className="font-body mt-1">
+                  <SelectTrigger className="font-body mt-1" aria-label="Select visit type">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

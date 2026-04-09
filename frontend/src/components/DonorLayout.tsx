@@ -6,11 +6,13 @@ import DarkModeToggle from './DarkModeToggle';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from '@/lib/AuthContext';
 import circleLogo from '@/assets/branding/circle-logo.png';
+import DonateDialog from './DonateDialog';
 
 export default function DonorLayout() {
   const { user, logout } = useAuth();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [donateOpen, setDonateOpen] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -18,22 +20,30 @@ export default function DonorLayout() {
     <>
       <Link to="/donor" onClick={() => setMobileOpen(false)}>
         <div className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors text-sm font-body ${isActive('/donor') ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'}`}>
-          <IconHeart className="h-5 w-5" />
+          <IconHeart className="h-5 w-5" aria-hidden="true" />
           My Dashboard
         </div>
       </Link>
       <Link to="/impact" onClick={() => setMobileOpen(false)}>
         <div className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors text-sm font-body ${isActive('/impact') ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'}`}>
-          <IconChartBar className="h-5 w-5" />
+          <IconChartBar className="h-5 w-5" aria-hidden="true" />
           Impact
         </div>
       </Link>
       <Link to="/" onClick={() => setMobileOpen(false)}>
         <div className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-muted-foreground hover:bg-accent transition-colors text-sm font-body">
-          <IconHome className="h-5 w-5" />
+          <IconHome className="h-5 w-5" aria-hidden="true" />
           Home
         </div>
       </Link>
+      <button
+        type="button"
+        onClick={() => { setMobileOpen(false); setDonateOpen(true); }}
+        className="flex w-full items-center gap-3 rounded-xl bg-secondary/10 px-3 py-2.5 text-sm font-body text-secondary transition-colors hover:bg-secondary/20"
+      >
+        <IconHeart className="h-5 w-5" aria-hidden="true" />
+        Donate Now
+      </button>
     </>
   );
 
@@ -58,7 +68,7 @@ export default function DonorLayout() {
                   <IconMenu2 className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-full sm:max-w-sm">
+              <SheetContent side="right" className="w-full sm:max-w-sm">
                 <SheetHeader>
                   <SheetTitle className="font-body text-xl text-primary">Donor Navigation</SheetTitle>
                 </SheetHeader>
@@ -134,6 +144,8 @@ export default function DonorLayout() {
           <Outlet />
         </div>
       </main>
+
+      <DonateDialog open={donateOpen} onOpenChange={setDonateOpen} />
     </div>
   );
 }

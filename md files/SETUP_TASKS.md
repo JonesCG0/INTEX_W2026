@@ -10,14 +10,15 @@ The app is already beyond starter state, so this list now focuses on keeping the
 
 Completed:
 
-- public home page
+- public home page with scroll-animated hero and Our Story section
 - public impact dashboard
 - privacy policy page
 - cookie consent banner
 - login and donor signup
 - donor dashboard
 - donor contribution recording
-- admin portal with CRUD for donors, contributions, residents, recordings, visitations, and users
+- admin portal with CRUD for donors, contributions, residents, recordings, visitations, conferences, and users
+- outreach performance page
 - ML pipelines page with eight notebooks, CSV output previews, and demo run simulation
 - Azure SQL persistence
 - seeded admin and donor accounts
@@ -26,6 +27,9 @@ Completed:
 - Azure Blob-backed ML snapshot reading with local repo fallback
 - Azure ML command-job trigger support in the backend
 - custom API domain target for same-site production auth: `https://api.jonescg0.net`
+- visual design system applied uniformly across all pages (Yeseva One for headings, Geist for body/UI)
+- CSP inline event handler removed from `index.html`
+- WCAG AA accessibility improvements: aria-labels, aria-hidden decorative icons on all admin pages
 
 ---
 
@@ -49,11 +53,11 @@ Completed:
 ## Documentation To Keep Updated
 
 - `README.md`
-- `frontend/README.md`
-- `md files/AI_COLLABORATION.md`
-- `md files/claude.md`
 - `md files/PRD.md`
 - `md files/Web_App_PRD.md`
+- `md files/SETUP_TASKS.md`
+- `md files/AI_COLLABORATION.md`
+- `md files/claude.md`
 - `ml-pipelines/AZURE_ML_SETUP.md`
 
 ---
@@ -69,6 +73,7 @@ Completed:
 - [x] Admin ML dashboard reads local CSV snapshots
 - [x] Backend can submit Azure ML jobs when configured
 - [x] Production config now targets same-site auth via `api.jonescg0.net`
-- [ ] CSP header hardening
-- [ ] Lighthouse audit
+- [x] CSP inline event handler removed
+- [x] Visual design system uniform across all pages
+- [x] Accessibility: aria-labels and aria-hidden on all icon-only buttons
 - [ ] End-to-end validation of live Azure ML runs in deployed environment

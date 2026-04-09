@@ -16,11 +16,29 @@ import { Button } from "@/components/ui/button";
 const AUTH_INPUT =
   "bg-background focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
+interface PasswordRequirement {
+  label: string;
+  met: (pw: string) => boolean;
+}
+
+const PASSWORD_REQUIREMENTS: PasswordRequirement[] = [
+  { label: "At least 12 characters", met: (pw) => pw.length >= 12 },
+  { label: "One uppercase letter (A–Z)", met: (pw) => /[A-Z]/.test(pw) },
+  { label: "One lowercase letter (a–z)", met: (pw) => /[a-z]/.test(pw) },
+  { label: "One number (0–9)", met: (pw) => /[0-9]/.test(pw) },
+  { label: "One special character (!@#$…)", met: (pw) => /[^A-Za-z0-9]/.test(pw) },
+];
+
+function passwordValid(pw: string) {
+  return PASSWORD_REQUIREMENTS.every((r) => r.met(pw));
+}
+
 export default function SignUp() {
   const [email, setEmail] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordTouched, setPasswordTouched] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const reduceMotion = useReducedMotion();
@@ -32,6 +50,17 @@ export default function SignUp() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setPasswordTouched(true);
+
+    if (!passwordValid(password)) {
+      setErrorMessage("Your password does not meet the requirements listed below.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setErrorMessage("Passwords do not match.");
+      return;
+    }
+
     setIsLoading(true);
     clearError();
 
@@ -150,12 +179,27 @@ export default function SignUp() {
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value);
+                setPasswordTouched(true);
                 clearError();
               }}
               className={AUTH_INPUT}
               autoComplete="new-password"
+              aria-describedby="password-requirements"
               required
             />
+            {passwordTouched && (
+              <ul id="password-requirements" className="mt-2 space-y-1" aria-label="Password requirements">
+                {PASSWORD_REQUIREMENTS.map((req) => {
+                  const met = req.met(password);
+                  return (
+                    <li key={req.label} className={`flex items-center gap-2 text-xs ${met ? "text-primary" : "text-destructive"}`}>
+                      <span aria-hidden="true">{met ? "✓" : "✗"}</span>
+                      {req.label}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </AuthFormField>
 
           <AuthFormField>
