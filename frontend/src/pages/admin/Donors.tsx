@@ -423,10 +423,10 @@ export default function Donors() {
                         <IconCashBanknote className="h-3.5 w-3.5" />
                         Record
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditDonor(donor)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditDonor(donor)} aria-label={`Edit donor ${donor.displayName}`} title={`Edit donor ${donor.displayName}`} type="button">
                         <IconPencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTargetDonor(donor)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTargetDonor(donor)} aria-label={`Discard donor ${donor.displayName}`} title={`Discard donor ${donor.displayName}`} type="button">
                         <IconTrash className="h-3.5 w-3.5" />
                       </Button>
                     </div>
@@ -483,10 +483,10 @@ export default function Donors() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditContribution(contribution)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditContribution(contribution)} aria-label={`Edit contribution for ${contribution.donorName}`} title={`Edit contribution for ${contribution.donorName}`} type="button">
                         <IconPencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTargetContribution(contribution)}>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTargetContribution(contribution)} aria-label={`Discard contribution for ${contribution.donorName}`} title={`Discard contribution for ${contribution.donorName}`} type="button">
                         <IconTrash className="h-3.5 w-3.5" />
                       </Button>
                     </div>

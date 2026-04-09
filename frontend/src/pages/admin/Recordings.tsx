@@ -245,10 +245,10 @@ export default function Recordings() {
                     {rec.emotionalState && (
                       <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-tighter bg-accent/20 text-accent-foreground">{rec.emotionalState}</span>
                     )}
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(rec)}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(rec)} aria-label={`Edit clinical record for ${rec.residentCode || 'resident'}`} title={`Edit clinical record for ${rec.residentCode || 'resident'}`} type="button">
                       <IconPencil className="h-3.5 w-3.5" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(rec)}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => setDeleteTarget(rec)} aria-label={`Discard clinical record for ${rec.residentCode || 'resident'}`} title={`Discard clinical record for ${rec.residentCode || 'resident'}`} type="button">
                       <IconTrash className="h-3.5 w-3.5" />
                     </Button>
                   </div>
