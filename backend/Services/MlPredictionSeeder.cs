@@ -1,6 +1,8 @@
+using System.Data.Common;
 using System.Globalization;
 using backend.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace backend.Services;
 
@@ -38,7 +40,7 @@ public sealed class MlPredictionSeeder(AppDbContext db, IWebHostEnvironment envi
                     continue;
                 }
 
-                await InsertRowAsync(columns, cancellationToken);
+                await InsertRowAsync(columns, transaction.GetDbTransaction(), cancellationToken);
             }
 
             await transaction.CommitAsync(cancellationToken);
@@ -57,9 +59,10 @@ public sealed class MlPredictionSeeder(AppDbContext db, IWebHostEnvironment envi
         return value is not null && value is not DBNull;
     }
 
-    private async Task InsertRowAsync(string[] columns, CancellationToken cancellationToken)
+    private async Task InsertRowAsync(string[] columns, DbTransaction transaction, CancellationToken cancellationToken)
     {
         await using var command = db.Database.GetDbConnection().CreateCommand();
+        command.Transaction = transaction;
         command.CommandText = """
             INSERT INTO ml_resident_reintegration_scores
             (
