@@ -95,15 +95,15 @@ export default function HeroScrollSequence() {
 
         <motion.div
           style={{ opacity: splitTextOpacity, x: splitTextX }}
-          className="absolute inset-y-0 right-0 flex w-[40%] min-w-[26rem] flex-col justify-start px-8 pb-10 pt-16 md:px-12 md:pt-20 lg:px-16"
+          className="absolute inset-y-0 right-0 flex w-[40%] min-w-[26rem] flex-col justify-center px-8 py-10 md:px-12 lg:px-16"
         >
           <span className="mb-4 font-body text-xs uppercase tracking-[0.32em] text-primary">
             Hopi-first expansion
           </span>
-          <h1 className="mb-6 font-display text-4xl leading-tight text-foreground md:text-5xl lg:text-6xl">
+          <h1 className="mb-5 font-display text-4xl leading-tight text-foreground md:text-5xl lg:text-[3.4rem]">
             A safe place to heal, belong, and begin again.
           </h1>
-          <p className="mb-8 max-w-md font-body text-lg leading-8 text-muted-foreground">
+          <p className="mb-6 max-w-md font-body text-lg leading-8 text-muted-foreground">
             Project Haven begins with Hopi-serving safehouse care in Arizona, then scales outward with the same commitment to cultural identity, collective care, and transparent stewardship.
           </p>
           <div className="flex gap-3">

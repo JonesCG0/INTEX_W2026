@@ -146,7 +146,7 @@ export default function Impact() {
             className="text-center mb-16"
           >
             <h1 className="font-display text-4xl md:text-5xl text-foreground mb-4">
-              {data.hero.headline || "Impact Dashboard"}
+              Project Haven Sanctuary Impact
             </h1>
             <p className="font-body text-lg text-muted-foreground max-w-2xl mx-auto">
               {data.hero.summary || "Transparent reporting on how your support transforms lives and strengthens communities"}
