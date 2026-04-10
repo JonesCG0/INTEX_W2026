@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
-import { IconChartBar, IconHeart, IconHome, IconLogout, IconMenu2 } from '@tabler/icons-react';
+import { IconChartBar, IconChevronLeft, IconChevronRight, IconHeart, IconHome, IconLogout, IconMenu2 } from '@tabler/icons-react';
 import { Button } from "@/components/ui/button";
 import DarkModeToggle from './DarkModeToggle';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -14,38 +14,43 @@ export default function DonorLayout() {
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [donateOpen, setDonateOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   // Mark the current page so the active nav item is easy to highlight.
   const isActive = (path: string) => location.pathname === path;
 
-  // Reuse the same links in the mobile drawer and desktop sidebar.
-  const navLinks = (
+  const onNavigate = () => setMobileOpen(false);
+
+  // Reuse the same links in the mobile drawer, expanded desktop sidebar, and icon-only collapsed rail.
+  const renderNavLinks = (compact: boolean, onNavigateCb?: () => void) => (
     <>
-      <Link to="/donor" onClick={() => setMobileOpen(false)}>
+      <Link to="/donor" onClick={onNavigateCb} aria-label="My Dashboard" title="My Dashboard">
         <div className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors text-sm font-body ${isActive('/donor') ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'}`}>
-          <IconHeart className="h-5 w-5" aria-hidden="true" />
-          My Dashboard
+          <IconHeart className="h-5 w-5 shrink-0" aria-hidden="true" />
+          {!compact && <span className="truncate">My Dashboard</span>}
         </div>
       </Link>
-      <Link to="/impact" onClick={() => setMobileOpen(false)}>
+      <Link to="/impact" onClick={onNavigateCb} aria-label="Impact" title="Impact">
         <div className={`flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors text-sm font-body ${isActive('/impact') ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent'}`}>
-          <IconChartBar className="h-5 w-5" aria-hidden="true" />
-          Impact
+          <IconChartBar className="h-5 w-5 shrink-0" aria-hidden="true" />
+          {!compact && <span className="truncate">Impact</span>}
         </div>
       </Link>
-      <Link to="/" onClick={() => setMobileOpen(false)}>
-        <div className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-muted-foreground hover:bg-accent transition-colors text-sm font-body">
-          <IconHome className="h-5 w-5" aria-hidden="true" />
-          Home
+      <Link to="/" onClick={onNavigateCb} aria-label="Home" title="Home">
+        <div className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-muted-foreground transition-colors hover:bg-accent text-sm font-body">
+          <IconHome className="h-5 w-5 shrink-0" aria-hidden="true" />
+          {!compact && <span className="truncate">Home</span>}
         </div>
       </Link>
       <button
         type="button"
-        onClick={() => { setMobileOpen(false); setDonateOpen(true); }}
+        aria-label="Donate now"
+        title="Donate now"
+        onClick={() => { onNavigateCb?.(); setDonateOpen(true); }}
         className="flex w-full items-center gap-3 rounded-xl bg-secondary/10 px-3 py-2.5 text-sm font-body text-secondary transition-colors hover:bg-secondary/20"
       >
-        <IconHeart className="h-5 w-5" aria-hidden="true" />
-        Donate Now
+        <IconHeart className="h-5 w-5 shrink-0" aria-hidden="true" />
+        {!compact && <span className="truncate">Donate Now</span>}
       </button>
     </>
   );
@@ -55,10 +60,10 @@ export default function DonorLayout() {
       <div className="sticky top-0 z-30 border-b border-border/60 bg-background/95 backdrop-blur md:hidden">
         <div className="flex h-16 items-center justify-between px-4">
           <Link
-            to="/donor"
+            to="/"
             className={`${logoLockupClasses.container} h-10 gap-1.5 px-2`}
-            aria-label="Project Haven donor home"
-            title="Project Haven donor home"
+            aria-label="Project Haven home"
+            title="Project Haven home"
           >
             <img
               src={circleLogo}
@@ -83,7 +88,7 @@ export default function DonorLayout() {
                   <SheetTitle className="font-body text-xl text-primary">Donor Navigation</SheetTitle>
                 </SheetHeader>
                 <div className="mt-8 flex min-h-0 flex-1 flex-col">
-                  <nav className="flex-1 space-y-2 overflow-y-auto pr-1">{navLinks}</nav>
+                  <nav className="flex-1 space-y-2 overflow-y-auto pr-1">{renderNavLinks(false, onNavigate)}</nav>
                   <div className="mt-4 rounded-2xl border border-border bg-card p-4">
                     {user && (
                       <div className="mb-4">
@@ -112,31 +117,43 @@ export default function DonorLayout() {
         </div>
       </div>
 
-      <aside className="fixed left-0 top-0 hidden h-screen w-[260px] flex-col border-r border-border bg-card md:flex">
+      <aside className={`fixed left-0 top-0 z-40 hidden h-screen border-r border-border bg-card transition-all duration-300 md:flex md:flex-col ${collapsed ? 'w-20' : 'w-[260px]'}`}>
         <div className="flex h-16 items-center border-b border-border px-4">
-          <Link
-            to="/donor"
-            className={`${logoLockupClasses.container} h-10 gap-1.5 px-2`}
-            aria-label="Project Haven donor home"
-            title="Project Haven donor home"
+          {!collapsed && (
+            <Link
+              to="/"
+              className={`${logoLockupClasses.container} h-10 gap-1.5 px-2`}
+              aria-label="Project Haven home"
+              title="Project Haven home"
+            >
+              <img
+                src={circleLogo}
+                alt=""
+                aria-hidden="true"
+                width={logoLockupImageSize}
+                height={logoLockupImageSize}
+                className={`${logoLockupClasses.image} h-7 w-7`}
+              />
+              <span className="font-display text-[1.55rem] leading-none whitespace-nowrap text-primary">Project Haven</span>
+            </Link>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setCollapsed(!collapsed)}
+            className={`h-8 w-8 shrink-0 rounded-full ${collapsed ? 'mx-auto' : 'ml-auto'}`}
+            aria-label={collapsed ? 'Expand donor sidebar' : 'Collapse donor sidebar'}
+            title={collapsed ? 'Expand donor sidebar' : 'Collapse donor sidebar'}
           >
-            <img
-              src={circleLogo}
-              alt=""
-              aria-hidden="true"
-              width={logoLockupImageSize}
-              height={logoLockupImageSize}
-              className={`${logoLockupClasses.image} h-7 w-7`}
-            />
-            <span className="font-display text-[1.55rem] leading-none whitespace-nowrap text-primary">Project Haven</span>
-          </Link>
+            {collapsed ? <IconChevronRight className="h-4 w-4" /> : <IconChevronLeft className="h-4 w-4" />}
+          </Button>
         </div>
-        <nav className="flex-1 space-y-2 px-3 py-5">{navLinks}</nav>
+        <nav className="flex-1 space-y-2 overflow-y-auto px-3 py-5">{renderNavLinks(collapsed)}</nav>
         <div className="space-y-3 border-t border-border p-4">
-          {user && (
-            <div className="rounded-2xl bg-muted/30 px-3 py-2 overflow-hidden">
-              <p className="text-sm font-medium truncate">{user.full_name || user.email}</p>
-              <span className="inline-block mt-2 px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary">
+          {!collapsed && user && (
+            <div className="overflow-hidden rounded-2xl bg-muted/30 px-3 py-2">
+              <p className="truncate text-sm font-medium">{user.full_name || user.email}</p>
+              <span className="mt-2 inline-block rounded-full bg-primary/10 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-primary">
                 Donor
               </span>
             </div>
@@ -146,17 +163,17 @@ export default function DonorLayout() {
             <Button
               variant="ghost"
               size="sm"
-              className="h-9 flex-1 justify-start gap-2 text-xs text-muted-foreground"
+              className="h-9 flex-1 justify-start gap-2 px-2 text-xs text-muted-foreground"
               onClick={() => logout()}
             >
               <IconLogout className="h-4 w-4" />
-              Logout
+              {!collapsed && 'Logout'}
             </Button>
           </div>
         </div>
       </aside>
 
-      <main className="flex-1 p-4 pt-6 md:ml-[260px] md:p-8">
+      <main className={`flex-1 p-4 pt-6 transition-all duration-300 md:p-8 ${collapsed ? 'md:ml-20' : 'md:ml-[260px]'}`}>
         <div className="max-w-[1280px] mx-auto">
           <Outlet />
         </div>
