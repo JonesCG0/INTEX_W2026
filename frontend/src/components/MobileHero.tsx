@@ -37,12 +37,12 @@ export default function MobileHero() {
               <IconArrowRight className="h-4 w-4" />
             </Button>
           </Link>
-          <a href="#donate">
+          <Link to="/signup">
             <Button size="lg" variant="outline" className="w-full font-body gap-2 border-white/30 bg-white/10 text-white hover:bg-white/15 sm:w-auto">
               Join the Circle
               <IconHeartHandshake className="h-4 w-4" />
             </Button>
-          </a>
+          </Link>
         </div>
         <HeroSignatureAccent className="mt-10 w-full opacity-90" />
       </motion.div>

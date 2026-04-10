@@ -19,6 +19,7 @@ import { useState } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useAuth } from '@/lib/AuthContext';
 import circleLogo from '@/assets/branding/circle-logo.png';
+import { logoLockupClasses, logoLockupImageSize } from '@/components/branding/logoLockup';
 
 const navItems = [
   { to: "/", icon: IconHome, label: "Home", exact: true },
@@ -65,16 +66,16 @@ export default function AdminSidebar() {
     <>
       <div className="sticky top-0 z-30 border-b border-border/60 bg-background/95 backdrop-blur md:hidden">
         <div className="flex h-16 items-center justify-between px-4">
-          <Link to="/admin" className="inline-flex h-14 items-center gap-3 rounded-full border border-border/80 bg-[#f5e8ce] px-3">
+          <Link to="/admin" className={logoLockupClasses.container}>
             <img
               src={circleLogo}
               alt=""
               aria-hidden="true"
-              width={44}
-              height={44}
-              className="h-11 w-11 shrink-0 rounded-full"
+              width={logoLockupImageSize}
+              height={logoLockupImageSize}
+              className={logoLockupClasses.image}
             />
-            <span className="font-display text-[2.1rem] leading-none text-primary">Project Haven</span>
+            <span className={logoLockupClasses.text}>Project Haven</span>
           </Link>
           <div className="flex items-center gap-2">
             <DarkModeToggle className="h-9 w-9" />
@@ -84,13 +85,13 @@ export default function AdminSidebar() {
                   <IconMenu2 className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-full sm:max-w-sm">
+              <SheetContent side="right" className="flex h-full w-full flex-col overflow-y-auto sm:max-w-sm">
                 <SheetHeader>
                   <SheetTitle className="font-body text-xl text-primary">Admin Navigation</SheetTitle>
                 </SheetHeader>
-                <div className="mt-8 flex h-full flex-col">
-                  <nav className="space-y-2">{renderNavItems(false, () => setMobileOpen(false))}</nav>
-                  <div className="mt-auto rounded-2xl border border-border bg-card p-4">
+                <div className="mt-8 flex min-h-0 flex-1 flex-col">
+                  <nav className="flex-1 space-y-2 overflow-y-auto pr-1">{renderNavItems(false, () => setMobileOpen(false))}</nav>
+                  <div className="mt-4 rounded-2xl border border-border bg-card p-4">
                     {user && (
                       <div className="mb-4">
                         <p className="truncate text-sm font-medium">{user.full_name || user.email}</p>
@@ -123,7 +124,7 @@ export default function AdminSidebar() {
           {!collapsed && (
             <Link
               to="/admin"
-              className="inline-flex h-14 items-center gap-3 rounded-full border border-border/80 bg-[#f5e8ce] px-3"
+              className={logoLockupClasses.container}
               aria-label="Project Haven admin home"
               title="Project Haven admin home"
             >
@@ -131,11 +132,11 @@ export default function AdminSidebar() {
                 src={circleLogo}
                 alt=""
                 aria-hidden="true"
-                width={44}
-                height={44}
-                className="h-11 w-11 shrink-0 rounded-full"
+                width={logoLockupImageSize}
+                height={logoLockupImageSize}
+                className={logoLockupClasses.image}
               />
-              <span className="font-display text-[2.1rem] leading-none text-primary">Project Haven</span>
+              <span className={logoLockupClasses.text}>Project Haven</span>
             </Link>
           )}
           <Button

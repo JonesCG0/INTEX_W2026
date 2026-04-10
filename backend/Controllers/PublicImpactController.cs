@@ -19,9 +19,13 @@ public class PublicImpactController(AppDbContext db) : ControllerBase
     {
         try
         {
+            var today = DateTime.UtcNow.Date;
+            var currentMonthStart = new DateTime(today.Year, today.Month, 1);
+
             var latestSnapshot = await db.PublicImpactSnapshots
                 .AsNoTracking()
                 .Where(s => s.IsPublished)
+                .Where(s => s.SnapshotDate <= today)
                 .OrderByDescending(s => s.SnapshotDate)
                 .ThenByDescending(s => s.PublishedAt)
                 .FirstOrDefaultAsync();
@@ -29,6 +33,7 @@ public class PublicImpactController(AppDbContext db) : ControllerBase
             var publishedSnapshots = await db.PublicImpactSnapshots
                 .AsNoTracking()
                 .Where(s => s.IsPublished)
+                .Where(s => s.SnapshotDate <= today)
                 .OrderByDescending(s => s.SnapshotDate)
                 .ThenByDescending(s => s.PublishedAt)
                 .Take(3)
@@ -36,6 +41,7 @@ public class PublicImpactController(AppDbContext db) : ControllerBase
 
             var donationTrendRaw = await db.Donations
                 .AsNoTracking()
+                .Where(d => d.DonationDate <= today)
                 .GroupBy(d => new { d.DonationDate.Year, d.DonationDate.Month })
                 .Select(g => new { g.Key.Year, g.Key.Month, Total = g.Sum(d => d.Amount ?? d.EstimatedValue ?? 0) })
                 .OrderByDescending(r => r.Year).ThenByDescending(r => r.Month)
@@ -50,6 +56,7 @@ public class PublicImpactController(AppDbContext db) : ControllerBase
             var careTrendRaw = await db.SafehouseMonthlyMetrics
                 .AsNoTracking()
                 .Where(m => m.MonthStart != null)
+                .Where(m => m.MonthStart <= currentMonthStart)
                 .GroupBy(m => m.MonthStart)
                 .Select(g => new 
                 { 
@@ -101,6 +108,7 @@ public class PublicImpactController(AppDbContext db) : ControllerBase
 
             var latestMetrics = latestMetricsRaw
                 .Where(m => m.MonthStart != null)
+                .Where(m => m.MonthStart <= currentMonthStart)
                 .GroupBy(m => m.SafehouseId)
                 .Select(g => g.OrderByDescending(m => m.MonthStart).First())
                 .ToDictionary(m => m.SafehouseId);

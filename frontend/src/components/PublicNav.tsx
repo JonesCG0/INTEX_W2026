@@ -6,6 +6,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { IconHeart, IconLogin, IconLogout, IconMenu2 } from '@tabler/icons-react';
 import { useAuth } from '@/lib/AuthContext';
 import circleLogo from '@/assets/branding/circle-logo.png';
+import { logoLockupClasses, logoLockupImageSize } from '@/components/branding/logoLockup';
 
 export default function PublicNav() {
   const location = useLocation();
@@ -29,16 +30,16 @@ export default function PublicNav() {
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/60 bg-background/90 backdrop-blur-xl">
       <div className="mx-auto flex h-16 w-full max-w-[1280px] items-center justify-between px-4 sm:px-6">
         <Link to="/" className="flex min-w-0 items-center gap-3">
-          <div className="inline-flex h-14 items-center gap-3 rounded-full border border-border/80 bg-[#f5e8ce] px-3">
+          <div className={logoLockupClasses.container}>
             <img
               src={circleLogo}
               alt=""
               aria-hidden="true"
-              width={44}
-              height={44}
-              className="h-11 w-11 shrink-0 rounded-full"
+              width={logoLockupImageSize}
+              height={logoLockupImageSize}
+              className={logoLockupClasses.image}
             />
-            <span className="font-display text-[2.1rem] leading-none text-primary">Project Haven</span>
+            <span className={logoLockupClasses.text}>Project Haven</span>
           </div>
           <div className="hidden lg:block">
             <p className="font-body text-xs uppercase tracking-[0.24em] text-muted-foreground">
@@ -89,23 +90,23 @@ export default function PublicNav() {
                 <IconMenu2 className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-full sm:max-w-sm">
+            <SheetContent side="right" className="flex h-full w-full flex-col overflow-y-auto sm:max-w-sm">
               <SheetHeader>
                 <SheetTitle>
-                  <div className="inline-flex h-14 items-center gap-3 rounded-full border border-border/80 bg-[#f5e8ce] px-3">
+                  <div className={logoLockupClasses.container}>
                     <img
                       src={circleLogo}
                       alt=""
                       aria-hidden="true"
-                      width={44}
-                      height={44}
-                      className="h-11 w-11 shrink-0 rounded-full"
+                      width={logoLockupImageSize}
+                      height={logoLockupImageSize}
+                      className={logoLockupClasses.image}
                     />
-                    <span className="font-display text-[2.1rem] leading-none text-primary">Project Haven</span>
+                    <span className={logoLockupClasses.text}>Project Haven</span>
                   </div>
                 </SheetTitle>
               </SheetHeader>
-              <div className="mt-8 space-y-6">
+              <div className="mt-8 min-h-0 flex-1 space-y-6 overflow-y-auto pr-1">
                 <div className="space-y-4">
                   {links.map(link => (
                     <Link

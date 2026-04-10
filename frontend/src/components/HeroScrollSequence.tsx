@@ -57,12 +57,12 @@ export default function HeroScrollSequence() {
                   <IconArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
-              <a href="#donate">
+              <Link to="/signup">
                 <Button size="lg" variant="outline" className="font-body gap-2">
                   Join the Circle
                   <IconHeartHandshake className="h-4 w-4" />
                 </Button>
-              </a>
+              </Link>
             </div>
           </div>
         </div>
@@ -75,7 +75,7 @@ export default function HeroScrollSequence() {
     <section ref={containerRef} className="relative h-[300vh] bg-background">
       <motion.div
         style={{ opacity: heroOpacity }}
-        className="sticky top-0 h-screen overflow-hidden"
+        className="sticky top-16 h-[calc(100vh-4rem)] overflow-hidden"
       >
         <motion.div
           style={{ width: imageWidth, scale: imageScale }}
@@ -95,7 +95,7 @@ export default function HeroScrollSequence() {
 
         <motion.div
           style={{ opacity: splitTextOpacity, x: splitTextX }}
-          className="absolute inset-y-0 right-0 flex w-[40%] min-w-[26rem] flex-col justify-center px-8 md:px-12 lg:px-16"
+          className="absolute inset-y-0 right-0 flex w-[40%] min-w-[26rem] flex-col justify-start px-8 pb-10 pt-16 md:px-12 md:pt-20 lg:px-16"
         >
           <span className="mb-4 font-body text-xs uppercase tracking-[0.32em] text-primary">
             Hopi-first expansion
@@ -113,12 +113,12 @@ export default function HeroScrollSequence() {
                 <IconArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <a href="#donate">
+            <Link to="/signup">
               <Button size="lg" variant="outline" className="font-body gap-2">
                 Join the Circle
                 <IconHeartHandshake className="h-4 w-4" />
               </Button>
-            </a>
+            </Link>
           </div>
         </motion.div>
 

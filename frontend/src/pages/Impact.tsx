@@ -161,6 +161,9 @@ export default function Impact() {
                 Data refreshed {new Date(data.generatedAt).toLocaleString()} from {data.sourceTables.length ?? 0} source tables.
               </p>
             )}
+            <p className="text-xs text-muted-foreground mt-1">
+              Trend visuals display data through the current calendar month.
+            </p>
           </motion.div>
 
           <CulturalDivider variant="step" className="mb-12" />
