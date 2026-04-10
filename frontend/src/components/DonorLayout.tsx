@@ -54,16 +54,21 @@ export default function DonorLayout() {
     <div className="min-h-screen bg-background">
       <div className="sticky top-0 z-30 border-b border-border/60 bg-background/95 backdrop-blur md:hidden">
         <div className="flex h-16 items-center justify-between px-4">
-          <Link to="/donor" className={logoLockupClasses.container}>
+          <Link
+            to="/donor"
+            className={`${logoLockupClasses.container} h-10 gap-1.5 px-2`}
+            aria-label="Project Haven donor home"
+            title="Project Haven donor home"
+          >
             <img
               src={circleLogo}
               alt=""
               aria-hidden="true"
               width={logoLockupImageSize}
               height={logoLockupImageSize}
-              className={logoLockupClasses.image}
+              className={`${logoLockupClasses.image} h-7 w-7`}
             />
-            <span className={logoLockupClasses.text}>Project Haven</span>
+            <span className="font-display text-[1.55rem] leading-none whitespace-nowrap text-primary">Project Haven</span>
           </Link>
           <div className="flex items-center gap-2">
             <DarkModeToggle className="h-9 w-9" />
@@ -109,16 +114,21 @@ export default function DonorLayout() {
 
       <aside className="fixed left-0 top-0 hidden h-screen w-[260px] flex-col border-r border-border bg-card md:flex">
         <div className="flex h-16 items-center border-b border-border px-4">
-          <Link to="/donor" className={logoLockupClasses.container}>
+          <Link
+            to="/donor"
+            className={`${logoLockupClasses.container} h-10 gap-1.5 px-2`}
+            aria-label="Project Haven donor home"
+            title="Project Haven donor home"
+          >
             <img
               src={circleLogo}
               alt=""
               aria-hidden="true"
               width={logoLockupImageSize}
               height={logoLockupImageSize}
-              className={logoLockupClasses.image}
+              className={`${logoLockupClasses.image} h-7 w-7`}
             />
-            <span className={logoLockupClasses.text}>Project Haven</span>
+            <span className="font-display text-[1.55rem] leading-none whitespace-nowrap text-primary">Project Haven</span>
           </Link>
         </div>
         <nav className="flex-1 space-y-2 px-3 py-5">{navLinks}</nav>
