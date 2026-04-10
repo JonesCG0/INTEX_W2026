@@ -527,16 +527,6 @@ export default function Analytics() {
           </Card>
         </motion.div>
       </div>
-
-      <div className="flex justify-between items-center bg-primary/5 p-6 rounded-2xl border border-primary/10">
-        <div>
-          <h3 className="font-body text-lg text-primary tracking-tight">Compliance & Privacy</h3>
-          <p className="font-body text-xs text-muted-foreground mt-1">All analytics are derived from anonymized data points. Individual identities are protected per IS414 protocols.</p>
-        </div>
-        <button type="button" disabled className="px-6 h-11 bg-primary/60 text-primary-foreground font-bold rounded-xl text-xs uppercase tracking-widest shadow-lg shadow-primary/10 cursor-not-allowed">
-          Generate Full Compliance Audit
-        </button>
-      </div>
     </div>
   );
 }
