@@ -411,3 +411,21 @@ public class CreateConferenceRequestDto
     public string PlanDescription { get; set; } = string.Empty;
     public string? ServicesProvided { get; set; }
 }
+
+public sealed record DonorRelationshipOkrsDto(
+    string ObjectiveStatement,
+    string PeriodDescription,
+    DateTimeOffset ComputedAtUtc,
+    DonorRelationshipKrDto RetentionRate,
+    DonorRelationshipKrDto UpgradeRate,
+    DonorRelationshipKrDto PortalEngagementRate
+);
+
+public sealed record DonorRelationshipKrDto(
+    string Title,
+    string Explanation,
+    string Formula,
+    decimal? Percent,
+    int Numerator,
+    int Denominator
+);

@@ -27,6 +27,12 @@ public class AdminPortalController(CanonicalAdminPortalStore store, ILogger<Admi
         return Ok(await store.GetSocialPostsAsync(platform, campaign));
     }
 
+    [HttpGet("donor-relationship-okrs")]
+    public async Task<ActionResult<DonorRelationshipOkrsDto>> GetDonorRelationshipOkrs()
+    {
+        return Ok(await store.GetDonorRelationshipOkrsAsync());
+    }
+
     [HttpPost("donors")]
     public async Task<ActionResult<AdminPortalDonorDto>> AddDonor([FromBody] CreateDonorRequestDto request)
     {

@@ -131,6 +131,123 @@ public sealed class CanonicalAdminPortalStore(AppDbContext db)
             ]);
     }
 
+    public async Task<DonorRelationshipOkrsDto> GetDonorRelationshipOkrsAsync()
+    {
+        var now = DateTime.UtcNow;
+        var currentStart = now.AddMonths(-12);
+        var priorStart = now.AddMonths(-24);
+
+        var portalEligibleSupporters = await db.Supporters
+            .AsNoTracking()
+            .Where(s => s.Email != null && s.Email.Trim().Length > 0)
+            .Select(s => s.SupporterId)
+            .ToHashSetAsync();
+
+        var donations = await db.Donations
+            .AsNoTracking()
+            .Where(d => d.DonationDate >= priorStart && d.DonationDate <= now)
+            .Select(d => new
+            {
+                d.SupporterId,
+                d.DonationDate,
+                Value = d.Amount ?? d.EstimatedValue ?? 0m,
+                d.Notes
+            })
+            .ToListAsync();
+
+        var retentionNumerator = 0;
+        var retentionDenominator = 0;
+        var upgradeNumerator = 0;
+        var upgradeDenominator = 0;
+        var portalNumerator = 0;
+        var portalDenominator = 0;
+
+        foreach (var supporterDonations in donations.GroupBy(d => d.SupporterId))
+        {
+            var priorAny = false;
+            var currentAny = false;
+            var priorTotal = 0m;
+            var currentTotal = 0m;
+            var hasSelfServiceInCurrent = false;
+
+            foreach (var donation in supporterDonations)
+            {
+                if (donation.DonationDate >= priorStart && donation.DonationDate < currentStart)
+                {
+                    priorAny = true;
+                    priorTotal += donation.Value;
+                }
+
+                if (donation.DonationDate >= currentStart && donation.DonationDate <= now)
+                {
+                    currentAny = true;
+                    currentTotal += donation.Value;
+                    if (IsSelfServiceDonorGift(donation.Notes))
+                    {
+                        hasSelfServiceInCurrent = true;
+                    }
+                }
+            }
+
+            if (priorAny)
+            {
+                retentionDenominator++;
+                if (currentAny)
+                {
+                    retentionNumerator++;
+                }
+            }
+
+            if (priorAny && currentAny)
+            {
+                upgradeDenominator++;
+                if (currentTotal > priorTotal)
+                {
+                    upgradeNumerator++;
+                }
+            }
+
+            if (portalEligibleSupporters.Contains(supporterDonations.Key) && currentAny)
+            {
+                portalDenominator++;
+                if (hasSelfServiceInCurrent)
+                {
+                    portalNumerator++;
+                }
+            }
+        }
+
+        return new DonorRelationshipOkrsDto(
+            "Strengthen donor relationships so supporters stay engaged over time, deepen their giving when they continue, and use the donor portal to stay connected to impact.",
+            "Windows are rolling 12-month UTC periods. Current window: now minus 12 months through now. Prior window: now minus 24 months through now minus 12 months.",
+            DateTimeOffset.UtcNow,
+            new DonorRelationshipKrDto(
+                "Retention rate",
+                "Share of supporters who gave in the prior 12-month window and gave again in the current 12-month window.",
+                "Retention rate = donors with gifts in both prior and current windows / donors with gifts in prior window * 100.",
+                PercentOrNull(retentionNumerator, retentionDenominator),
+                retentionNumerator,
+                retentionDenominator
+            ),
+            new DonorRelationshipKrDto(
+                "Upgrade rate",
+                "Among supporters active in both windows, share whose total current-window giving exceeds their prior-window giving.",
+                "Upgrade rate = donors active in both windows with current total > prior total / donors active in both windows * 100.",
+                PercentOrNull(upgradeNumerator, upgradeDenominator),
+                upgradeNumerator,
+                upgradeDenominator
+            ),
+            new DonorRelationshipKrDto(
+                "Portal engagement rate",
+                "Among portal-eligible supporters active in the current window, share who submitted at least one self-service donor gift.",
+                "Portal engagement rate = portal-eligible donors with >=1 self-service gift in current window / portal-eligible donors with >=1 gift in current window * 100.",
+                PercentOrNull(portalNumerator, portalDenominator),
+                portalNumerator,
+                portalDenominator
+            )
+        );
+    }
+
     public async Task<AdminPortalDonorDto> AddDonorAsync(CreateDonorRequestDto request)
     {
         var normalizedEmail = NormalizeNullable(request.LinkedEmail);
@@ -1318,6 +1435,22 @@ public sealed class CanonicalAdminPortalStore(AppDbContext db)
         command.CommandText = sql;
         var value = await command.ExecuteScalarAsync();
         return value is null || value is DBNull ? 0m : Convert.ToDecimal(value);
+    }
+
+    private static bool IsSelfServiceDonorGift(string? notes)
+    {
+        return !string.IsNullOrWhiteSpace(notes)
+            && notes.Contains("Self-service donor gift", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static decimal? PercentOrNull(int numerator, int denominator)
+    {
+        if (denominator <= 0)
+        {
+            return null;
+        }
+
+        return Math.Round((decimal)numerator / denominator * 100m, 1, MidpointRounding.AwayFromZero);
     }
 
     private static string CleanRequired(string? value, string fallback = "")
