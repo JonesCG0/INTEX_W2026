@@ -22,6 +22,11 @@ function formatAllocationPhpTwoDecimals(value: number): string {
   }).format(value);
 }
 
+/** Sum-safe two-decimal currency; avoids float noise on chart data and labels. */
+function roundAllocationAmountToTwoDecimals(n: number): number {
+  return Number.parseFloat(n.toFixed(2));
+}
+
 export default function Analytics() {
   const reduceMotion = useReducedMotion();
   const [data, setData] = useState<AdminPortalOverview | null>(null);
@@ -106,7 +111,7 @@ export default function Analytics() {
 
   const allocationData = Object.entries(allocationTotals).map(([programArea, amount]) => ({
     programArea,
-    amount,
+    amount: roundAllocationAmountToTwoDecimals(amount),
   }));
 
   const donationsMonthlyData = monthlyTrendData.map((point) => ({
@@ -499,6 +504,7 @@ export default function Analytics() {
                         tickRotation: 0,
                         format: (value) => formatAllocationPhpTwoDecimals(Number(value)),
                       }}
+                      labelFormat={(value) => formatAllocationPhpTwoDecimals(Number(value))}
                       theme={havenNivoTheme}
                       role="img"
                       ariaLabel="Program allocation totals chart"
