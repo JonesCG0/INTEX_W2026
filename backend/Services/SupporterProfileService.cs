@@ -4,8 +4,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace backend.Services;
 
+// Creates or updates a Supporter record linked to a user account by email.
 public sealed class SupporterProfileService(AppDbContext db)
 {
+    // Finds an existing Supporter by email and updates their name/status, or creates a new one if not found.
     public async Task<Supporter> EnsureSupporterProfileAsync(
         string email,
         string displayName,
@@ -51,6 +53,7 @@ public sealed class SupporterProfileService(AppDbContext db)
         return supporter;
     }
 
+    // Splits a display name into first and last name (everything after the first word is the last name).
     private static (string? FirstName, string? LastName) SplitDisplayName(string displayName)
     {
         var parts = displayName.Trim().Split(' ', StringSplitOptions.RemoveEmptyEntries);

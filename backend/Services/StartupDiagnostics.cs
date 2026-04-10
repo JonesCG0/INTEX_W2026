@@ -1,5 +1,7 @@
 namespace backend.Services;
 
+// Tracks startup health checkpoints and any exception that occurred during bootstrap.
+// The HealthController reads this to report status at /api/health.
 public sealed class StartupDiagnostics
 {
     private readonly object _gate = new();

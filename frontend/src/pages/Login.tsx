@@ -32,6 +32,7 @@ export default function Login() {
     clearError();
 
     try {
+      // Submit the login request and let the backend decide the account role.
       const response = await apiFetch(`${API_BASE}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -50,8 +51,10 @@ export default function Login() {
       const data = await response.json();
       toast.success(`Welcome back, ${data.displayName}`);
 
+      // Refresh the shared auth state before navigating away.
       await checkAppState();
 
+      // Send each role to the correct landing page.
       const destination =
         data.role === "Admin"
           ? "/admin"

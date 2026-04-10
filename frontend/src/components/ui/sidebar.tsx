@@ -96,6 +96,7 @@ const SidebarProvider = React.forwardRef<HTMLDivElement, SidebarProviderProps>((
 
   // Helper to toggle the sidebar.
   const toggleSidebar = React.useCallback(() => {
+    // Use the mobile drawer on small screens and collapse on desktop.
     return isMobile
       ? setOpenMobile((open) => !open)
       : setOpen((open) => !open);
@@ -186,6 +187,7 @@ const Sidebar = React.forwardRef<HTMLDivElement, SidebarProps>((
   if (isMobile) {
     return (
       (<Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
+        {/* On mobile, the sidebar becomes a slide-over sheet. */}
         <SheetContent
           data-sidebar="sidebar"
           data-mobile="true"
@@ -566,6 +568,7 @@ SidebarMenuBadge.displayName = "SidebarMenuBadge"
 const SidebarMenuSkeleton = React.forwardRef(({ className, showIcon = false, ...props }, ref) => {
   // Random width between 50 to 90%.
   const width = React.useMemo(() => {
+    // Vary the skeleton width so loading states look less repetitive.
     return `${Math.floor(Math.random() * 40) + 50}%`;
   }, [])
 

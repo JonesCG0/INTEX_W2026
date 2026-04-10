@@ -7,7 +7,6 @@ export default function PublicFooter() {
       <CulturalDivider variant="hopi" className="px-4 sm:px-8" />
       <div className="mx-auto max-w-[1280px] px-6 py-16">
         <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
-
           {/* Brand */}
           <div className="sm:col-span-2 lg:col-span-1">
             <h3 className="font-display text-2xl text-primary mb-3">Project Haven</h3>
@@ -30,7 +29,7 @@ export default function PublicFooter() {
           {/* Contact Us */}
           <div id="contact">
             <h4 className="font-body text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">Contact Us</h4>
-            {/* ↓ Replace with your real contact details */}
+            {/* Replace these placeholders with the real contact details. */}
             <ul className="space-y-3 font-body text-sm text-muted-foreground">
               <li>
                 <a href="mailto:info@jonescg0.net" className="hover:text-primary transition-colors">
@@ -52,7 +51,7 @@ export default function PublicFooter() {
           {/* Follow Us */}
           <div>
             <h4 className="font-body text-xs font-bold uppercase tracking-widest text-muted-foreground mb-4">Follow Us</h4>
-            {/* ↓ Replace these hrefs with your real social media URLs */}
+            {/* Replace these links with the real social profiles when they are ready. */}
             <ul className="space-y-3 font-body text-sm">
               <li>
                 <a
@@ -102,7 +101,8 @@ export default function PublicFooter() {
 
         <div className="mt-10 border-t border-border pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="font-body text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Project Haven. Built with respect for Hopi communities first and with care for future intertribal expansion.
+            {/* Keep the footer copy short and clear. */}
+            (c) {new Date().getFullYear()} Project Haven. Built with respect for Hopi communities first and with care for future intertribal expansion.
           </p>
           <Link to="/privacy" className="font-body text-xs text-muted-foreground hover:text-primary transition-colors">
             Privacy Policy

@@ -7,11 +7,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace backend.Controllers;
 
+// Public (no auth required) endpoint that serves the impact dashboard data.
 [ApiController]
 [Route("api/public")]
 [AllowAnonymous]
 public class PublicImpactController(AppDbContext db) : ControllerBase
 {
+    // GET /api/public/impact — aggregates snapshots, donations, care trends, social stats, and safehouse info.
     [HttpGet("impact")]
     public async Task<ActionResult<ImpactDashboardDto>> GetImpactDashboard()
     {
@@ -150,6 +152,7 @@ public class PublicImpactController(AppDbContext db) : ControllerBase
         }
     }
 
+    // Builds the hero section from the latest published snapshot, or falls back to live totals.
     private static ImpactHeroDto BuildHero(ImpactSnapshotRow? snapshot, ImpactTotals totals)
     {
         if (snapshot is not null)
@@ -173,6 +176,7 @@ public class PublicImpactController(AppDbContext db) : ControllerBase
         );
     }
 
+    // Converts database totals into the four metric cards shown on the public page.
     private static IReadOnlyList<ImpactMetricDto> BuildMetrics(ImpactTotals totals)
     {
         return new[]
@@ -184,6 +188,7 @@ public class PublicImpactController(AppDbContext db) : ControllerBase
         };
     }
 
+    // Joins donation and care trend data on month, filling missing months with zeros.
     private static IReadOnlyList<ImpactTrendPointDto> MergeTrendData(
         IReadOnlyList<MonthlyDonationRow> donationTrend,
         IReadOnlyList<MonthlyCareRow> careTrend)

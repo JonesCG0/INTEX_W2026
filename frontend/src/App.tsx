@@ -33,6 +33,7 @@ const PublicLayout = lazy(() => import('./components/PublicLayout'));
 const ProtectedRoute = ({ children, allowedRole }: { children: ReactNode, allowedRole?: string }) => {
   const { isAuthenticated, user, isLoadingAuth } = useAuth();
   
+  // Wait until auth is ready before deciding where the user can go.
   if (isLoadingAuth) return (
     <div className="fixed inset-0 flex items-center justify-center bg-background">
       <div className="w-8 h-8 border-4 border-slate-200 border-t-slate-800 rounded-full animate-spin"></div>
@@ -110,6 +111,7 @@ const AuthenticatedApp = () => {
 
 const OptionalFeaturesBootstrap = ({ enabled }: { enabled: boolean }) => {
   useEffect(() => {
+    // Store the optional feature state on the document for CSS and UI helpers.
     document.documentElement.dataset.optionalFeatures = enabled ? "enabled" : "disabled";
   }, [enabled]);
 
@@ -123,10 +125,12 @@ function App() {
   const [consentState, setConsentState] = useState<HavenConsentState | null>(null);
 
   useEffect(() => {
+    // Load the saved theme as soon as the app starts.
     initializeTheme();
   }, [initializeTheme]);
 
   useEffect(() => {
+    // Read cookie consent once on startup so optional features match the user's choice.
     setConsentState(getConsentState());
   }, []);
 

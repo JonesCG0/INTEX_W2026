@@ -8,11 +8,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace backend.Controllers;
 
+// Public health-check endpoints used by load balancers and deployment pipelines.
 [ApiController]
 [Route("api/health")]
 [AllowAnonymous]
 public class HealthController(AppDbContext db, StartupDiagnostics startupDiagnostics, IWebHostEnvironment environment) : ControllerBase
 {
+    // GET /api/health — returns 200 if healthy, 503 if degraded. Pass ?details=true for more info.
     [HttpGet]
     public async Task<IActionResult> Ready([FromQuery] bool details = false)
     {
@@ -25,6 +27,7 @@ public class HealthController(AppDbContext db, StartupDiagnostics startupDiagnos
     [HttpGet("ready")]
     public async Task<IActionResult> ReadyEndpoint([FromQuery] bool details = false) => await Ready(details);
 
+    // GET /api/health/live — simple liveness probe that always returns 200 with basic app info.
     [HttpGet("live")]
     public IActionResult Live()
     {
@@ -41,6 +44,7 @@ public class HealthController(AppDbContext db, StartupDiagnostics startupDiagnos
     [HttpGet("full")]
     public async Task<IActionResult> Full([FromQuery] bool details = false) => await Ready(details);
 
+    // GET /api/health/diagnostics — returns row counts and donor lookup stats for debugging.
     [HttpGet("diagnostics")]
     public async Task<IActionResult> GetDiagnostics()
     {

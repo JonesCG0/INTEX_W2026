@@ -22,6 +22,7 @@ export default function PageNotFound({}) {
                             Page Not Found
                         </h2>
                         <p className="text-slate-600 leading-relaxed">
+                            {/* Show the missing path so users can tell what failed. */}
                             The page <span className="font-medium text-slate-700">"{pageName}"</span> could not be found in this application.
                         </p>
                     </div>

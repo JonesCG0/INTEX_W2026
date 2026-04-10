@@ -12,11 +12,13 @@ export default function PublicNav() {
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  // Keep the public links small and easy to scan.
   const links = [
     { to: "/", label: "Home" },
     { to: "/impact", label: "Impact" },
   ];
 
+  // Send users to the donate section on the home page when possible.
   const donateHref = location.pathname === "/" ? "#donate" : "/#donate";
   const dashboardHref = user?.role === 'Admin' ? '/admin' : '/donor';
 

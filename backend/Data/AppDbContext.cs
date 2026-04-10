@@ -7,7 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace backend.Data;
 
-// Add DbSet<T> properties here as models are created during the project week.
+// Main EF Core database context. Extends IdentityDbContext so ASP.NET Identity tables are included.
+// Also handles manual ID assignment for tables that don't use IDENTITY columns.
 public class AppDbContext(
     DbContextOptions<AppDbContext> options,
     DatabaseKeyMode databaseKeyMode)
@@ -202,6 +203,7 @@ public class AppDbContext(
         return await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
     }
 
+    // Marks the PK as ValueGeneratedNever for tables that require manual ID assignment.
     private void ConfigureManualAssignment<T>(Microsoft.EntityFrameworkCore.Metadata.Builders.EntityTypeBuilder<T> builder, string tableName, System.Linq.Expressions.Expression<Func<T, int>> keyExpression) where T : class
     {
         if (_databaseKeyMode.IsManual(tableName))
@@ -210,6 +212,7 @@ public class AppDbContext(
         }
     }
 
+    // Before saving, assigns sequential IDs to any new entities whose IDs are still unset (<=0).
     private async Task AssignManualIdsAsync<T>(DbSet<T> dbSet, string tableName, System.Linq.Expressions.Expression<Func<T, int>> keyExpression, Action<T, int> keySetter, CancellationToken cancellationToken) where T : class
     {
         if (!_databaseKeyMode.IsManual(tableName))

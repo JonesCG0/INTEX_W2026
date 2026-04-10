@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace backend.Controllers;
 
+// Handles login, logout, registration, and current-user checks.
 [ApiController]
 [Route("api/auth")]
 public class AuthController(
@@ -26,6 +27,7 @@ public class AuthController(
         return roles.FirstOrDefault() ?? "User";
     }
 
+    // POST /api/auth/login — validates credentials and sets the auth cookie.
     [HttpPost("login")]
     [AllowAnonymous]
     public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginRequestDto request)
@@ -64,6 +66,7 @@ public class AuthController(
     private bool HasConnectionString() =>
         !string.IsNullOrWhiteSpace(db.Database.GetDbConnection().ConnectionString);
 
+    // POST /api/auth/logout — clears the auth cookie.
     [HttpPost("logout")]
     [Authorize]
     public async Task<IActionResult> Logout()
@@ -72,6 +75,7 @@ public class AuthController(
         return NoContent();
     }
 
+    // GET /api/auth/me — returns the current user's info, or an unauthenticated response if not logged in.
     [HttpGet("me")]
     [AllowAnonymous]
     public async Task<ActionResult<CurrentUserDto>> Me()
@@ -98,6 +102,7 @@ public class AuthController(
         return Ok(new CurrentUserDto(true, user.Email, user.DisplayName, primaryRole));
     }
 
+    // POST /api/auth/register — creates a new Donor account and logs them in immediately.
     [HttpPost("register")]
     [AllowAnonymous]
     public async Task<ActionResult<AuthResponseDto>> Register([FromBody] RegisterRequestDto request)

@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace backend.Controllers;
 
+// Admin-only endpoints for managing users and running read-only database queries.
 [ApiController]
 [Route("api/admin")]
 [Authorize(Roles = "Admin")]
@@ -23,6 +24,7 @@ public class AdminController(
 {
     // ── User Management ────────────────────────────────────────────────────
 
+    // GET /api/admin/users — returns all users sorted by email.
     [HttpGet("users")]
     public async Task<ActionResult<IEnumerable<UserSummaryDto>>> GetUsers()
     {
@@ -46,6 +48,7 @@ public class AdminController(
         return Ok(result);
     }
 
+    // POST /api/admin/users — creates a new user with the specified role.
     [HttpPost("users")]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserRequestDto dto)
     {
@@ -84,6 +87,7 @@ public class AdminController(
         return CreatedAtAction(nameof(GetUsers), new { id = user.Id }, new { user.Id, user.Email, user.DisplayName, dto.Role });
     }
 
+    // PUT /api/admin/users/{id} — updates a user's display name and role.
     [HttpPut("users/{id:int}")]
     public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserRequestDto dto)
     {
@@ -118,6 +122,7 @@ public class AdminController(
         return NoContent();
     }
 
+    // PUT /api/admin/users/{id}/role — replaces all roles for the user with the given role.
     [HttpPut("users/{id:int}/role")]
     public async Task<IActionResult> ChangeRole(int id, [FromBody] ChangeRoleDto dto)
     {
@@ -146,6 +151,7 @@ public class AdminController(
         return NoContent();
     }
 
+    // DELETE /api/admin/users/{id} — deletes a user. Requires confirmation header. Cannot delete yourself or the last admin.
     [HttpDelete("users/{id:int}")]
     public async Task<IActionResult> DeleteUser(int id)
     {
@@ -186,6 +192,7 @@ public class AdminController(
         return NoContent();
     }
 
+    // POST /api/admin/users/{id}/unlock — clears the lockout on a user account.
     [HttpPost("users/{id:int}/unlock")]
     public async Task<IActionResult> UnlockUser(int id)
     {
@@ -203,6 +210,7 @@ public class AdminController(
 
     // ── Database Query ─────────────────────────────────────────────────────
 
+    // POST /api/admin/query — runs a validated read-only SQL query and returns columns + rows (max 200).
     [HttpPost("query")]
     public async Task<IActionResult> RunQuery([FromBody] QueryRequestDto dto)
     {
@@ -255,6 +263,7 @@ public class AdminController(
         }
     }
 
+    // GET /api/admin/roles — returns all role names defined in the system.
     [HttpGet("roles")]
     public async Task<ActionResult<IEnumerable<string>>> GetRoles()
     {

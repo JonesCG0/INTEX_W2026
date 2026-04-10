@@ -49,6 +49,7 @@ export default function Impact() {
 
   useEffect(() => {
     async function fetchImpact() {
+      // Pull the latest public impact data once when the page opens.
       try {
         const response = await apiFetch(`${API_BASE}/api/public/impact`);
         if (response.ok) {
@@ -104,6 +105,7 @@ export default function Impact() {
     {
       id: "Donations",
       color: HAVEN_NIVO_COLORS[0],
+      // Convert the API response into the shape the chart library expects.
       data: data.donationTrend.map(pt => ({
         x: pt.monthLabel,
         y: pt.donationAmountPhp
@@ -115,6 +117,7 @@ export default function Impact() {
     {
       id: "Residents",
       color: HAVEN_NIVO_COLORS[1],
+      // Use the same monthly timeline for the resident trend chart.
       data: data.donationTrend.map(pt => ({
         x: pt.monthLabel,
         y: pt.activeResidents
@@ -125,6 +128,7 @@ export default function Impact() {
   const barData = data.safehouses.map(sh => ({
     name: sh.name,
     shortName: shortenSafehouseLabel(sh.name),
+    // Show occupancy and capacity side by side for each safehouse.
     "Occupancy": sh.currentOccupancy,
     "Capacity": sh.capacityGirls
   }));

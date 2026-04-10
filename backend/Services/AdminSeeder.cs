@@ -8,6 +8,8 @@ using Microsoft.Extensions.Options;
 
 namespace backend.Services;
 
+// Runs at startup to ensure the system has required roles, admin user, donor user,
+// sample donations, public impact snapshots, and safehouse monthly metrics.
 public sealed class AdminSeeder(
     UserManager<AppUser> userManager,
     RoleManager<IdentityRole<int>> roleManager,

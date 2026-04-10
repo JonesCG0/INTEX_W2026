@@ -7,6 +7,7 @@ const THEME_COOKIE_KEY = 'haven_theme';
 type HavenTheme = 'light' | 'dark';
 
 const applyTheme = (theme: HavenTheme) => {
+  // Keep the DOM, local storage, and cookie in sync.
   if (typeof document !== 'undefined') {
     document.documentElement.classList.toggle('dark', theme === 'dark');
   }
@@ -19,6 +20,7 @@ const applyTheme = (theme: HavenTheme) => {
 };
 
 const resolveInitialTheme = (): HavenTheme => {
+  // Prefer the saved theme, then the cookie, then the system preference.
   if (typeof window === 'undefined') {
     return (Cookies.get(THEME_COOKIE_KEY) as HavenTheme) || 'light';
   }

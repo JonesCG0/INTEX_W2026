@@ -3,6 +3,9 @@ using Microsoft.Extensions.Options;
 
 namespace backend.Services;
 
+// In-memory store for ML pipeline definitions and run history.
+// In Demo mode it simulates run progress based on elapsed time.
+// In AzureMl mode it submits real notebook jobs and polls their status.
 public sealed class MlPipelineStore
 {
     private static readonly HttpClient HttpClient = new();
@@ -471,6 +474,7 @@ public sealed class MlPipelineStore
         );
     }
 
+    // Tries the blob storage URL first, then falls back to local generated_outputs directories.
     private SnapshotSource? ResolveOutputSource(string fileName)
     {
         var blobSource = TryReadBlobSnapshot(fileName);
@@ -576,6 +580,7 @@ public sealed class MlPipelineStore
         );
     }
 
+    // Determines the display state of a run based on Azure job status, overrides, or elapsed time in Demo mode.
     private static RunState EvaluateState(MlPipelineRunRecord run)
     {
         if (!string.IsNullOrWhiteSpace(run.AzureJobStatus))

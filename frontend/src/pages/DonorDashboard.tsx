@@ -50,6 +50,7 @@ export default function DonorDashboard() {
   useEffect(() => {
     async function load() {
       try {
+        // Pull the donor-specific summary once when the dashboard loads.
         const response = await apiFetch(`${API_BASE}/api/DonorPortal/dashboard`);
         if (response.ok) {
           const result = await response.json();
@@ -107,6 +108,7 @@ export default function DonorDashboard() {
   }
 
   const typeCounts = data.contributions.reduce((acc: Record<string, number>, contribution) => {
+    // Group contributions by type for the pie chart.
     acc[contribution.type] = (acc[contribution.type] || 0) + (contribution.amountPhp || 0);
     return acc;
   }, {});
@@ -114,6 +116,7 @@ export default function DonorDashboard() {
   const pieData = Object.entries(typeCounts).map(([id, value]) => ({ id, label: id, value }));
 
   const monthCounts = data.contributions.reduce((acc: Record<string, number>, contribution) => {
+    // Group contributions by month so the trend chart stays compact.
     const month = formatMonthKey(contribution.date);
     acc[month] = (acc[month] || 0) + (contribution.amountPhp || 0);
     return acc;
@@ -128,6 +131,7 @@ export default function DonorDashboard() {
 
   const hasContributionData = pieData.length > 0;
   const hasTrendData = barData.length > 0;
+  // Format the lifetime impact once so it can be reused in the headline card.
   const compactLifetimeImpact = `₱${formatCompactCurrencyTick(data.totalImpactPhp)}`;
 
   return (

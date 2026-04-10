@@ -56,6 +56,7 @@ const ChartContainer = React.forwardRef<HTMLDivElement, ChartContainerProps>(({
   ...props
 }, ref) => {
   const uniqueId = React.useId()
+  // Give every chart a stable id so CSS variables stay scoped correctly.
   const chartId = `chart-${id || uniqueId.replace(/:/g, "")}`
 
   return (
@@ -82,6 +83,7 @@ const ChartStyle = ({
   id,
   config
 }: ChartStyleProps) => {
+  // Only generate CSS for charts that actually define colors.
   const colorConfig = Object.entries(config).filter(([, config]) => config.theme || config.color)
 
   if (!colorConfig.length) {
@@ -129,6 +131,7 @@ const ChartTooltipContent = React.forwardRef((
   }: any,
   ref
 ) => {
+  // Tooltip markup is still a placeholder in this project.
   return null; // Placeholder
 })
 ChartTooltipContent.displayName = "ChartTooltip"
@@ -139,6 +142,7 @@ const ChartLegendContent = React.forwardRef((
   { className, hideIcon = false, payload, verticalAlign = "bottom", nameKey }: any,
   ref
 ) => {
+  // Legend markup is still a placeholder in this project.
   return null; // Placeholder
 })
 ChartLegendContent.displayName = "ChartLegend"

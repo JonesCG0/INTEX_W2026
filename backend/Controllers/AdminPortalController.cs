@@ -7,17 +7,20 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace backend.Controllers;
 
+// Admin-only CRUD endpoints for the admin portal (donors, contributions, residents, recordings, visitations, conferences).
 [ApiController]
 [Route("api/admin/portal")]
 [Authorize(Roles = "Admin")]
 public class AdminPortalController(CanonicalAdminPortalStore store, ILogger<AdminPortalController> logger) : ControllerBase
 {
+    // GET /api/admin/portal — returns a full overview of all portal data.
     [HttpGet]
     public async Task<ActionResult<AdminPortalOverviewDto>> GetOverview()
     {
         return Ok(await store.GetOverviewAsync());
     }
 
+    // GET /api/admin/portal/social-posts — returns social posts, optionally filtered by platform or campaign.
     [HttpGet("social-posts")]
     public async Task<ActionResult<IReadOnlyList<AdminPortalSocialPostDto>>> GetSocialPosts([FromQuery] string? platform = null, [FromQuery] string? campaign = null)
     {

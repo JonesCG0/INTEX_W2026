@@ -15,6 +15,7 @@ export function parseDisplayValue(valueDisplay: string): {
   prefix: string;
   suffix: string;
 } {
+  // Strip out formatting so charts can work with plain numbers.
   const sanitized = valueDisplay.replace(/,/g, '');
   const numericMatch = sanitized.match(/-?\d+(\.\d+)?/);
   const numericValue = numericMatch ? Number.parseFloat(numericMatch[0]) : 0;
@@ -22,8 +23,9 @@ export function parseDisplayValue(valueDisplay: string): {
   let prefix = '';
   let suffix = '';
 
-  if (/php|₱/i.test(valueDisplay)) {
-    prefix = '₱';
+  // Keep currency and percent markers for display.
+  if (/php|\u20b1/i.test(valueDisplay)) {
+    prefix = '\u20b1';
   }
 
   if (/%/.test(valueDisplay)) {

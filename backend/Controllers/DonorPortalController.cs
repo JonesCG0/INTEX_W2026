@@ -10,11 +10,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace backend.Controllers;
 
+// Donor-only endpoints for submitting gifts and viewing the donor dashboard.
 [Authorize(Roles = "Donor")]
 [ApiController]
 [Route("api/[controller]")]
 public sealed class DonorPortalController(AppDbContext db, SupporterProfileService supporterProfiles) : ControllerBase
 {
+    // POST /api/donorportal/donate — records a monetary gift for the logged-in donor.
     [HttpPost("donate")]
     public async Task<ActionResult<CreateDonationResponseDto>> Donate([FromBody] CreateDonationRequestDto request)
     {
@@ -61,6 +63,7 @@ public sealed class DonorPortalController(AppDbContext db, SupporterProfileServi
         ));
     }
 
+    // GET /api/donorportal/dashboard — returns the donor's contribution history, safehouse updates, and impact metrics.
     [HttpGet("dashboard")]
     public async Task<ActionResult<DonorDashboardDto>> GetDashboard()
     {
@@ -115,11 +118,13 @@ public sealed class DonorPortalController(AppDbContext db, SupporterProfileServi
         }
     }
 
+    // Gets or creates a Supporter record for the logged-in donor.
     private async Task<Supporter> GetOrCreateDonorProfileAsync(string email, string displayName)
     {
         return await supporterProfiles.EnsureSupporterProfileAsync(email, displayName, acquisitionChannel: "Website");
     }
 
+    // Queries the latest monthly snapshot for up to 2 safehouses.
     private static async Task<List<SafehouseUpdateDto>> ReadSafehouseUpdatesAsync(DbConnection connection)
     {
         try
@@ -181,6 +186,7 @@ public sealed class DonorPortalController(AppDbContext db, SupporterProfileServi
         }
     }
 
+    // Builds summary impact metrics (active safehouses, residents, donor tier) for the dashboard.
     private static async Task<List<ImpactMetricDto>> ReadImpactMetricsAsync(DbConnection connection, Supporter donor)
     {
         var safehouses = await ExecuteScalarIntAsync(connection, "SELECT COUNT(*) FROM safehouses WHERE status = 'Active';");

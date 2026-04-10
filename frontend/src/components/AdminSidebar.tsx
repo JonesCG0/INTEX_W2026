@@ -39,11 +39,13 @@ export default function AdminSidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { user, logout } = useAuth();
 
+  // Treat exact routes and section routes differently.
   const isActive = (item: any) => {
     if (item.exact) return location.pathname === item.to;
     return location.pathname.startsWith(item.to);
   };
 
+  // Render the same menu in compact and expanded modes.
   const renderNavItems = (compact = false, onNavigate?: () => void) => (
     navItems.map(item => {
       const active = isActive(item);

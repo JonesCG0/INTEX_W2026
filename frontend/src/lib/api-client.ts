@@ -24,6 +24,7 @@ export async function apiFetch(input: RequestInfo | URL, init: ApiFetchOptions =
   const requestHeaders = new Headers(headers ?? undefined);
 
   if (confirmDelete) {
+    // Add the explicit delete confirmation header when the caller needs it.
     requestHeaders.set(DELETE_CONFIRMATION_HEADER, DELETE_CONFIRMATION_VALUE);
   }
 
@@ -34,6 +35,7 @@ export async function apiFetch(input: RequestInfo | URL, init: ApiFetchOptions =
   });
 
   if (!skipAuthHandling && (response.status === 401 || response.status === 403)) {
+    // Let the auth provider handle redirects for expired or forbidden sessions.
     window.dispatchEvent(new CustomEvent(AUTH_ERROR_EVENT, { detail: { status: response.status } }));
   }
 
@@ -44,6 +46,7 @@ export async function readApiErrorMessage(response: Response, fallback: string) 
   const contentType = response.headers.get('content-type') ?? '';
 
   try {
+    // Prefer a JSON error payload when the backend sends one.
     if (contentType.includes('application/json')) {
       const payload = await response.clone().json();
       if (typeof payload?.error === 'string' && payload.error.trim()) {
@@ -70,5 +73,6 @@ export async function ensureApiSuccess(response: Response, fallback: string) {
     return response;
   }
 
+  // Turn non-OK responses into a typed error with a readable message.
   throw new ApiError(await readApiErrorMessage(response, fallback), response);
 }

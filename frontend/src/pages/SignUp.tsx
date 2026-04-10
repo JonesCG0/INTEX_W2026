@@ -21,6 +21,7 @@ interface PasswordRequirement {
   met: (pw: string) => boolean;
 }
 
+// Keep the password rules visible and easy to audit.
 const PASSWORD_REQUIREMENTS: PasswordRequirement[] = [
   { label: "At least 12 characters", met: (pw) => pw.length >= 12 },
   { label: "One uppercase letter (A–Z)", met: (pw) => /[A-Z]/.test(pw) },
@@ -52,6 +53,7 @@ export default function SignUp() {
     e.preventDefault();
     setPasswordTouched(true);
 
+    // Check the local password rules before sending anything to the server.
     if (!passwordValid(password)) {
       setErrorMessage("Your password does not meet the requirements listed below.");
       return;
@@ -65,6 +67,7 @@ export default function SignUp() {
     clearError();
 
     try {
+      // Create the donor account, then refresh auth state after success.
       const response = await apiFetch(`${API_BASE}/api/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -82,6 +85,7 @@ export default function SignUp() {
         toast.success(
           `Welcome, ${data.displayName}. Your donor account is ready.`
         );
+        // Update the session before routing into the donor dashboard.
         await checkAppState();
         navigate("/donor");
         return;

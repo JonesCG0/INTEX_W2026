@@ -14,8 +14,10 @@ export default function DonorLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [donateOpen, setDonateOpen] = useState(false);
 
+  // Mark the current page so the active nav item is easy to highlight.
   const isActive = (path: string) => location.pathname === path;
 
+  // Reuse the same links in the mobile drawer and desktop sidebar.
   const navLinks = (
     <>
       <Link to="/donor" onClick={() => setMobileOpen(false)}>

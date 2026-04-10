@@ -2,8 +2,11 @@ using System.Text.RegularExpressions;
 
 namespace backend.Security;
 
+// Validates admin SQL queries to ensure they are read-only and only access approved tables.
+// Blocks SQL injection patterns, DDL statements, and queries against identity/system tables.
 public static partial class AdminSqlGuard
 {
+    // Tables that admins are permitted to query.
     private static readonly string[] AllowedTables =
     [
         "donation_allocations",
@@ -22,6 +25,7 @@ public static partial class AdminSqlGuard
         "supporters"
     ];
 
+    // SQL keywords and patterns that are never allowed in a read-only query.
     private static readonly string[] BlockedTokens =
     [
         "--",
@@ -45,6 +49,8 @@ public static partial class AdminSqlGuard
         " sp_"
     ];
 
+    // Validates that the SQL is a safe, read-only SELECT against allowed tables.
+    // Returns true on success; sets normalizedSql and error accordingly.
     public static bool TryValidateReadOnlyQuery(string? sql, out string normalizedSql, out string error)
     {
         normalizedSql = string.Empty;

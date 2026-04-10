@@ -8,6 +8,7 @@ export const CookieConsent = ({ onConsentChange }: { onConsentChange?: (state: H
   const [show, setShow] = useState(false);
 
   useEffect(() => {
+    // Only show the banner if the user has not made a choice yet.
     const consent = getConsentState();
     if (!consent) {
       setShow(true);
@@ -15,6 +16,7 @@ export const CookieConsent = ({ onConsentChange }: { onConsentChange?: (state: H
   }, []);
 
   const updateConsent = (state: HavenConsentState) => {
+    // Save the choice and close the banner right away.
     setConsentState(state);
     onConsentChange?.(state);
     setShow(false);

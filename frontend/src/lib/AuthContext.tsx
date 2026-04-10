@@ -26,11 +26,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [appPublicSettings, setAppPublicSettings] = useState(null);
 
   useEffect(() => {
+    // Check the current session once when the app starts.
     checkAppState();
   }, []);
 
   useEffect(() => {
     const handleAuthFailure = (event: Event) => {
+      // Clear local auth state and send the user to the right page.
       const detail = (event as CustomEvent<{ status: number }>).detail;
       setUser(null);
       setIsAuthenticated(false);
@@ -53,6 +55,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const checkAppState = async () => {
     try {
+      // Ask the backend who is signed in and load the public app settings at the same time.
       setIsLoadingPublicSettings(true);
       setIsLoadingAuth(true);
       
@@ -91,6 +94,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async (shouldRedirect = true) => {
     try {
+      // Tell the backend to clear the session before resetting local state.
       await apiFetch(`${API_URL}/api/auth/logout`, { method: 'POST', skipAuthHandling: true });
       setUser(null);
       setIsAuthenticated(false);

@@ -10,6 +10,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
+// ── Application entry point ────────────────────────────────────────────────
+// Configures services, runs startup tasks (migrations, seeding), and starts the API.
+
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -51,10 +54,12 @@ catch
 
 // #endregion
 
+// Register EF Core with SQL Server.
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString)
            .ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning)));
 
+// Configure ASP.NET Identity with strict password and lockout rules.
 builder.Services.AddIdentity<AppUser, IdentityRole<int>>(options =>
 {
     // IS414: stricter than Microsoft defaults (default min is 6)
@@ -156,6 +161,7 @@ builder.Services.AddCors(options =>
     });
 });
 
+// If the app is launched with --seed-csv, run the CSV seeder and exit instead of starting the server.
 if (args.Any(a => a.Equals("--seed-csv", StringComparison.OrdinalIgnoreCase)))
 {
     using var seedApp = builder.Build();
@@ -315,6 +321,7 @@ static Task WriteDebugLogAsync(IHostEnvironment env, string runId, string hypoth
 }
 // #endregion
 
+// Adds the LinkedEmail column + unique index to portal_donors if they don't already exist.
 static async Task EnsurePortalDonorLinkedEmailSchemaAsync(AppDbContext db)
 {
     const string addColumnSql = """
@@ -342,6 +349,7 @@ static async Task EnsurePortalDonorLinkedEmailSchemaAsync(AppDbContext db)
     await db.Database.ExecuteSqlRawAsync(addIndexSql);
 }
 
+// Creates the ml_resident_reintegration_scores table and its index if they don't exist.
 static async Task EnsureMlResidentReintegrationScoreSchemaAsync(AppDbContext db)
 {
     const string createTableSql = """
@@ -381,6 +389,7 @@ static async Task EnsureMlResidentReintegrationScoreSchemaAsync(AppDbContext db)
     await db.Database.ExecuteSqlRawAsync(createIndexSql);
 }
 
+// Creates public_impact_snapshots if missing, or renames the PK column from 'id' to 'snapshot_id' if needed.
 static async Task EnsurePublicImpactSchemaAsync(AppDbContext db)
 {
     const string sql = """
@@ -408,6 +417,7 @@ static async Task EnsurePublicImpactSchemaAsync(AppDbContext db)
     await db.Database.ExecuteSqlRawAsync(sql);
 }
 
+// Creates safehouse_monthly_metrics if missing, or renames the PK column from 'id' to 'metric_id' if needed.
 static async Task EnsureAnalyticalMetricsSchemaAsync(AppDbContext db)
 {
     const string sql = """
@@ -435,6 +445,7 @@ static async Task EnsureAnalyticalMetricsSchemaAsync(AppDbContext db)
     await db.Database.ExecuteSqlRawAsync(sql);
 }
 
+// Parses a SameSite string from config into the enum value, or returns null if blank/unrecognized.
 static SameSiteMode? TryParseSameSiteMode(string? rawValue)
 {
     if (string.IsNullOrWhiteSpace(rawValue))

@@ -9,6 +9,7 @@ type AuthPageLayoutProps = {
 export function AuthPageLayout({ children }: AuthPageLayoutProps) {
   return (
     <div className="relative min-h-screen w-full bg-background text-foreground">
+      {/* Keep a simple escape path back to the public home page. */}
       <Link
         to="/"
         className="absolute left-4 top-4 z-20 inline-flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
@@ -18,10 +19,12 @@ export function AuthPageLayout({ children }: AuthPageLayoutProps) {
         <span className="sm:hidden">Home</span>
       </Link>
 
+      {/* Theme toggle stays visible on every auth screen. */}
       <div className="absolute right-4 top-4 z-20">
         <DarkModeToggle />
       </div>
 
+      {/* Center the form content so login and signup share the same layout. */}
       <div className="relative z-10 flex min-h-screen flex-col items-center justify-center px-4 pb-12 pt-16">
         {children}
       </div>

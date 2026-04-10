@@ -22,6 +22,7 @@ export default function Home() {
   const [impactData, setImpactData] = useState<HomeImpactData | null>(null);
 
   useEffect(() => {
+    // Switch to the mobile hero on small screens.
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
     window.addEventListener('resize', check);
@@ -29,6 +30,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    // Jump to the donate section when the page opens with #donate in the URL.
     if (window.location.hash === '#donate') {
       const el = document.getElementById('donate');
       if (el) {
@@ -47,6 +49,7 @@ export default function Home() {
     let isMounted = true;
 
     async function loadImpactPreview() {
+      // Load a small set of public impact metrics for the home page preview.
       try {
         const response = await fetch(`${API_BASE}/api/public/impact`);
         if (!response.ok) {
@@ -71,6 +74,7 @@ export default function Home() {
 
   const previewMetrics = (impactData?.metrics ?? []).slice(0, 4).map((metric, index) => ({
     ...metric,
+    // Keep the card animation and number formatting simple.
     numericValue: parseInt(metric.valueDisplay.replace(/[^\d]/g, ''), 10) || 0,
     prefix: metric.valueDisplay.includes('PHP') ? '₱' : '',
     suffix: metric.valueDisplay.includes('%') ? '%' : '',

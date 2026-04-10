@@ -48,6 +48,7 @@ const addToRemoveQueue = (toastId: string) => {
     return;
   }
 
+  // Delay removal so the dismiss animation can finish first.
   const timeout = setTimeout(() => {
     toastTimeouts.delete(toastId);
     dispatch({
@@ -140,6 +141,7 @@ type ToastProps = Omit<ToasterToast, "id">;
 function toast({ ...props }: ToastProps) {
   const id = genId();
 
+  // Return small helpers so callers can update or dismiss the toast later.
   const update = (nextProps: Partial<ToastProps>) =>
     dispatch({
       type: actionTypes.UPDATE_TOAST,
@@ -172,6 +174,7 @@ function useToast() {
   const [state, setState] = useState(memoryState);
 
   useEffect(() => {
+    // Subscribe this component to the shared in-memory toast store.
     listeners.push(setState);
     return () => {
       const index = listeners.indexOf(setState);
