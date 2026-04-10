@@ -66,7 +66,7 @@ export default function AdminSidebar() {
     <>
       <div className="sticky top-0 z-30 border-b border-border/60 bg-background/95 backdrop-blur md:hidden">
         <div className="flex h-16 items-center justify-between px-4">
-          <Link to="/admin" className={logoLockupClasses.container}>
+          <Link to="/" className={logoLockupClasses.container}>
             <img
               src={circleLogo}
               alt=""
@@ -123,10 +123,10 @@ export default function AdminSidebar() {
         <div className="flex h-16 items-center border-b border-border px-4">
           {!collapsed && (
             <Link
-              to="/admin"
-              className={logoLockupClasses.container}
+              to="/"
+              className={`${logoLockupClasses.container} max-w-[192px] overflow-hidden`}
               aria-label="Project Haven admin home"
-              title="Project Haven admin home"
+              title="Project Haven home"
             >
               <img
                 src={circleLogo}
@@ -136,7 +136,7 @@ export default function AdminSidebar() {
                 height={logoLockupImageSize}
                 className={logoLockupClasses.image}
               />
-              <span className={logoLockupClasses.text}>Project Haven</span>
+              <span className={`${logoLockupClasses.text} truncate`}>Project Haven</span>
             </Link>
           )}
           <Button
