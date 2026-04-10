@@ -30,6 +30,7 @@ const navItems = [
   { to: "/admin/conferences", icon: IconCalendar, label: "Conferences" },
   { to: "/admin/visitations", icon: IconCalendar, label: "Visitations" },
   { to: "/admin/analytics", icon: IconChartBar, label: "Analytics" },
+  { to: "/admin/donor-okrs", icon: IconChartBar, label: "Donor OKRs" },
   { to: "/admin/ml-pipelines", icon: IconActivity, label: "ML Pipelines" },
 ];
 

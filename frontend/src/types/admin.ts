@@ -189,6 +189,24 @@ export interface SafehouseComparisonRecord {
   highRiskResidents: number;
 }
 
+export interface DonorRelationshipKr {
+  title: string;
+  explanation: string;
+  formula: string;
+  percent: number | null;
+  numerator: number;
+  denominator: number;
+}
+
+export interface DonorRelationshipOkrs {
+  objectiveStatement: string;
+  periodDescription: string;
+  computedAtUtc: string;
+  retentionRate: DonorRelationshipKr;
+  upgradeRate: DonorRelationshipKr;
+  portalEngagementRate: DonorRelationshipKr;
+}
+
 export interface AdminPortalOverview {
   dashboard: {
     metrics: Array<{ label: string; value: string; detail: string }>;

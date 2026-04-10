@@ -26,6 +26,7 @@ const Outreach = lazy(() => import('./pages/admin/Outreach'));
 const Users = lazy(() => import('./pages/admin/Users'));
 const Analytics = lazy(() => import('./pages/admin/Analytics'));
 const MlPipelines = lazy(() => import('./pages/admin/MlPipelines'));
+const DonorRelationshipOkrs = lazy(() => import('./pages/admin/DonorRelationshipOkrs'));
 const AdminLayout = lazy(() => import('./components/AdminLayout'));
 const DonorLayout = lazy(() => import('./components/DonorLayout'));
 const PublicLayout = lazy(() => import('./components/PublicLayout'));
@@ -101,6 +102,7 @@ const AuthenticatedApp = () => {
         <Route path="outreach" element={<Outreach />} />
         <Route path="users" element={<Users />} />
         <Route path="analytics" element={<Analytics />} />
+        <Route path="donor-okrs" element={<DonorRelationshipOkrs />} />
         <Route path="ml-pipelines" element={<MlPipelines />} />
       </Route>
       
