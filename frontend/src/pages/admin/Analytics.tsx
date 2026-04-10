@@ -15,6 +15,13 @@ const ChartSkeleton = () => (
   <div className="h-full rounded-lg border border-dashed border-border/60 bg-muted/20" />
 );
 
+function formatAllocationPhpTwoDecimals(value: number): string {
+  return new Intl.NumberFormat('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+}
+
 export default function Analytics() {
   const reduceMotion = useReducedMotion();
   const [data, setData] = useState<AdminPortalOverview | null>(null);
@@ -490,7 +497,7 @@ export default function Analytics() {
                         tickSize: 5,
                         tickPadding: 5,
                         tickRotation: 0,
-                        format: (value) => formatCompactCurrencyTick(Number(value)),
+                        format: (value) => formatAllocationPhpTwoDecimals(Number(value)),
                       }}
                       theme={havenNivoTheme}
                       role="img"
@@ -517,7 +524,7 @@ export default function Analytics() {
                     {allocationData.map((row) => (
                       <tr key={`allocation-${row.programArea}`}>
                         <td>{row.programArea}</td>
-                        <td>{row.amount.toLocaleString()}</td>
+                        <td>{formatAllocationPhpTwoDecimals(row.amount)}</td>
                       </tr>
                     ))}
                   </tbody>
