@@ -63,10 +63,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddIdentity<AppUser, IdentityRole<int>>(options =>
 {
     // IS414: stricter than Microsoft defaults (default min is 6)
-    options.Password.RequireDigit = true;
-    options.Password.RequireLowercase = true;
-    options.Password.RequireUppercase = true;
-    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequireNonAlphanumeric = false;
     options.Password.RequiredLength = 14;
     options.User.RequireUniqueEmail = true;
     options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
@@ -417,7 +417,7 @@ static async Task EnsurePublicImpactSchemaAsync(AppDbContext db)
     await db.Database.ExecuteSqlRawAsync(sql);
 }
 
-// Creates safehouse_monthly_metrics if missing, or renames the PK column from 'id' to 'metric_id' if needed.
+// Creates safehouse_monthly_metrics if missing, or repairs missing/renamed columns if needed.
 static async Task EnsureAnalyticalMetricsSchemaAsync(AppDbContext db)
 {
     const string sql = """
@@ -435,10 +435,25 @@ static async Task EnsureAnalyticalMetricsSchemaAsync(AppDbContext db)
         END
         ELSE
         BEGIN
-            IF COL_LENGTH('safehouse_monthly_metrics', 'id') IS NOT NULL 
+            IF COL_LENGTH('safehouse_monthly_metrics', 'id') IS NOT NULL
                AND COL_LENGTH('safehouse_monthly_metrics', 'metric_id') IS NULL
             BEGIN
                 EXEC sp_rename 'safehouse_monthly_metrics.id', 'metric_id', 'COLUMN';
+            END
+
+            IF COL_LENGTH('safehouse_monthly_metrics', 'avg_education_progress') IS NULL
+            BEGIN
+                ALTER TABLE safehouse_monthly_metrics ADD avg_education_progress decimal(18,4) NULL;
+            END
+
+            IF COL_LENGTH('safehouse_monthly_metrics', 'avg_health_score') IS NULL
+            BEGIN
+                ALTER TABLE safehouse_monthly_metrics ADD avg_health_score decimal(18,4) NULL;
+            END
+
+            IF COL_LENGTH('safehouse_monthly_metrics', 'active_residents') IS NULL
+            BEGIN
+                ALTER TABLE safehouse_monthly_metrics ADD active_residents int NULL;
             END
         END
         """;
