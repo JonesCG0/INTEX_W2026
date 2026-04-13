@@ -66,16 +66,16 @@ export default function AdminSidebar() {
     <>
       <div className="sticky top-0 z-30 border-b border-border/60 bg-background/95 backdrop-blur md:hidden">
         <div className="flex h-16 items-center justify-between px-4">
-          <Link to="/admin" className={logoLockupClasses.container}>
+          <Link to="/" className={`${logoLockupClasses.container} h-10 gap-1.5 px-2`}>
             <img
               src={circleLogo}
               alt=""
               aria-hidden="true"
               width={logoLockupImageSize}
               height={logoLockupImageSize}
-              className={logoLockupClasses.image}
+              className={`${logoLockupClasses.image} h-7 w-7`}
             />
-            <span className={logoLockupClasses.text}>Project Haven</span>
+            <span className="font-display text-[1.55rem] leading-none whitespace-nowrap text-primary">Project Haven</span>
           </Link>
           <div className="flex items-center gap-2">
             <DarkModeToggle className="h-9 w-9" />
@@ -123,10 +123,10 @@ export default function AdminSidebar() {
         <div className="flex h-16 items-center border-b border-border px-4">
           {!collapsed && (
             <Link
-              to="/admin"
-              className={logoLockupClasses.container}
+              to="/"
+              className={`${logoLockupClasses.container} h-10 gap-1.5 px-2`}
               aria-label="Project Haven admin home"
-              title="Project Haven admin home"
+              title="Project Haven home"
             >
               <img
                 src={circleLogo}
@@ -134,9 +134,9 @@ export default function AdminSidebar() {
                 aria-hidden="true"
                 width={logoLockupImageSize}
                 height={logoLockupImageSize}
-                className={logoLockupClasses.image}
+                className={`${logoLockupClasses.image} h-7 w-7`}
               />
-              <span className={logoLockupClasses.text}>Project Haven</span>
+              <span className="font-display text-[1.55rem] leading-none whitespace-nowrap text-primary">Project Haven</span>
             </Link>
           )}
           <Button
