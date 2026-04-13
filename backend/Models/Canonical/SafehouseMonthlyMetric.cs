@@ -19,9 +19,9 @@ public sealed class SafehouseMonthlyMetric
     [Column("active_residents")]
     public int? ActiveResidents { get; set; }
 
-    [Column("avg_education_progress")]
+    [Column("avg_education_progress", TypeName = "decimal(18,4)")]
     public decimal? AvgEducationProgress { get; set; }
 
-    [Column("avg_health_score")]
+    [Column("avg_health_score", TypeName = "decimal(18,4)")]
     public decimal? AvgHealthScore { get; set; }
 }

@@ -31,7 +31,11 @@
       "Bash(sed -i 's/className=\"font-body text-2xl font-semibold tracking-tight text-foreground\"/className=\"font-display text-2xl tracking-tight text-foreground\"/' frontend/src/pages/Login.tsx)",
       "Bash(sed -i 's/className=\"font-body text-2xl font-semibold tracking-tight text-foreground\"/className=\"font-display text-2xl tracking-tight text-foreground\"/' frontend/src/pages/SignUp.tsx)",
       "Bash(sed -i 's/className=\"font-body text-4xl mb-8\"/className=\"font-display text-4xl mb-8\"/' frontend/src/pages/Privacy.tsx)",
-      "Bash(sed -i 's/className=\"font-body text-2xl mb-4\"/className=\"font-display text-2xl mb-4\"/g' frontend/src/pages/Privacy.tsx)"
+      "Bash(sed -i 's/className=\"font-body text-2xl mb-4\"/className=\"font-display text-2xl mb-4\"/g' frontend/src/pages/Privacy.tsx)",
+      "Bash(curl -v --max-time 10 https://api.jonescg0.net/api/auth/login -X POST -H \"Content-Type: application/json\" -d '{\"email\":\"test@test.com\",\"password\":\"test\"}')",
+      "Bash(curl -v --max-time 10 https://api.jonescg0.net/api/auth/login -X POST -H \"Content-Type: application/json\" -H \"Origin: https://polite-rock-003bb5b1e.1.azurestaticapps.net\" -d '{\"email\":\"test@test.com\",\"password\":\"test\"}')",
+      "Bash(curl:*)",
+      "Bash(dotnet ef:*)"
     ]
   }
 }
